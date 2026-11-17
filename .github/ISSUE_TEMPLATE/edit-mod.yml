@@ -66,6 +66,11 @@ body:
       label: Description
       description: Replaces the whole description.
   - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: "Replaces all screenshots. Drag or paste up to 8 images here; the first one is the cover. Write none to remove them."
+  - type: textarea
     id: requirements
     attributes:
       label: Requirements

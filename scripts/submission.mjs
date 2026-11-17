@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  CATEGORIES, GAME_LABELS, ARCHIVE_RE, clean, oneLine, slugify, hueFor, today,
+  CATEGORIES, GAME_LABELS, ARCHIVE_RE, IMAGE_RE, MAX_IMAGES, clean, oneLine, slugify, hueFor, today,
   readMods, writeMod, validateMod, gh, setOutput
 } from './lib.mjs';
 
@@ -50,6 +50,22 @@ function parseTags(v) {
   return tags.slice(0, 8);
 }
 const parseGames = v => checked(v).map(l => GAME_LABELS[l]).filter(Boolean);
+
+// Dragging an image into an issue form inserts ![name](url) or <img src="url">; accept bare links too.
+function parseImages(v) {
+  const text = clean(v, 8000);
+  const urls = [...text.matchAll(/!\[[^\]]*\]\(\s*(\S+?)\s*\)|<img\b[^>]*?\bsrc=["']([^"']+)["']|(https?:\/\/\S+)/gi)]
+    .map(m => (m[1] || m[2] || m[3]).replace(/[)>.,]+$/, ''));
+  const images = [];
+  for (const u of [...new Set(urls)]) {
+    if (IMAGE_RE.test(u)) images.push(u);
+    else if (/private-user-images\.githubusercontent\.com/i.test(u)) errors.push('Screenshots: an image link is private and expires. Drag the image into this form again instead of copying its link.');
+    else errors.push(`Screenshots: "${oneLine(u, 80)}" isn't a GitHub-hosted image. Drag the image file into the form so GitHub uploads it.`);
+  }
+  if (!urls.length && text && !/^none$/i.test(text)) errors.push('Screenshots: no images found. Drag image files into the box, or leave it empty.');
+  if (images.length > MAX_IMAGES) errors.push(`Screenshots: ${images.length} images; the limit is ${MAX_IMAGES}.`);
+  return images.slice(0, MAX_IMAGES);
+}
 
 const f = parseForm(issue.body);
 const all = readMods();
@@ -107,6 +123,7 @@ if (mode === 'submit') {
   };
   const authorName = oneLine(f['Display name'], 40);
   if (authorName) mod.authorName = authorName;
+  if (f['Screenshots']) mod.images = parseImages(f['Screenshots']);
 
   if (full) {
     await loadRepo(full);
@@ -140,6 +157,10 @@ if (mode === 'submit') {
     const games = parseGames(f['Games']);
     if (games.length) set('games', games);
     if (f['Description']) set('description', clean(f['Description'], 20000));
+    if (f['Screenshots']) {
+      if (/^none$/i.test(f['Screenshots'].trim())) { if (mod.images) { delete mod.images; changed.push('images'); } }
+      else set('images', parseImages(f['Screenshots']));
+    }
     if (f['Requirements']) set('requirements', parseRequirements(f['Requirements']));
     if (f['Tags']) set('tags', /^none$/i.test(f['Tags'].trim()) ? [] : parseTags(f['Tags']));
     if (!changed.length && !errors.length) errors.push('Nothing to change: every field matches what is listed now.');
@@ -172,7 +193,7 @@ fs.writeFileSync(path.join(tmp, 'reply.md'), mode === 'submit'
   ? `Thanks, @${login}! **${mod.name}** passed the checks and is being published.\n\n` +
     `It will appear at ${page} in a few minutes, once its files have been scanned.\n\n` +
     'New versions show up automatically when you publish a GitHub release. To change the description or tags later, use the Edit a mod form.\n'
-  : `Done, @${login}. Updated the ${changed.map(k => ({ authorName: 'display name', name: 'mod name' }[k] || k)).join(', ')} for **${mod.name}**. The change appears at ${page} in a few minutes.\n`);
+  : `Done, @${login}. Updated the ${changed.map(k => ({ authorName: 'display name', name: 'mod name', images: 'screenshots' }[k] || k)).join(', ')} for **${mod.name}**. The change appears at ${page} in a few minutes.\n`);
 setOutput('ok', 'true');
 setOutput('title', mode === 'submit' ? `Add ${mod.name}` : `Update ${mod.name}`);
 console.log(`Wrote mods/${mod.id}.json`);

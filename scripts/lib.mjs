@@ -19,6 +19,9 @@ export const ARCHIVE_RE = /\.(7z|zip|rar)$/i;
 export const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const REPO_RE = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+// Images must be hosted by GitHub: issue uploads, or files in a public repository.
+export const IMAGE_RE = /^https:\/\/(?:github\.com\/user-attachments\/assets\/[0-9a-f-]{36}|user-images\.githubusercontent\.com\/\d+\/[\w.-]+\.(?:png|jpe?g|gif|webp)|raw\.githubusercontent\.com\/[\w.-]+\/[\w.-]+\/[^\s"'<>]+\.(?:png|jpe?g|gif|webp))$/i;
+export const MAX_IMAGES = 8;
 
 export const today = () => new Date().toISOString().slice(0, 10);
 
@@ -78,6 +81,8 @@ export function validateMod(mod, file) {
   if (mod.hue !== undefined && !(Number.isInteger(mod.hue) && mod.hue >= 0 && mod.hue < 360)) e.push('hue must be a whole number 0-359');
   if (mod.license !== undefined && !isStr(mod.license, 0, 40)) e.push('license must be up to 40 characters');
   if (mod.authorName !== undefined && !isStr(mod.authorName, 1, 40)) e.push('authorName must be 1-40 characters');
+  if (mod.images !== undefined && (!Array.isArray(mod.images) || mod.images.length > MAX_IMAGES ||
+      mod.images.some(u => typeof u !== 'string' || !IMAGE_RE.test(u)))) e.push(`images must be up to ${MAX_IMAGES} GitHub-hosted image links`);
   if (mod.includePrereleases !== undefined && typeof mod.includePrereleases !== 'boolean') e.push('includePrereleases must be true or false');
   return e;
 }

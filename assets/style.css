@@ -103,6 +103,7 @@ h1, h2, h3 { line-height: 1.2; }
 .cover::before { content: ""; position: absolute; inset: 0;
   background: radial-gradient(circle at 20% 15%, rgba(255,255,255,.2), transparent 45%),
               repeating-linear-gradient(45deg, rgba(255,255,255,.045) 0 2px, transparent 2px 12px); }
+.cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .cover span { position: relative; font-size: 40px; font-weight: 800; letter-spacing: .04em; color: rgba(255,255,255,.88); }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -152,6 +153,22 @@ h1, h2, h3 { line-height: 1.2; }
 .lead { font-size: 17px; margin: 14px 0; }
 .statrow { display: flex; gap: 28px; flex-wrap: wrap; margin: 18px 0 6px; color: var(--muted); font-size: 13px; }
 .statrow b { display: block; color: var(--text); font-size: 18px; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 18px; }
+.thumb { padding: 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface-2); cursor: zoom-in; aspect-ratio: 16 / 9; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s; }
+.thumb:hover img { transform: scale(1.04); }
+.thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.viewer { border: 0; padding: 0; background: transparent; max-width: 100vw; max-height: 100vh; width: 100vw; height: 100vh; }
+.viewer::backdrop { background: rgba(0, 0, 0, .88); }
+.viewer[open] { display: grid; place-items: center; }
+.viewer img { max-width: calc(100vw - 32px); max-height: calc(100vh - 96px); object-fit: contain; border-radius: 6px; }
+.v-btn { position: fixed; background: rgba(0, 0, 0, .55); color: #fff; border: 0; border-radius: 50%; width: 44px; height: 44px; font-size: 28px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.v-btn:hover { background: rgba(0, 0, 0, .8); }
+.v-btn[hidden] { display: none; }
+.v-prev { left: 16px; top: 50%; transform: translateY(-50%); }
+.v-next { right: 16px; top: 50%; transform: translateY(-50%); }
+.v-close { right: 16px; top: 16px; }
+.v-count { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 14px; background: rgba(0, 0, 0, .55); padding: 4px 12px; border-radius: 999px; }
 .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-top: 22px; overflow-x: auto; }
 .tab { background: none; border: 0; padding: 10px 14px; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
 .tab:hover { color: var(--text); }

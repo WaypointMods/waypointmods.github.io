@@ -74,6 +74,11 @@ body:
     validations:
       required: true
   - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: "Optional. Drag or paste up to 8 images here (PNG, JPG, GIF or WebP). The first one is the cover picture. GitHub hosts them for free."
+  - type: textarea
     id: requirements
     attributes:
       label: Requirements

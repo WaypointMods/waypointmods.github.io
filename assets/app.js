@@ -95,7 +95,10 @@
   // ---------- shared pieces ----------
   function cover(m) {
     const initials = m.name.replace(/[^A-Za-z0-9 ]/g, '').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-    return `<div class="cover" style="--h:${Number(m.hue) || 30}"><span>${esc(initials)}</span></div>`;
+    const img = m.images && m.images[0];
+    // If the picture fails to load, it removes itself and the initials show through.
+    return `<div class="cover" style="--h:${Number(m.hue) || 30}"><span>${esc(initials)}</span>${img
+      ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</div>`;
   }
   function card(m) {
     const r = latest(m);
@@ -299,6 +302,9 @@
             <div><b>${r ? 'v' + esc(r.version) : '-'}</b>version</div>
             <div><b>${ago(updated(m))}</b>updated</div>
           </div>
+          ${m.images && m.images.length ? `<div class="gallery">${m.images.map((u, i) =>
+            `<button type="button" class="thumb" data-shot="${i}" aria-label="Open screenshot ${i + 1} of ${m.images.length}">
+              <img src="${esc(u)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></button>`).join('')}</div>` : ''}
           <div class="tabs" role="tablist">
             <button class="tab" role="tab" data-tab="description">Description</button>
             <button class="tab" role="tab" data-tab="files">Files<small>${fileCount}</small></button>
@@ -364,6 +370,48 @@
       $('.tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }));
     select(location.hash.slice(1));
+    if (m.images && m.images.length) viewer(m);
+  }
+
+  // Full-size screenshot viewer: click a thumbnail, arrows or swipe to move, Esc or click outside to close.
+  function viewer(m) {
+    const dlg = document.createElement('dialog');
+    dlg.className = 'viewer';
+    dlg.innerHTML = `<img alt="" referrerpolicy="no-referrer">
+      <button type="button" class="v-btn v-prev" aria-label="Previous screenshot">‹</button>
+      <button type="button" class="v-btn v-next" aria-label="Next screenshot">›</button>
+      <button type="button" class="v-btn v-close" aria-label="Close">×</button>
+      <div class="v-count"></div>`;
+    document.body.appendChild(dlg);
+    const img = $('img', dlg);
+    let at = 0;
+    const show = i => {
+      at = (i + m.images.length) % m.images.length;
+      img.src = m.images[at];
+      $('.v-count', dlg).textContent = `${at + 1} / ${m.images.length}`;
+    };
+    const multi = m.images.length > 1;
+    dlg.querySelectorAll('.v-prev, .v-next').forEach(b => { b.hidden = !multi; });
+    $('.v-prev', dlg).addEventListener('click', () => show(at - 1));
+    $('.v-next', dlg).addEventListener('click', () => show(at + 1));
+    $('.v-close', dlg).addEventListener('click', () => dlg.close());
+    dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft' && multi) show(at - 1);
+      if (e.key === 'ArrowRight' && multi) show(at + 1);
+    });
+    let x0 = null;
+    dlg.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+    dlg.addEventListener('touchend', e => {
+      if (x0 === null || !multi) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 40) show(at + (dx < 0 ? 1 : -1));
+      x0 = null;
+    });
+    document.querySelectorAll('[data-shot]').forEach(b => b.addEventListener('click', () => {
+      show(Number(b.dataset.shot));
+      dlg.showModal();
+    }));
   }
 
   shell();

@@ -203,7 +203,7 @@ for (const { mod } of entries) {
   out.push({
     id: mod.id, name: mod.name, author: repo.owner.login, authorName: mod.authorName || '', repo: repo.full_name,
     summary: mod.summary, description: mod.description, games: mod.games, category: mod.category,
-    tags: mod.tags, requirements: mod.requirements,
+    tags: mod.tags, requirements: mod.requirements, images: mod.images || [],
     license: mod.license || (spdx && spdx !== 'NOASSERTION' ? spdx : ''),
     created: mod.created, endorsements: repo.stargazers_count,
     hue: mod.hue ?? hueFor(mod.id),
