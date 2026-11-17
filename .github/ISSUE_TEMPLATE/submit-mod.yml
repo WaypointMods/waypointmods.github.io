@@ -7,7 +7,8 @@ body:
     attributes:
       value: |
         Before you start, publish a release on your mod's GitHub repository with the .7z, .zip or .rar attached.
-        After you submit, automatic checks run and reply here within a minute or two. A moderator then reviews it.
+        After you submit, automatic checks run and reply here within a minute or two. If everything passes, your mod goes live a few minutes later.
+        You can only submit repositories you own.
   - type: input
     id: repo
     attributes:

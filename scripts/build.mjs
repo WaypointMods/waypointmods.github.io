@@ -2,7 +2,7 @@
 // hashes and virus-scans new files, and writes data/mods.js for the pages.
 //
 //   node scripts/build.mjs           full build (needs network)
-//   node scripts/build.mjs --check   only validate mods/*.json (used on pull requests)
+//   node scripts/build.mjs --check   only validate mods/*.json (used on hand-made pull requests)
 //
 // Env: GITHUB_TOKEN (raises the API rate limit), VT_API_KEY (VirusTotal; without it files are
 // listed as "not virus-scanned"), VT_MAX_CALLS (default 100 per build), VT_FLAG_AT (default 2).
@@ -46,7 +46,7 @@ console.log(`mods/: ${entries.length} entries, all valid`);
 if (CHECK_ONLY) process.exit(0);
 
 // ---------- 2. scan state ----------
-// Key: "owner/repo@tag/file". Status: clean | flagged | pending | queued | unscanned | changed | rescan
+// Key: "owner/repo@tag/file". Status: clean | flagged | pending | queued | unscanned | rescan
 const state = fs.existsSync(STATE_FILE) ? JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')) : {};
 const report = { listed: [], hidden: [], unavailable: [], scanned: [], changed: [], flagged: [] };
 let vtCalls = 0, vtLast = 0;
@@ -120,13 +120,7 @@ async function checkAsset(key, a) {
   const same = e && e.assetId === a.id && e.size === a.size && e.updatedAt === a.updated_at;
 
   if (same) {
-    // Moderator decisions on a replaced file: "clean" accepts it, "rescan" accepts it if VirusTotal agrees.
-    if (e.seenSha256 && (e.status === 'clean' || e.status === 'rescan')) {
-      e.sha256 = e.seenSha256;
-      delete e.seenSha256;
-      delete e.vt;
-      delete e.uploaded;
-    }
+    // A moderator can set "rescan" (scan again) or "clean" (false positive) on a flagged file.
     if (e.status === 'rescan' || e.status === 'pending' || e.status === 'queued' || (e.status === 'unscanned' && e.note === 'no-key' && VT)) {
       await scan(e, a);
     }
@@ -142,10 +136,14 @@ async function checkAsset(key, a) {
     }
     Object.assign(e, meta);
     if (dl.sha256 !== e.sha256) {
-      e.seenSha256 = dl.sha256;
-      e.status = 'changed';
-      e.changed = today();
+      // Replaced under the same name: treat it as a new file and scan it again.
+      Object.assign(e, { sha256: dl.sha256, status: 'queued', changed: today() });
+      delete e.seenSha256;
+      delete e.vt;
+      delete e.uploaded;
+      delete e.note;
       report.changed.push(key);
+      await scan(e, a, dl);
     }
     return e;
   } finally {
@@ -182,7 +180,6 @@ for (const { mod } of entries) {
       let e;
       try { e = await checkAsset(key, a); } catch (err) { console.warn(`${key}: ${err.message}`); ready = false; continue; }
       if (e.status === 'flagged') { hideReason = `${a.name} flagged by VirusTotal`; report.flagged.push(key); }
-      if (e.status === 'changed') hideReason = `${a.name} was replaced with a different file`;
       if (['pending', 'queued', 'rescan'].includes(e.status)) ready = false;
       assets.push({
         name: a.name, size: a.size, downloads: a.download_count, sha256: e.sha256,
@@ -242,7 +239,7 @@ if (needsReview.length && process.env.GITHUB_REPOSITORY && process.env.GITHUB_TO
         body: {
           title, labels: ['review'],
           body: `**${mod.name}** (https://github.com/${mod.repo}) is hidden from the site.\n\nReason: ${reason}\n\n` +
-            'Check the file, then in `state/assets.json` set its `status` to `clean` to accept it, or `rescan` to accept it only if VirusTotal finds nothing. ' +
+            'If it is a false positive, set the file\'s `status` in `state/assets.json` to `clean`, or to `rescan` to check it again. ' +
             'To remove the mod instead, delete `mods/' + mod.id + '.json`.'
         }
       });
@@ -254,6 +251,6 @@ if (needsReview.length && process.env.GITHUB_REPOSITORY && process.env.GITHUB_TO
 const section = (title, items) => items.length ? `### ${title} (${items.length})\n${items.map(i => `- ${i}`).join('\n')}\n\n` : '';
 const summary = `## Site build\n\n${report.listed.length} of ${entries.length} mods listed. VirusTotal calls: ${vtCalls}${VT ? '' : ' (no VT_API_KEY set: files are listed as not virus-scanned)'}.\n\n` +
   section('Flagged by VirusTotal', report.flagged) + section('Hidden', report.hidden) + section('Repository unavailable', report.unavailable) +
-  section('Files replaced since approval', report.changed) + section('Scanned this build', report.scanned);
+  section('Files replaced and rescanned', report.changed) + section('Scanned this build', report.scanned);
 if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
 console.log(summary);

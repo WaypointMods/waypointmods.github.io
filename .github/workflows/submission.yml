@@ -5,13 +5,14 @@ on:
     types: [opened, edited]
 
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+  contents: write   # commit mods/<id>.json to main
+  issues: write     # reply and close
+  actions: write    # start the site build
 
+# One at a time, so two submissions never race for the same name or push at once.
 concurrency:
-  group: submission-${{ github.event.issue.number }}
-  cancel-in-progress: true
+  group: registry
+  cancel-in-progress: false
 
 jobs:
   submission:
@@ -34,36 +35,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Open or update the pull request
+      - name: Publish
         if: steps.parse.outputs.ok == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: ${{ steps.parse.outputs.branch }}
           TITLE: ${{ steps.parse.outputs.title }}
           ISSUE: ${{ github.event.issue.number }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -B "$BRANCH"
           git add mods/
-          if git diff --cached --quiet; then
-            echo "Nothing changed"
-            exit 0
+          if ! git diff --cached --quiet; then
+            git commit -m "$TITLE (#$ISSUE)"
+            git pull --rebase origin main
+            git push origin HEAD:main
+            # Pushes made by this workflow don't trigger other workflows, so start the build directly.
+            gh workflow run build.yml --ref main
           fi
-          git commit -m "$TITLE"
-          git push --force origin "$BRANCH"
-          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
-          if [ -z "$existing" ]; then
-            url=$(gh pr create --head "$BRANCH" --base main --title "$TITLE" --body-file "$RUNNER_TEMP/pr-body.md")
-            gh issue comment "$ISSUE" --body "Thanks! It passed the automatic checks and is waiting for a moderator: $url"
-          else
-            gh pr edit "$existing" --title "$TITLE" --body-file "$RUNNER_TEMP/pr-body.md"
-            gh issue comment "$ISSUE" --body "Updated pull request #$existing with your changes."
-          fi
+          gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/reply.md"
+          gh issue close "$ISSUE" --reason completed
 
       - name: Reply with problems
         if: steps.parse.outputs.ok == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE: ${{ github.event.issue.number }}
-        run: gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/errors.md"
+        run: gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/reply.md"

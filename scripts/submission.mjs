@@ -1,5 +1,6 @@
-// Turns a "Submit a mod" or "Edit a mod" issue into a mods/<id>.json change.
-// Writes $RUNNER_TEMP/pr-body.md (ok) or $RUNNER_TEMP/errors.md (problems) and sets step outputs.
+// Turns a "Submit a mod" or "Edit a mod" issue into a mods/<id>.json change, published without review.
+// Only the repository's owner (or a public member of the owning organization) may submit or edit.
+// Writes $RUNNER_TEMP/reply.md for the issue comment and sets the "ok" and "title" step outputs.
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -13,7 +14,6 @@ const login = issue.user.login;
 const mode = issue.labels.some(l => l.name === 'edit') ? 'edit' : 'submit';
 const tmp = process.env.RUNNER_TEMP || '.';
 const errors = [];
-const warnings = [];
 
 // Issue forms render as "### Label\n\nvalue"; empty answers are "_No response_".
 function parseForm(body) {
@@ -67,9 +67,18 @@ async function loadRepo(full) {
   if (!releases.some(r => r.assets.some(a => ARCHIVE_RE.test(a.name)))) {
     errors.push('Repository: no published release with a .7z, .zip or .rar file attached. Publish a release first (see the Submit page).');
   }
-  if (repo.owner.login.toLowerCase() !== login.toLowerCase()) {
-    warnings.push(`The repository belongs to **${repo.owner.login}** (${repo.owner.type}), but this was submitted by **${login}**. Check they have permission.`);
+  const owner = repo.owner.login;
+  if (owner.toLowerCase() === login.toLowerCase()) return;
+  if (repo.owner.type === 'Organization') {
+    try {
+      await gh(`/orgs/${owner}/public_members/${login}`);
+      return;
+    } catch {
+      errors.push(`Repository: it belongs to the **${owner}** organization. Make your membership of ${owner} public (on the organization's People page), then edit this issue to run the checks again.`);
+      return;
+    }
   }
+  errors.push(`Repository: it belongs to **${owner}**, and only the owner can ${mode === 'edit' ? 'change' : 'list'} it. Ask them to submit it, or use the report form if it's your work.`);
 }
 
 if (mode === 'submit') {
@@ -135,8 +144,8 @@ if (mode === 'submit') {
 if (mod && !errors.length) errors.push(...validateMod(mod, mod.id + '.json').map(e => `Entry: ${e}`));
 
 if (errors.length) {
-  fs.writeFileSync(path.join(tmp, 'errors.md'),
-    `Thanks, @${login}! A few things need fixing before this can go to a moderator:\n\n` +
+  fs.writeFileSync(path.join(tmp, 'reply.md'),
+    `Thanks, @${login}! A few things need fixing before this can be listed:\n\n` +
     errors.map(e => `- ${e}`).join('\n') +
     '\n\nEdit this issue to fix them. The checks run again automatically when you save.\n');
   setOutput('ok', 'false');
@@ -145,34 +154,19 @@ if (errors.length) {
 }
 
 writeMod(mod);
-const esc = s => String(s).replace(/\|/g, '\\|').replace(/[<>]/g, '');
-const latestWithFiles = releases.find(r => r.assets.some(a => ARCHIVE_RE.test(a.name)));
-const lines = [
-  `Closes #${issue.number}. ${mode === 'submit' ? 'Submitted' : 'Edit requested'} by @${login}.`,
-  '',
-  '| | |', '|---|---|',
-  `| Mod | ${esc(mod.name)} (\`${mod.id}\`) |`,
-  `| Repository | https://github.com/${mod.repo} |`,
-  `| Category | ${esc(mod.category)} |`,
-  `| Games | ${mod.games.join(', ')} |`,
-  `| Latest release | ${esc(latestWithFiles.tag_name)} (${latestWithFiles.assets.filter(a => ARCHIVE_RE.test(a.name)).length} archive file(s)) |`,
-  ...(mode === 'edit' ? [`| Changed | ${changed.join(', ')} |`] : []),
-  '',
-  '### Automatic checks',
-  '- ✅ Repository is public and has a release with an archive attached',
-  '- ✅ Entry matches the site format',
-  ...warnings.map(w => `- ⚠️ ${w}`),
-  '',
-  '### Moderator checklist',
-  ...(mode === 'submit' ? ['- [ ] Not a reupload of someone else\'s work'] : []),
-  '- [ ] Name, summary and description are accurate',
-  '- [ ] No sexually explicit content',
-  '- [ ] Requirements look right',
-  '',
-  'Merging publishes the change on the next build. Files are virus-scanned during the build.'
-];
-fs.writeFileSync(path.join(tmp, 'pr-body.md'), lines.join('\n') + '\n');
+
+// Site address: owner.github.io for a <owner>.github.io repo, otherwise owner.github.io/repo/.
+const [siteOwner, siteRepo] = (process.env.GITHUB_REPOSITORY || 'owner/owner.github.io').split('/');
+const siteUrl = siteRepo.toLowerCase() === `${siteOwner.toLowerCase()}.github.io`
+  ? `https://${siteRepo.toLowerCase()}/`
+  : `https://${siteOwner.toLowerCase()}.github.io/${siteRepo}/`;
+const page = `${siteUrl}mod.html?id=${mod.id}`;
+
+fs.writeFileSync(path.join(tmp, 'reply.md'), mode === 'submit'
+  ? `Thanks, @${login}! **${mod.name}** passed the checks and is being published.\n\n` +
+    `It will appear at ${page} in a few minutes, once its files have been scanned.\n\n` +
+    'New versions show up automatically when you publish a GitHub release. To change the description or tags later, use the Edit a mod form.\n'
+  : `Done, @${login}. Updated ${changed.join(', ')} for **${mod.name}**. The change appears at ${page} in a few minutes.\n`);
 setOutput('ok', 'true');
-setOutput('branch', `${mode}/${issue.number}`);
 setOutput('title', mode === 'submit' ? `Add ${mod.name}` : `Update ${mod.name}`);
 console.log(`Wrote mods/${mod.id}.json`);
