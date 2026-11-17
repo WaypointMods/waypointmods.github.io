@@ -226,6 +226,14 @@ fs.mkdirSync(path.join(OUT, 'data'), { recursive: true });
 fs.writeFileSync(path.join(OUT, 'data', 'mods.js'), `// Generated ${new Date().toISOString()}\nwindow.MODS = ${JSON.stringify(out)};\n`);
 fs.writeFileSync(path.join(OUT, 'data', 'mods.json'), JSON.stringify(out));
 
+// GitHub Pages lets browsers cache files for 10 minutes. Stamp each build's script and style links
+// so a page always loads the data from the same build, instead of a stale mod list.
+const stamp = Date.now().toString(36);
+for (const f of fs.readdirSync(OUT).filter(n => n.endsWith('.html'))) {
+  const p = path.join(OUT, f);
+  fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replace(/((?:src|href)="(?:assets|data)\/[^"?]+\.(?:js|css))"/g, `$1?v=${stamp}"`));
+}
+
 // ---------- 5. open review issues for hidden mods ----------
 if (needsReview.length && process.env.GITHUB_REPOSITORY && process.env.GITHUB_TOKEN) {
   const site = process.env.GITHUB_REPOSITORY;
