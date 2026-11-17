@@ -1,0 +1,15 @@
+{
+  "id": "more-carriage-routes",
+  "name": "More Carriage Routes",
+  "repo": "eargsm/MoreCaarriageRoutes",
+  "summary": "Add more routes option to carriage driver",
+  "description": "As a dedicated survival mode player, finding the perfect carriage mod has always been a challenge. While there are many excellent carriage mods available, most introduce additional objects or dependencies, leading to compatibility issues and a patching nightmare. After much searching, I discovered [Wait Carriage in Inns](https://www.nexusmods.com/skyrimspecialedition/mods/83044), which was almost exactly what I was looking for—except it left the vanilla carriages feeling incomplete, as they didn’t benefit from the expanded routes the mod introduced.\n\nTo address this, I strip down Edryu Carriage mod to integrates the additional routes same as provided by Wait Carriage in Inns into the vanilla carriages, ensuring they are providing a consistent travel experience across Skyrim.\n\n- New Routes -\nDarkwater Crossing\nDragon Bridge\nIvarstead\nKarthwasten\nKynsgrove\nMorthal\nOld Hroldan\nRiverwood\nRorikstead\nShor's Stone\nStonehills\nHearthfire Homes\n\n- Compatibility -\nnot compatible with other carriage mod\n\n- Credit -\nEdryu for More Carriages - Fast Travel Improvement",
+  "category": "Immersion",
+  "games": [
+    "se"
+  ],
+  "tags": [],
+  "requirements": [],
+  "created": "2026-11-17",
+  "hue": 27
+}
