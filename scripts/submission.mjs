@@ -105,6 +105,8 @@ if (mode === 'submit') {
     created: today(),
     hue: hueFor(id || 'mod')
   };
+  const authorName = oneLine(f['Display name'], 40);
+  if (authorName) mod.authorName = authorName;
 
   if (full) {
     await loadRepo(full);
@@ -124,6 +126,10 @@ if (mode === 'submit') {
     mod = { ...entry.mod };
     const set = (key, value) => { if (JSON.stringify(mod[key]) !== JSON.stringify(value)) { mod[key] = value; changed.push(key); } };
     if (f['Mod name']) set('name', oneLine(f['Mod name'], 80));
+    if (f['Display name']) {
+      if (/^none$/i.test(f['Display name'].trim())) { if (mod.authorName) { delete mod.authorName; changed.push('authorName'); } }
+      else set('authorName', oneLine(f['Display name'], 40));
+    }
     if (f['Summary']) {
       const s = oneLine(f['Summary'], 400);
       if (s.length > 160) errors.push(`Summary: ${s.length} characters; keep it to 160.`); else set('summary', s);
@@ -166,7 +172,7 @@ fs.writeFileSync(path.join(tmp, 'reply.md'), mode === 'submit'
   ? `Thanks, @${login}! **${mod.name}** passed the checks and is being published.\n\n` +
     `It will appear at ${page} in a few minutes, once its files have been scanned.\n\n` +
     'New versions show up automatically when you publish a GitHub release. To change the description or tags later, use the Edit a mod form.\n'
-  : `Done, @${login}. Updated ${changed.join(', ')} for **${mod.name}**. The change appears at ${page} in a few minutes.\n`);
+  : `Done, @${login}. Updated the ${changed.map(k => ({ authorName: 'display name', name: 'mod name' }[k] || k)).join(', ')} for **${mod.name}**. The change appears at ${page} in a few minutes.\n`);
 setOutput('ok', 'true');
 setOutput('title', mode === 'submit' ? `Add ${mod.name}` : `Update ${mod.name}`);
 console.log(`Wrote mods/${mod.id}.json`);

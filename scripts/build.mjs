@@ -201,7 +201,7 @@ for (const { mod } of entries) {
 
   const spdx = repo.license && repo.license.spdx_id;
   out.push({
-    id: mod.id, name: mod.name, author: repo.owner.login, repo: repo.full_name,
+    id: mod.id, name: mod.name, author: repo.owner.login, authorName: mod.authorName || '', repo: repo.full_name,
     summary: mod.summary, description: mod.description, games: mod.games, category: mod.category,
     tags: mod.tags, requirements: mod.requirements,
     license: mod.license || (spdx && spdx !== 'NOASSERTION' ? spdx : ''),

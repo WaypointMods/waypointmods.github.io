@@ -77,6 +77,7 @@ export function validateMod(mod, file) {
   if (!isStr(mod.created, 10, 10) || !DATE_RE.test(mod.created)) e.push('created must be YYYY-MM-DD');
   if (mod.hue !== undefined && !(Number.isInteger(mod.hue) && mod.hue >= 0 && mod.hue < 360)) e.push('hue must be a whole number 0-359');
   if (mod.license !== undefined && !isStr(mod.license, 0, 40)) e.push('license must be up to 40 characters');
+  if (mod.authorName !== undefined && !isStr(mod.authorName, 1, 40)) e.push('authorName must be 1-40 characters');
   if (mod.includePrereleases !== undefined && typeof mod.includePrereleases !== 'boolean') e.push('includePrereleases must be true or false');
   return e;
 }

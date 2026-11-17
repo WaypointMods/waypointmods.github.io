@@ -21,6 +21,11 @@ body:
     attributes:
       label: Mod name
   - type: input
+    id: author-name
+    attributes:
+      label: Display name
+      description: "The author name shown on the site. Write none to go back to your GitHub name."
+  - type: input
     id: summary
     attributes:
       label: Summary

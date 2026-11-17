@@ -25,6 +25,11 @@ body:
     validations:
       required: true
   - type: input
+    id: author-name
+    attributes:
+      label: Display name
+      description: "Optional. The author name shown on the site, for example your Nexus name. Your GitHub name is shown next to it. Leave empty to use your GitHub name."
+  - type: input
     id: summary
     attributes:
       label: Summary

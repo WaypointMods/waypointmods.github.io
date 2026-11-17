@@ -34,6 +34,8 @@
 
   const downloads = m => m.releases.reduce((a, r) => a + r.assets.reduce((b, x) => b + (x.downloads || 0), 0), 0);
   const latest = m => m.releases[0];
+  const authorLabel = m => m.authorName || m.author;
+  const hasOwnName = m => m.authorName && m.authorName.toLowerCase() !== m.author.toLowerCase();
   const updated = m => (latest(m) ? latest(m).date : m.created);
   const issueUrl = (template, title) =>
     `https://github.com/${SITE.indexRepo}/issues/new?template=${encodeURIComponent(template)}` +
@@ -77,7 +79,7 @@
   function md(src) {
     const out = [];
     let list = null, para = [];
-    const flushP = () => { if (para.length) { out.push('<p>' + inline(para.join(' ')) + '</p>'); para = []; } };
+    const flushP = () => { if (para.length) { out.push('<p>' + para.map(inline).join('<br>') + '</p>'); para = []; } };
     const flushL = () => { if (list) { out.push('<ul>' + list.map(li => '<li>' + inline(li) + '</li>').join('') + '</ul>'); list = null; } };
     esc(src || '').split('\n').forEach(raw => {
       const line = raw.trim();
@@ -104,7 +106,7 @@
         <h3>${esc(m.name)}</h3>
         <p class="card-sum">${esc(m.summary)}</p>
         <div class="meta">
-          <span>by ${esc(m.author)}</span>
+          <span>by ${esc(authorLabel(m))}</span>
           <span title="Downloads">${svg('dl')} ${fmtNum(downloads(m))}</span>
           <span title="GitHub stars">${svg('heart')} ${fmtNum(m.endorsements)}</span>
           ${r ? `<span title="Updated ${esc(fmtDate(r.date))}">${svg('clock')} ${ago(r.date)}</span>` : ''}
@@ -183,7 +185,7 @@
 
   function matches(m, q) {
     if (!q) return true;
-    const hay = [m.name, m.summary, m.author, m.category, ...m.tags].join(' ').toLowerCase();
+    const hay = [m.name, m.summary, m.author, m.authorName || '', m.category, ...m.tags].join(' ').toLowerCase();
     return q.toLowerCase().split(/\s+/).every(w => hay.includes(w));
   }
 
@@ -287,7 +289,9 @@
         <div>
           <div class="kicker">${esc(m.category)}</div>
           <h1 class="mod-title">${esc(m.name)}</h1>
-          <div class="byline">by <a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener">${esc(m.author)}</a></div>
+          <div class="byline">by ${hasOwnName(m)
+            ? `<strong>${esc(m.authorName)}</strong> · <a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener" title="GitHub account">@${esc(m.author)}</a>`
+            : `<a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener">${esc(m.author)}</a>`}</div>
           <p class="lead">${esc(m.summary)}</p>
           <div class="statrow">
             <div><b>${fmtNum(downloads(m))}</b>downloads</div>
