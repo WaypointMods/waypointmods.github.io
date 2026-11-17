@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Submit a mod</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="submit">
+  <header id="site-header" class="site-header"></header>
+  <main>
+    <article class="page prose">
+      <h1>Submit a mod</h1>
+      <p class="lead">Your files stay in your own GitHub repository. This site only lists them, so you keep full control and nobody pays anything.</p>
+
+      <h2>What you need</h2>
+      <ul>
+        <li>A free GitHub account</li>
+        <li>A public repository for the mod. It can hold just a README; sharing your source is optional.</li>
+        <li>A release with your mod archive attached (.7z, .zip or .rar, up to 2 GB per file)</li>
+      </ul>
+
+      <h2>1. Publish a release</h2>
+      <ol>
+        <li>Open your repository on GitHub and select <strong>Releases</strong>, then <strong>Draft a new release</strong>.</li>
+        <li>Create a tag with the version number, for example <code>v1.0.0</code>.</li>
+        <li>Write the changelog in the description. It appears on your mod page.</li>
+        <li>Attach your archive and select <strong>Publish release</strong>.</li>
+      </ol>
+
+      <h2>2. Submit it here</h2>
+      <p>The submission form asks for the repository, mod name, a one-line summary, the full description, category, supported games and requirements. It opens on GitHub, and a moderator reviews it, usually within a few days.</p>
+      <p class="cta"><a class="btn btn-primary btn-lg" data-issue="submit-mod.yml" href="#" target="_blank" rel="noopener">Open the submission form</a></p>
+
+      <h2>3. Updating your mod</h2>
+      <p>Publish a new release in the same repository. The site checks for new releases every few hours, scans the new files and updates your page. You don't need to submit again.</p>
+      <p>To change your description, tags or requirements, use the <a data-issue="edit-mod.yml" href="#" target="_blank" rel="noopener">edit form</a>.</p>
+
+      <div class="notice"><strong>About replaced files.</strong> Every approved file's SHA-256 hash is recorded. If a file is replaced under the same name, the mod is hidden until a moderator checks it again.</div>
+
+      <h2 id="rules">Rules</h2>
+      <p>Submissions are rejected for:</p>
+      <ul class="rules">
+        <li>Reuploading someone else's mod without their permission</li>
+        <li>Sexually explicit content, which GitHub does not allow</li>
+        <li>Files that fail the malware scan, or unexplained executables in the archive</li>
+        <li>Paywalled or "early access" files</li>
+        <li>Missing or misleading requirements</li>
+      </ul>
+    </article>
+  </main>
+  <footer id="site-footer" class="site-footer"></footer>
+  <script src="data/site.js"></script>
+  <script src="data/mods.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

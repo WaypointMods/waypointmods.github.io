@@ -1,0 +1,92 @@
+name: Submit a mod
+description: List your mod on the site. Your files stay in your own GitHub repository.
+title: "Submit: "
+labels: ["submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before you start, publish a release on your mod's GitHub repository with the .7z, .zip or .rar attached.
+        After you submit, automatic checks run and reply here within a minute or two. A moderator then reviews it.
+  - type: input
+    id: repo
+    attributes:
+      label: Repository
+      description: "owner/name, or paste the GitHub link. It must be public."
+      placeholder: your-name/your-mod
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Mod name
+      description: Up to 80 characters. The mod's page address is made from this.
+    validations:
+      required: true
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One sentence, up to 160 characters. Shown on mod cards.
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Animation
+        - Armour and Weapons
+        - Audio
+        - Bug Fixes
+        - Combat
+        - Followers
+        - Gameplay
+        - Immersion
+        - Patches
+        - Quests
+        - UI
+        - Utilities
+        - Visuals
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: games
+    attributes:
+      label: Games
+      description: Tick every version the mod works on.
+      options:
+        - label: Skyrim SE/AE
+        - label: Skyrim VR
+        - label: Skyrim LE
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: "You can use `## Heading`, `- list items`, `**bold**`, `` `code` `` and `[links](https://...)`."
+    validations:
+      required: true
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements
+      description: "One per line, as Name | link. Leave empty if it only needs the base game."
+      placeholder: "SKSE | https://skse.silverlock.org/"
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+      description: Up to 8, separated by commas.
+      placeholder: lighting, roads, night
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: Rules
+      options:
+        - label: I made this mod, or I have the author's permission to list it.
+          required: true
+        - label: It contains no sexually explicit content.
+          required: true
+        - label: Nothing in it is paywalled or "early access".
+          required: true

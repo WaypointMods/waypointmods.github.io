@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="about">
+  <header id="site-header" class="site-header"></header>
+  <main>
+    <article class="page prose">
+      <h1>About <span data-site-name></span></h1>
+      <p class="lead">A free place to list Skyrim mods, run by the community with no paid tiers and no ads.</p>
+
+      <h2>How files are hosted</h2>
+      <p>This site doesn't store mod files. Each author publishes their mod as a release on their own GitHub repository, and the download buttons here link straight to that release. Download counts come from GitHub.</p>
+      <p>The site itself is a set of static pages on GitHub Pages, rebuilt every few hours by GitHub Actions. That's why it costs nothing to run.</p>
+
+      <h2>Safety</h2>
+      <ul>
+        <li>Every new file is checked against VirusTotal before it is listed. Files over VirusTotal's 650 MB limit are marked "not virus-scanned".</li>
+        <li>Each approved file's SHA-256 hash is recorded and shown on the Files tab, so you can check your download matches.</li>
+        <li>If an author replaces a file, the mod is hidden until a moderator reviews it again.</li>
+        <li>Anyone can report a mod from its page.</li>
+      </ul>
+
+      <h2>Takedowns and reports</h2>
+      <p>If your work was uploaded without your permission, or a mod breaks the <a href="submit.html#rules">rules</a>, <a data-issue="report-mod.yml" href="#" target="_blank" rel="noopener">open a report</a>. Listings are removed while a report is looked into.</p>
+
+      <h2>Questions</h2>
+      <dl class="faq">
+        <dt>Does it work with mod managers?</dt>
+        <dd>Not yet. Downloads are manual for now: download the archive and install it with Mod Organizer 2 or Vortex as usual.</dd>
+        <dt>Why do I need a GitHub account?</dt>
+        <dd>Only authors and commenters need one. Downloading needs no account at all.</dd>
+        <dt>What happens if an author deletes their repository?</dt>
+        <dd>The mod drops off the site at the next rebuild and comes back if the repository returns.</dd>
+        <dt>How do I endorse a mod?</dt>
+        <dd>Star its GitHub repository. The star count is shown on the mod page.</dd>
+        <dt>Is this connected to Nexus Mods?</dt>
+        <dd>No. It's an independent, non-commercial project.</dd>
+      </dl>
+
+      <p class="cta"><a class="btn" data-index-repo href="#" target="_blank" rel="noopener">Site source on GitHub</a></p>
+    </article>
+  </main>
+  <footer id="site-footer" class="site-footer"></footer>
+  <script src="data/site.js"></script>
+  <script src="data/mods.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

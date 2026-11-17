@@ -1,0 +1,31 @@
+name: Report a mod
+description: Malware, a reupload without permission, a rule break or a broken download.
+title: "Report: "
+labels: ["report"]
+body:
+  - type: input
+    id: mod
+    attributes:
+      label: Mod
+      description: The mod's name or page address.
+    validations:
+      required: true
+  - type: dropdown
+    id: reason
+    attributes:
+      label: Reason
+      options:
+        - Malware or a suspicious file
+        - Uploaded without the author's permission
+        - Breaks the site rules
+        - Broken download
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What's wrong? For a reupload, link the original.
+    validations:
+      required: true

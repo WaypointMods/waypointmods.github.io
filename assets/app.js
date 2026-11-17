@@ -1,0 +1,367 @@
+(function () {
+  'use strict';
+
+  const SITE = window.SITE || { name: 'Waypoint', tagline: '', indexRepo: '', giscus: {} };
+  const MODS = window.MODS || [];
+  const GAMES = { se: 'Skyrim SE/AE', vr: 'Skyrim VR', le: 'Skyrim LE' };
+  const page = document.body.dataset.page;
+  const $ = (s, r = document) => r.querySelector(s);
+
+  // ---------- small helpers ----------
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function fmtNum(n) {
+    if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, '') + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(n >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'k';
+    return String(n);
+  }
+  function fmtSize(b) {
+    const u = ['B', 'KB', 'MB', 'GB'];
+    let i = 0;
+    while (b >= 1024 && i < u.length - 1) { b /= 1024; i++; }
+    return (i ? b.toFixed(1) : b) + ' ' + u[i];
+  }
+  const toDate = iso => new Date(iso + 'T00:00:00');
+  const fmtDate = iso => toDate(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  function ago(iso) {
+    const d = (Date.now() - toDate(iso)) / 864e5;
+    if (d < 1) return 'today';
+    if (d < 2) return 'yesterday';
+    if (d < 30) return Math.floor(d) + ' days ago';
+    if (d < 365) return Math.floor(d / 30) + ' mo ago';
+    return Math.floor(d / 365) + ' yr ago';
+  }
+
+  const downloads = m => m.releases.reduce((a, r) => a + r.assets.reduce((b, x) => b + (x.downloads || 0), 0), 0);
+  const latest = m => m.releases[0];
+  const updated = m => (latest(m) ? latest(m).date : m.created);
+  const issueUrl = (template, title) =>
+    `https://github.com/${SITE.indexRepo}/issues/new?template=${encodeURIComponent(template)}` +
+    (title ? '&title=' + encodeURIComponent(title) : '');
+
+  function countBy(fn) {
+    const out = {};
+    MODS.forEach(m => [].concat(fn(m)).forEach(k => { out[k] = (out[k] || 0) + 1; }));
+    return out;
+  }
+
+  const SORTS = {
+    popular: (a, b) => downloads(b) - downloads(a),
+    updated: (a, b) => updated(b).localeCompare(updated(a)),
+    new: (a, b) => b.created.localeCompare(a.created),
+    endorsed: (a, b) => b.endorsements - a.endorsements,
+    name: (a, b) => a.name.localeCompare(b.name)
+  };
+
+  // ---------- icons ----------
+  const P = {
+    dl: '<path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/>',
+    heart: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    shield: '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/>',
+    pin: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+    moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/>'
+  };
+  const svg = (name, s = 14) =>
+    `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name]}</svg>`;
+
+  // ---------- tiny markdown (headings, lists, bold, code, links) ----------
+  function inline(s) {
+    return s
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  }
+  function md(src) {
+    const out = [];
+    let list = null, para = [];
+    const flushP = () => { if (para.length) { out.push('<p>' + inline(para.join(' ')) + '</p>'); para = []; } };
+    const flushL = () => { if (list) { out.push('<ul>' + list.map(li => '<li>' + inline(li) + '</li>').join('') + '</ul>'); list = null; } };
+    esc(src || '').split('\n').forEach(raw => {
+      const line = raw.trim();
+      if (!line) { flushP(); flushL(); return; }
+      if (line.startsWith('## ')) { flushP(); flushL(); out.push('<h3>' + inline(line.slice(3)) + '</h3>'); return; }
+      if (/^[-*] /.test(line)) { flushP(); (list = list || []).push(line.slice(2)); return; }
+      flushL(); para.push(line);
+    });
+    flushP(); flushL();
+    return out.join('');
+  }
+
+  // ---------- shared pieces ----------
+  function cover(m) {
+    const initials = m.name.replace(/[^A-Za-z0-9 ]/g, '').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    return `<div class="cover" style="--h:${Number(m.hue) || 30}"><span>${esc(initials)}</span></div>`;
+  }
+  function card(m) {
+    const r = latest(m);
+    return `<a class="card" href="mod.html?id=${encodeURIComponent(m.id)}">
+      ${cover(m)}
+      <div class="card-body">
+        <div class="kicker">${esc(m.category)}</div>
+        <h3>${esc(m.name)}</h3>
+        <p class="card-sum">${esc(m.summary)}</p>
+        <div class="meta">
+          <span>by ${esc(m.author)}</span>
+          <span title="Downloads">${svg('dl')} ${fmtNum(downloads(m))}</span>
+          <span title="GitHub stars">${svg('heart')} ${fmtNum(m.endorsements)}</span>
+          ${r ? `<span title="Updated ${esc(fmtDate(r.date))}">${svg('clock')} ${ago(r.date)}</span>` : ''}
+        </div>
+      </div>
+    </a>`;
+  }
+
+  // ---------- theme ----------
+  function readTheme() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
+  function currentTheme() {
+    return document.documentElement.dataset.theme ||
+      (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  }
+  const saved = readTheme();
+  if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+
+  // ---------- header / footer ----------
+  function shell() {
+    const nav = [['browse', 'browse.html', 'Browse'], ['submit', 'submit.html', 'Submit a mod'], ['about', 'about.html', 'About']];
+    const h = $('#site-header');
+    if (h) {
+      h.innerHTML = `<div class="wrap hdr">
+        <a class="logo" href="index.html"><span class="logo-mark">${svg('pin', 18)}</span>${esc(SITE.name)}</a>
+        <nav class="nav" aria-label="Main">${nav.map(([k, href, label]) =>
+          `<a href="${href}"${k === page ? ' class="active" aria-current="page"' : ''}>${label}</a>`).join('')}</nav>
+        ${page === 'browse' || page === 'home' ? '' : `<form class="search hdr-search" action="browse.html" role="search">
+          ${svg('search', 16)}<input class="input" name="q" type="search" placeholder="Search mods" aria-label="Search mods"></form>`}
+        <button class="icon-btn" id="theme-btn" type="button" aria-label="Switch light or dark theme"></button>
+      </div>`;
+      const btn = $('#theme-btn');
+      const paint = () => { btn.innerHTML = svg(currentTheme() === 'dark' ? 'sun' : 'moon', 18); };
+      paint();
+      btn.addEventListener('click', () => {
+        const next = currentTheme() === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        try { localStorage.setItem('theme', next); } catch (e) { /* private mode */ }
+        paint();
+      });
+    }
+    const f = $('#site-footer');
+    if (f) {
+      f.innerHTML = `<div class="wrap ftr">
+        <div>${esc(SITE.name)} is a free, non-commercial mod index. Files are hosted by their authors on GitHub.</div>
+        <nav aria-label="Footer">
+          <a href="submit.html">Submit a mod</a>
+          <a href="submit.html#rules">Rules</a>
+          <a href="${issueUrl('report-mod.yml')}" target="_blank" rel="noopener">Report a problem</a>
+          <a href="about.html">About</a>
+        </nav>
+      </div>`;
+    }
+    document.querySelectorAll('[data-site-name]').forEach(e => { e.textContent = SITE.name; });
+    document.querySelectorAll('[data-issue]').forEach(a => { a.href = issueUrl(a.dataset.issue); });
+    document.querySelectorAll('[data-index-repo]').forEach(a => { a.href = 'https://github.com/' + SITE.indexRepo; });
+    if (page === 'home') document.title = `${SITE.name} | ${SITE.tagline}`;
+    else if (page !== 'mod') document.title = `${document.title} | ${SITE.name}`;
+  }
+
+  // ---------- pages ----------
+  function home() {
+    $('#stat-mods').textContent = MODS.length;
+    $('#stat-dl').textContent = fmtNum(MODS.reduce((a, m) => a + downloads(m), 0));
+    $('#stat-authors').textContent = new Set(MODS.map(m => m.author)).size;
+    if (!MODS.length) {
+      document.querySelectorAll('[data-needs-mods]').forEach(s => { s.hidden = true; });
+      $('#no-mods').hidden = false;
+      return;
+    }
+    $('#popular').innerHTML = MODS.slice().sort(SORTS.popular).slice(0, 4).map(card).join('');
+    $('#updated').innerHTML = MODS.slice().sort(SORTS.updated).slice(0, 4).map(card).join('');
+    const cats = countBy(m => m.category);
+    $('#cats').innerHTML = Object.keys(cats).sort().map(c =>
+      `<a class="chip" href="browse.html?cat=${encodeURIComponent(c)}">${esc(c)}<small>${cats[c]}</small></a>`).join('');
+  }
+
+  function matches(m, q) {
+    if (!q) return true;
+    const hay = [m.name, m.summary, m.author, m.category, ...m.tags].join(' ').toLowerCase();
+    return q.toLowerCase().split(/\s+/).every(w => hay.includes(w));
+  }
+
+  function browse() {
+    const p = new URLSearchParams(location.search);
+    const st = { q: p.get('q') || '', cat: p.get('cat') || '', game: p.get('game') || '', sort: SORTS[p.get('sort')] ? p.get('sort') : 'popular' };
+    const q = $('#q'), sort = $('#sort');
+    q.value = st.q;
+    sort.value = st.sort;
+
+    const opt = (name, val, label, n) => {
+      const on = st[name] === val;
+      return `<label class="${on ? 'on' : ''}"><input type="radio" name="${name}" value="${esc(val)}"${on ? ' checked' : ''}>
+        <span>${esc(label)}</span><small>${n}</small></label>`;
+    };
+
+    function render() {
+      const cats = countBy(m => m.category);
+      const games = countBy(m => m.games);
+      $('#f-cat').innerHTML = opt('cat', '', 'All', MODS.length) + Object.keys(cats).sort().map(c => opt('cat', c, c, cats[c])).join('');
+      $('#f-game').innerHTML = opt('game', '', 'All', MODS.length) + Object.keys(GAMES).map(g => opt('game', g, GAMES[g], games[g] || 0)).join('');
+
+      const list = MODS.filter(m => (!st.cat || m.category === st.cat) && (!st.game || m.games.includes(st.game)) && matches(m, st.q))
+        .sort(SORTS[st.sort]);
+      $('#count').textContent = `${list.length} mod${list.length === 1 ? '' : 's'}`;
+      $('#results').innerHTML = list.length ? list.map(card).join('')
+        : '<div class="empty">No mods match these filters. <a href="browse.html">Clear filters</a></div>';
+
+      const u = new URLSearchParams();
+      ['q', 'cat', 'game'].forEach(k => { if (st[k]) u.set(k, st[k]); });
+      if (st.sort !== 'popular') u.set('sort', st.sort);
+      const qs = u.toString();
+      try { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '')); } catch (e) { /* file:// in some browsers */ }
+    }
+
+    $('.filters').addEventListener('change', e => { if (e.target.name) { st[e.target.name] = e.target.value; render(); } });
+    q.addEventListener('input', () => { st.q = q.value.trim(); render(); });
+    sort.addEventListener('change', () => { st.sort = sort.value; render(); });
+    render();
+  }
+
+  function release(r, isLatest) {
+    return `<article class="release">
+      <div class="release-head"><h3>v${esc(r.version)}</h3>${isLatest ? '<span class="badge">Latest</span>' : ''}<span class="muted">${esc(fmtDate(r.date))}</span></div>
+      ${r.assets.map(a => `<div class="asset">
+        <div>
+          <div class="asset-name">${esc(a.name)}</div>
+          <div class="asset-meta">
+            <span>${fmtSize(a.size)}</span>
+            <span>${svg('dl', 12)} ${fmtNum(a.downloads)}</span>
+            <span class="hash" title="SHA-256 ${esc(a.sha256)}">SHA-256 ${esc(String(a.sha256).slice(0, 12))}…</span>
+            ${a.scan === 'unscanned' ? '<span>Not virus-scanned</span>' : ''}
+          </div>
+        </div>
+        <a class="btn btn-sm${isLatest ? ' btn-primary' : ''}" href="${esc(a.url)}">${svg('dl')} Download</a>
+      </div>`).join('')}
+    </article>`;
+  }
+
+  function loadComments(m) {
+    const box = $('#giscus');
+    if (box.dataset.loaded) return;
+    box.dataset.loaded = '1';
+    const g = SITE.giscus || {};
+    if (!g.repo || !g.repoId || !g.categoryId) {
+      box.innerHTML = '<div class="notice"><strong>Comments are not switched on yet.</strong> Once Giscus is set up, comments appear here. They are stored as GitHub Discussions, so people sign in with their GitHub account.</div>';
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = 'https://giscus.app/client.js';
+    s.async = true;
+    s.crossOrigin = 'anonymous';
+    const attrs = {
+      repo: g.repo, 'repo-id': g.repoId, category: g.category, 'category-id': g.categoryId,
+      mapping: 'specific', term: m.id, strict: '1', 'reactions-enabled': '1', 'emit-metadata': '0',
+      'input-position': 'top', theme: 'preferred_color_scheme', lang: 'en', loading: 'lazy'
+    };
+    Object.keys(attrs).forEach(k => s.setAttribute('data-' + k, attrs[k]));
+    box.appendChild(s);
+  }
+
+  function modPage() {
+    const id = new URLSearchParams(location.search).get('id');
+    const m = MODS.find(x => x.id === id);
+    const root = $('#mod');
+    if (!m) {
+      document.title = `Mod not found | ${SITE.name}`;
+      root.innerHTML = `<div class="page"><h1>Mod not found</h1>
+        <p class="lead">This mod may have been removed, or the link is wrong.</p>
+        <p><a class="btn btn-primary" href="browse.html">Browse all mods</a></p></div>`;
+      return;
+    }
+    document.title = `${m.name} | ${SITE.name}`;
+    const r = latest(m);
+    const main = r && r.assets[0];
+    const fileCount = m.releases.reduce((a, x) => a + x.assets.length, 0);
+
+    root.innerHTML = `
+      <div class="banner">${cover(m)}</div>
+      <div class="mod-layout">
+        <div>
+          <div class="kicker">${esc(m.category)}</div>
+          <h1 class="mod-title">${esc(m.name)}</h1>
+          <div class="byline">by <a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener">${esc(m.author)}</a></div>
+          <p class="lead">${esc(m.summary)}</p>
+          <div class="statrow">
+            <div><b>${fmtNum(downloads(m))}</b>downloads</div>
+            <div><b>${fmtNum(m.endorsements)}</b>stars</div>
+            <div><b>${r ? 'v' + esc(r.version) : '-'}</b>version</div>
+            <div><b>${ago(updated(m))}</b>updated</div>
+          </div>
+          <div class="tabs" role="tablist">
+            <button class="tab" role="tab" data-tab="description">Description</button>
+            <button class="tab" role="tab" data-tab="files">Files<small>${fileCount}</small></button>
+            <button class="tab" role="tab" data-tab="changelog">Changelog</button>
+            <button class="tab" role="tab" data-tab="comments">Comments</button>
+          </div>
+          <section class="panel prose" role="tabpanel" id="p-description">${md(m.description)}</section>
+          <section class="panel" role="tabpanel" id="p-files" hidden>${m.releases.map((x, i) => release(x, i === 0)).join('')}</section>
+          <section class="panel" role="tabpanel" id="p-changelog" hidden>${m.releases.map(x =>
+            `<div class="cl"><h3>v${esc(x.version)}<span class="muted">${esc(fmtDate(x.date))}</span></h3><div class="prose">${md(x.notes)}</div></div>`).join('')}</section>
+          <section class="panel" role="tabpanel" id="p-comments" hidden><div id="giscus"></div></section>
+        </div>
+        <aside>
+          <div class="side-card dl-box">
+            ${main
+              ? `<a class="btn btn-primary btn-lg" href="${esc(main.url)}">${svg('dl', 18)} Download v${esc(r.version)}</a>
+                 <div class="dl-note">${esc(main.name)} · ${fmtSize(main.size)}</div>
+                 ${r.assets.length > 1 ? `<a class="dl-note" href="#files" data-goto="files">+ ${r.assets.length - 1} more file${r.assets.length > 2 ? 's' : ''} in this release</a>` : ''}`
+              : '<div class="dl-note">No files released yet.</div>'}
+            ${main ? `<div class="dl-note">${svg('shield')} ${main.scan === 'unscanned'
+              ? 'Not virus-scanned (too large or scanner unavailable). File hash recorded.'
+              : 'Checked on VirusTotal, file hash recorded'}</div>` : ''}
+            <a class="btn" href="https://github.com/${esc(m.repo)}" target="_blank" rel="noopener">Star or view on GitHub</a>
+          </div>
+          <div class="side-card"><h4>Details</h4>
+            <dl class="facts">
+              <dt>Games</dt><dd>${m.games.map(g => esc(GAMES[g] || g)).join('<br>')}</dd>
+              <dt>Category</dt><dd><a href="browse.html?cat=${encodeURIComponent(m.category)}">${esc(m.category)}</a></dd>
+              <dt>Created</dt><dd>${esc(fmtDate(m.created))}</dd>
+              <dt>Updated</dt><dd>${esc(fmtDate(updated(m)))}</dd>
+              <dt>License</dt><dd>${esc(m.license || 'Not stated')}</dd>
+            </dl>
+          </div>
+          <div class="side-card"><h4>Requirements</h4>
+            ${m.requirements.length
+              ? `<ul class="reqs">${m.requirements.map(q => `<li><a href="${esc(q.url)}" target="_blank" rel="noopener">${esc(q.name)}</a></li>`).join('')}</ul>`
+              : '<div class="muted" style="font-size:14px">None beyond the base game.</div>'}
+          </div>
+          <div class="side-card"><h4>Tags</h4>
+            <div class="chips">${m.tags.map(t => `<a class="tag" href="browse.html?q=${encodeURIComponent(t)}">${esc(t)}</a>`).join('')}</div>
+          </div>
+          <a class="report" href="${issueUrl('report-mod.yml', 'Report: ' + m.name)}" target="_blank" rel="noopener">Report this mod</a>
+        </aside>
+      </div>`;
+
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+    function select(name) {
+      if (!tabs.some(t => t.dataset.tab === name)) name = 'description';
+      tabs.forEach(t => {
+        const on = t.dataset.tab === name;
+        t.setAttribute('aria-selected', on);
+        $('#p-' + t.dataset.tab).hidden = !on;
+      });
+      if (name === 'comments') loadComments(m);
+    }
+    tabs.forEach(t => t.addEventListener('click', () => {
+      select(t.dataset.tab);
+      try { history.replaceState(null, '', location.pathname + location.search + '#' + t.dataset.tab); } catch (e) { /* ignore */ }
+    }));
+    document.querySelectorAll('[data-goto]').forEach(a => a.addEventListener('click', e => {
+      e.preventDefault();
+      select(a.dataset.goto);
+      $('.tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }));
+    select(location.hash.slice(1));
+  }
+
+  shell();
+  ({ home, browse, mod: modPage }[page] || (() => {}))();
+})();

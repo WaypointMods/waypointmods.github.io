@@ -1,0 +1,72 @@
+name: Edit a mod
+description: Change a listed mod's name, summary, description, category, games, requirements or tags.
+title: "Edit: "
+labels: ["edit"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill in only what you want to change; empty fields stay as they are.
+        New versions don't need this form: publish a new GitHub release and the site picks it up.
+  - type: input
+    id: id
+    attributes:
+      label: Mod ID
+      description: The part after `?id=` in the mod page address.
+      placeholder: wayfarers-lanterns
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Mod name
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: Up to 160 characters.
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - No change
+        - Animation
+        - Armour and Weapons
+        - Audio
+        - Bug Fixes
+        - Combat
+        - Followers
+        - Gameplay
+        - Immersion
+        - Patches
+        - Quests
+        - UI
+        - Utilities
+        - Visuals
+        - Other
+      default: 0
+  - type: checkboxes
+    id: games
+    attributes:
+      label: Games
+      description: Leave all unticked to keep the current list. If you tick any, they replace it.
+      options:
+        - label: Skyrim SE/AE
+        - label: Skyrim VR
+        - label: Skyrim LE
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Replaces the whole description.
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements
+      description: "Replaces the whole list. One per line, as Name | link. Write none to clear it."
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+      description: "Replaces all tags. Up to 8, separated by commas. Write none to clear them."

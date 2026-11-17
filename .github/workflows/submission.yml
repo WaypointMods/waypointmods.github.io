@@ -1,0 +1,69 @@
+name: Mod submission
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: submission-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  submission:
+    if: >-
+      github.event.issue.state == 'open' &&
+      (contains(github.event.issue.labels.*.name, 'submission') ||
+       contains(github.event.issue.labels.*.name, 'edit'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The issue body is untrusted. It is only ever read by the script from the event file,
+      # never pasted into a shell command.
+      - name: Check the form
+        id: parse
+        run: node scripts/submission.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Open or update the pull request
+        if: steps.parse.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.parse.outputs.branch }}
+          TITLE: ${{ steps.parse.outputs.title }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add mods/
+          if git diff --cached --quiet; then
+            echo "Nothing changed"
+            exit 0
+          fi
+          git commit -m "$TITLE"
+          git push --force origin "$BRANCH"
+          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -z "$existing" ]; then
+            url=$(gh pr create --head "$BRANCH" --base main --title "$TITLE" --body-file "$RUNNER_TEMP/pr-body.md")
+            gh issue comment "$ISSUE" --body "Thanks! It passed the automatic checks and is waiting for a moderator: $url"
+          else
+            gh pr edit "$existing" --title "$TITLE" --body-file "$RUNNER_TEMP/pr-body.md"
+            gh issue comment "$ISSUE" --body "Updated pull request #$existing with your changes."
+          fi
+
+      - name: Reply with problems
+        if: steps.parse.outputs.ok == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/errors.md"

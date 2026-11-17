@@ -1,0 +1,21 @@
+name: Set up labels
+
+# Run once from the Actions tab after creating the repo. The issue forms rely on these labels.
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  labels:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh label create submission --color 1f883d --description "New mod submission" --force
+          gh label create edit       --color 0969da --description "Change to a listed mod" --force
+          gh label create report     --color d1242f --description "Report about a listed mod" --force
+          gh label create review     --color bf8700 --description "Hidden mod waiting for a moderator" --force

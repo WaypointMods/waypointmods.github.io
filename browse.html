@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Browse mods</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="browse">
+  <header id="site-header" class="site-header"></header>
+  <main>
+    <div class="wrap browse">
+      <aside class="filters" aria-label="Filters">
+        <div class="group" role="radiogroup" aria-label="Category"><h4>Category</h4><div class="opts" id="f-cat"></div></div>
+        <div class="group" role="radiogroup" aria-label="Game"><h4>Game</h4><div class="opts" id="f-game"></div></div>
+      </aside>
+      <div>
+        <h1 class="page-title">Browse mods</h1>
+        <div class="toolbar">
+          <div class="search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="q" class="input" type="search" placeholder="Search by name, tag or author" aria-label="Search mods">
+          </div>
+          <label class="sort">Sort
+            <select id="sort" class="input">
+              <option value="popular">Most downloaded</option>
+              <option value="updated">Recently updated</option>
+              <option value="new">Newest</option>
+              <option value="endorsed">Most starred</option>
+              <option value="name">Name A to Z</option>
+            </select>
+          </label>
+          <span class="count" id="count" aria-live="polite"></span>
+        </div>
+        <div class="grid" id="results"></div>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer" class="site-footer"></footer>
+  <script src="data/site.js"></script>
+  <script src="data/mods.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
