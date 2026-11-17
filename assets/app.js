@@ -333,9 +333,9 @@
               ? `<ul class="reqs">${m.requirements.map(q => `<li><a href="${esc(q.url)}" target="_blank" rel="noopener">${esc(q.name)}</a></li>`).join('')}</ul>`
               : '<div class="muted" style="font-size:14px">None beyond the base game.</div>'}
           </div>
-          <div class="side-card"><h4>Tags</h4>
+          ${m.tags.length ? `<div class="side-card"><h4>Tags</h4>
             <div class="chips">${m.tags.map(t => `<a class="tag" href="browse.html?q=${encodeURIComponent(t)}">${esc(t)}</a>`).join('')}</div>
-          </div>
+          </div>` : ''}
           <a class="report" href="${issueUrl('report-mod.yml', 'Report: ' + m.name)}" target="_blank" rel="noopener">Report this mod</a>
         </aside>
       </div>`;
