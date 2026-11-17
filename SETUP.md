@@ -24,7 +24,7 @@ Mod files stay in each author's own GitHub releases.
 5. **Actions → Set up labels → Run workflow** (once). The issue forms need these labels.
 6. Recommended: get a free VirusTotal API key (virustotal.com → sign in → API key) and add it under
    **Settings → Secrets and variables → Actions** as `VT_API_KEY`. Without it every file is listed as
-   "not virus-scanned".
+   "not virus-scanned". Then run **Actions → Check VirusTotal key** to confirm it works.
 7. Optional, for comments: **Settings → Features → Discussions**, create a category such as "Mod comments",
    install the giscus app (giscus.app), and copy the repo ID and category ID into `data/site.js`.
 8. **Actions → Build site → Run workflow** for the first build.

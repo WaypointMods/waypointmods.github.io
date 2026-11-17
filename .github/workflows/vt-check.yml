@@ -1,0 +1,20 @@
+name: Check VirusTotal key
+
+# Run from the Actions tab after adding or changing the VT_API_KEY secret.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: node scripts/vt-check.mjs
+        env:
+          VT_API_KEY: ${{ secrets.VT_API_KEY }}
