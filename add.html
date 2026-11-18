@@ -12,23 +12,34 @@
   <main>
     <section class="add-hero topo-bg" data-topo="share">
       <div class="wrap add-hero-inner">
-        <p class="eyebrow">Leave your mark on the trail</p>
-        <h1>Add your mod</h1>
-        <p class="lead">Four short steps. Your files stay in your own GitHub repository; Waypoint only points the way. If the automatic checks pass, your mod goes live.</p>
+        <p class="eyebrow" id="hero-eyebrow">Leave your mark on the trail</p>
+        <h1 id="hero-title">Add your mod</h1>
+        <p class="lead" id="hero-lead">Four short steps. Your files stay in your own GitHub repository; Waypoint only points the way. If the automatic checks pass, your mod goes live.</p>
       </div>
     </section>
 
     <div class="wrap add-wrap">
       <ol class="stepper" id="stepper" aria-label="Steps">
-        <li><button type="button" data-go="0"><span>1</span>Your mod</button></li>
+        <li><button type="button" data-go="0"><span>1</span><i data-mode="add">Your mod</i><i data-mode="edit">Pick your mod</i></button></li>
         <li><button type="button" data-go="1"><span>2</span>About it</button></li>
         <li><button type="button" data-go="2"><span>3</span>Your choices</button></li>
-        <li><button type="button" data-go="3"><span>4</span>Check and send</button></li>
+        <li><button type="button" data-go="3"><span>4</span><i data-mode="add">Check and send</i><i data-mode="edit">Check changes</i></button></li>
       </ol>
 
       <form class="wizard" id="wizard" novalidate>
         <!-- Step 1 -->
         <section class="wstep" data-step="0" aria-labelledby="s1h">
+          <div data-mode="edit">
+            <h2>Which mod do you want to change?</h2>
+            <p class="muted">You can change mods whose GitHub repository you own. New versions don't need this: publish a new GitHub release and Waypoint picks it up.</p>
+            <div class="field">
+              <label for="f-find">Find your mod</label>
+              <input class="input" id="f-find" name="find" type="search" autocomplete="off" placeholder="Mod name or GitHub name">
+            </div>
+            <div class="mod-pick" id="mod-pick" role="listbox" aria-label="Listed mods"></div>
+            <div id="mod-chosen" aria-live="polite"></div>
+          </div>
+          <div data-mode="add">
           <h2 id="s1h">Where is your mod?</h2>
           <p class="muted">Paste the link to your mod's GitHub repository. We'll check it's ready before you fill in anything else.</p>
           <div class="field">
@@ -49,6 +60,7 @@
               <li>Attach your mod archive (.7z, .zip or .rar, up to 2 GB) and select <strong>Publish release</strong>.</li>
             </ol>
           </details>
+          </div>
         </section>
 
         <!-- Step 2 -->
@@ -78,6 +90,12 @@
             <label for="f-description">Description <small class="count-of" data-for="f-description"></small></label>
             <textarea class="input" id="f-description" name="description" rows="9" maxlength="20000" required placeholder="What it does, how to install it, known issues..."></textarea>
             <small class="hint">Optional formatting: <code>## Heading</code>, <code>- list item</code>, <code>**bold**</code>, <code>[link](https://...)</code>.</small>
+          </div>
+          <div class="field" data-mode="edit" id="shots-field">
+            <span class="label">Screenshots</span>
+            <div class="shots" id="shots" role="radiogroup" aria-label="Cover picture"></div>
+            <small class="hint" id="shots-hint">Click a screenshot to make it the cover. To add new ones, drag them into the Screenshots box on GitHub at the end; new screenshots replace all of these.</small>
+            <label class="check shots-remove"><input type="checkbox" name="shots-remove" value="1"><span>Remove all screenshots</span></label>
           </div>
           <details class="help more" id="more-about">
             <summary>More (optional): display name, requirements, tags</summary>
@@ -154,6 +172,11 @@
               <p class="hint">Screenshots are added on the next page, and the first one becomes the cover picture.</p>
             </div>
             <div>
+              <div data-mode="edit">
+                <span class="label">What will change</span>
+                <ul class="change-list" id="changes"></ul>
+              </div>
+              <div data-mode="add">
               <span class="label">Before you send</span>
               <div class="rules-check">
                 <label class="check"><input type="checkbox" name="rules" value="I made this mod, or I have the author's permission to list it."><span>I made this mod, or I have the author's permission to list it.</span></label>
@@ -161,13 +184,16 @@
                 <label class="check"><input type="checkbox" name="rules" value="It's free to download. If supporters get a newer version first somewhere else (early access), it's released here for free within 3 months."><span>It's free to download. If supporters get a newer version first somewhere else (early access), it's released here for free within 3 months.</span></label>
               </div>
               <a href="#rules" class="hint">Read all the rules</a>
+              </div>
               <div class="next-box">
                 <b>What happens next</b>
                 <ol>
                   <li><strong>Send</strong> opens a short GitHub form with all your answers already in it. Sign in there if asked, as the owner of the repository.</li>
-                  <li>Optional: drag up to 8 screenshots into the <strong>Screenshots</strong> box.</li>
+                  <li data-mode="add">Optional: drag up to 8 screenshots into the <strong>Screenshots</strong> box.</li>
+                  <li data-mode="edit">Optional: drag new screenshots into the <strong>Screenshots</strong> box. They replace all the current ones.</li>
                   <li>Scroll down and press <strong>Create</strong>.</li>
-                  <li>A bot replies within a minute or two. If all is well, your mod shows up on Waypoint 2 to 5 minutes later.</li>
+                  <li data-mode="add">A bot replies within a minute or two. If all is well, your mod shows up on Waypoint 2 to 5 minutes later.</li>
+                  <li data-mode="edit">A bot replies within a minute or two, and the changes show on Waypoint a few minutes later.</li>
                 </ol>
               </div>
               <div id="send-note"></div>
@@ -179,16 +205,17 @@
           <button class="btn" type="button" id="back">Back</button>
           <span class="werror" id="werror" role="alert"></span>
           <button class="btn btn-primary" type="button" id="next">Next</button>
-          <a class="btn btn-primary btn-lg" id="send" href="#" target="_blank" rel="noopener" hidden>Send to Waypoint</a>
+          <a class="btn btn-primary btn-lg" id="send" href="#" target="_blank" rel="noopener" hidden><span data-mode="add">Send to Waypoint</span><span data-mode="edit">Send changes</span></a>
         </div>
       </form>
-      <p class="hint add-alt">Prefer GitHub's own form? <a data-issue="submit-mod.yml" href="#" target="_blank" rel="noopener">Open it directly</a>. Your answers on this page are kept in this browser until you send them.</p>
+      <p class="hint add-alt" data-mode="add">Prefer GitHub's own form? <a data-issue="submit-mod.yml" href="#" target="_blank" rel="noopener">Open it directly</a>. Your answers on this page are kept in this browser until you send them. Already listed? <a href="add.html?edit">Change your mod</a>.</p>
+      <p class="hint add-alt" data-mode="edit">Prefer GitHub's own form? <a data-issue="edit-mod.yml" href="#" target="_blank" rel="noopener">Open the edit form directly</a>. Adding a new mod instead? <a href="add.html">Add your mod</a>.</p>
     </div>
 
     <article class="page prose add-more">
       <h2>Updating your mod</h2>
       <p>Publish a new release in the same repository. Waypoint notices it within a minute and lists it once its files are virus-scanned, usually 2 to 5 minutes after you publish. You don't need to add it again.</p>
-      <p>To change the name, description, screenshots, cover picture, category, games, tags, requirements, AI use, permissions, credits or virus scan, use the <a data-issue="edit-mod.yml" href="#" target="_blank" rel="noopener">edit form</a>. Edits show within a few minutes.</p>
+      <p>To change the name, description, screenshots, cover picture, category, games, tags, requirements, AI use, permissions, credits or virus scan, use <a href="add.html?edit">Change your mod</a>. Edits show within a few minutes.</p>
       <div class="notice"><strong>About replaced files.</strong> Every file's SHA-256 hash is recorded. If you replace a file in an existing release, it's scanned again like a new one. A file flagged by the virus scan hides the whole mod until it's looked at, and turning the scan off afterwards doesn't undo that.</div>
       <p>You can only add repositories you own. For a repository owned by an organization, make your membership of that organization public first.</p>
 

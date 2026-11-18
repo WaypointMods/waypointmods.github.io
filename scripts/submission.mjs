@@ -14,6 +14,13 @@ const issue = event.issue;
 const login = issue.user.login;
 const mode = issue.labels.some(l => l.name === 'edit') ? 'edit' : 'submit';
 const tmp = process.env.RUNNER_TEMP || '.';
+// Site address: owner.github.io for a <owner>.github.io repo, otherwise owner.github.io/repo/.
+const [siteOwner, siteRepo] = (process.env.GITHUB_REPOSITORY || 'owner/owner.github.io').split('/');
+const siteUrl = siteRepo.toLowerCase() === `${siteOwner.toLowerCase()}.github.io`
+  ? `https://${siteRepo.toLowerCase()}/`
+  : `https://${siteOwner.toLowerCase()}.github.io/${siteRepo}/`;
+// The guided "Change your mod" page, opened on this mod.
+const changeLink = id => `${siteUrl}add.html?edit=${id}`;
 const errors = [];
 
 // ---------- reading the form ----------
@@ -215,7 +222,7 @@ if (mode === 'submit') {
   if (repo) {
     mod.repo = repo.full_name;
     const dupe = all.find(x => x.mod && x.mod.repo && x.mod.repo.toLowerCase() === repo.full_name.toLowerCase());
-    if (dupe) errors.push(`This repository is already listed as \`${dupe.mod.id}\`. Use the edit form to change it.`);
+    if (dupe) errors.push(`This repository is already listed as \`${dupe.mod.id}\`. To change it, use ${changeLink(dupe.mod.id)}`);
   }
 } else {
   const id = oneLine(f['Mod ID'], 80).toLowerCase();
@@ -274,12 +281,7 @@ if (errors.length) {
 
 writeMod(mod);
 
-// Site address: owner.github.io for a <owner>.github.io repo, otherwise owner.github.io/repo/.
-const [siteOwner, siteRepo] = (process.env.GITHUB_REPOSITORY || 'owner/owner.github.io').split('/');
-const siteUrl = siteRepo.toLowerCase() === `${siteOwner.toLowerCase()}.github.io`
-  ? `https://${siteRepo.toLowerCase()}/`
-  : `https://${siteOwner.toLowerCase()}.github.io/${siteRepo}/`;
-const page = `${siteUrl}mod.html?id=${mod.id}`;
+const page =`${siteUrl}mod.html?id=${mod.id}`;
 const FIELD_NAMES = {
   authorName: 'display name', name: 'mod name', scan: 'virus scan setting',
   ai: 'AI disclosure', aiParts: 'AI parts', permissionNotes: 'permission notes', images: 'screenshots or cover picture'
@@ -290,14 +292,14 @@ const WHEN = {
   private: `It will appear at ${page}, usually within 2 to 5 minutes, once the site has rebuilt and its files have had the private scan ` +
     '(ClamAV, plus a VirusTotal fingerprint check). Your files never leave GitHub.',
   off: `It will appear at ${page} in a minute or two, once the site has rebuilt. You chose no virus scan, so it is marked ` +
-    '**Not virus-scanned** on its card and page. You can pick a scan later with the Edit a mod form.'
+    '**Not virus-scanned** on its card and page. You can pick a scan later on the Change your mod page.'
 };
 
 fs.writeFileSync(path.join(tmp, 'reply.md'), mode === 'submit'
   ? `Thanks, @${login}! **${mod.name}** passed the checks and is being published.\n\n` +
     WHEN[scanMode(mod)] + '\n\n' +
     'If you had the site open already, press Ctrl + F5 to reload: browsers can keep an old copy for up to 10 minutes.\n\n' +
-    'New versions show up automatically when you publish a GitHub release. To change the description, screenshots or tags later, use the Edit a mod form.\n'
+    `New versions show up automatically when you publish a GitHub release. To change the description, screenshots or anything else later, use ${changeLink(mod.id)}\n`
   : `Done, @${login}. Updated the ${changed.map(k => FIELD_NAMES[k] || k).join(', ')} for **${mod.name}**. ` +
     `The change appears at ${page} within a few minutes (press Ctrl + F5 if you had the page open).\n`);
 setOutput('ok', 'true');

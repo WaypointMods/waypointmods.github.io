@@ -605,7 +605,10 @@
           ${m.tags.length ? `<div class="side-card"><h4>Tags</h4>
             <div class="chips">${m.tags.map(t => `<a class="tag" href="browse.html?q=${encodeURIComponent(t)}">${esc(t)}</a>`).join('')}</div>
           </div>` : ''}
-          <a class="report" href="${issueUrl('report-mod.yml', 'Report: ' + m.name)}" target="_blank" rel="noopener">Report this mod</a>
+          <div class="side-links">
+            <a class="report" href="add.html?edit=${encodeURIComponent(m.id)}">Your mod? Change its details</a>
+            <a class="report" href="${issueUrl('report-mod.yml', 'Report: ' + m.name)}" target="_blank" rel="noopener">Report this mod</a>
+          </div>
         </aside>
       </div>`;
 

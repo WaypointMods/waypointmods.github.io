@@ -1,0 +1,24 @@
+name: Change your mod (filled in by the Waypoint page)
+description: Opened by the Change your mod page on waypointmods.github.io, with your changes filled in. Start on that page.
+title: "Edit: "
+labels: ["edit"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Your changes from the Waypoint page are filled in below. Add new screenshots if you like, then press **Create**.
+        Anything not listed below stays as it is.
+  # Screenshots come before the changes on purpose: the bot reads the form top to bottom and the
+  # later answer wins, so "Screenshots: none" from the page is never undone by an empty box here.
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: "Optional. New screenshots replace all the current ones. Drag or paste up to 8 images here; the first one becomes the cover."
+  - type: textarea
+    id: answers
+    attributes:
+      label: Your changes
+      description: Filled in by the Change your mod page. Edit carefully, keeping each `###` line as it is.
+    validations:
+      required: true
