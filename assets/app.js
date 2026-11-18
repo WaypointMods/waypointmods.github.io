@@ -243,7 +243,7 @@
           <div class="asset-name">${esc(a.name)}</div>
           <div class="asset-meta">
             <span>${fmtSize(a.size)}</span>
-            <span>${svg('dl', 12)} ${fmtNum(a.downloads)}</span>
+            <span>${svg('dl', 12)} <span data-dl="${esc(a.url)}">${fmtNum(a.downloads)}</span></span>
             <span class="hash" title="SHA-256 ${esc(a.sha256)}">SHA-256 ${esc(String(a.sha256).slice(0, 12))}…</span>
             ${a.scan === 'unscanned' ? '<span>Not virus-scanned</span>' : ''}
           </div>
@@ -302,11 +302,12 @@
             : `<a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener">${esc(m.author)}</a>`}</div>
           <p class="lead">${esc(m.summary)}</p>
           <div class="statrow">
-            <div><b>${fmtNum(m.totalDownloads)}</b>downloads</div>
-            <div><b>${fmtNum(m.stars)}</b>stars</div>
+            <div><b data-live="downloads">${fmtNum(m.totalDownloads)}</b>downloads</div>
+            <div><b data-live="stars">${fmtNum(m.stars)}</b>stars</div>
             <div><b>${r ? 'v' + esc(r.version) : '-'}</b>version</div>
             <div><b>${ago(m.lastUpdated)}</b>updated</div>
           </div>
+          <div id="live-note"></div>
           ${m.images && m.images.length ? `<div class="gallery">${m.images.map((u, i) =>
             `<button type="button" class="thumb" data-shot="${i}" aria-label="Open screenshot ${i + 1} of ${m.images.length}">
               <img src="${esc(u)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></button>`).join('')}</div>` : ''}
@@ -376,6 +377,82 @@
     }));
     select(location.hash.slice(1));
     if (m.images && m.images.length) viewer(m);
+    live(m);
+  }
+
+  // ---------- live data from GitHub ----------
+  // The site is rebuilt every few hours. In between, a mod page asks GitHub directly for fresh
+  // download counts and stars, and whether the repository still exists. New releases are NOT
+  // offered for download here: they appear only after the build has virus-scanned them.
+  // Free: GitHub allows 60 requests an hour per visitor; each page uses 2, cached for 5 minutes.
+  const LIVE_TTL = 5 * 60 * 1000;
+
+  async function fetchLive(repo) {
+    const key = 'live:' + repo;
+    try {
+      const hit = JSON.parse(sessionStorage.getItem(key) || 'null');
+      if (hit && Date.now() - hit.at < LIVE_TTL) return hit.data;
+    } catch (e) { /* storage unavailable */ }
+    const api = p => fetch('https://api.github.com/repos/' + repo + p, { headers: { Accept: 'application/vnd.github+json' } });
+    const [r1, r2] = await Promise.all([api(''), api('/releases?per_page=10')]);
+    let data;
+    if (r1.status === 404) data = { gone: true };
+    else if (!r1.ok || !r2.ok) return null; // rate limit or network trouble: keep the built numbers
+    else {
+      const repoInfo = await r1.json();
+      const rels = (await r2.json()).filter(r => !r.draft && !r.prerelease && r.published_at);
+      data = {
+        stars: repoInfo.stargazers_count,
+        counts: Object.fromEntries(rels.flatMap(r => r.assets.map(a => [a.browser_download_url, a.download_count]))),
+        newest: rels.length ? {
+          tag: rels[0].tag_name,
+          date: rels[0].published_at,
+          urls: rels[0].assets.filter(a => /\.(7z|zip|rar)$/i.test(a.name)).map(a => a.browser_download_url)
+        } : null
+      };
+    }
+    try { sessionStorage.setItem(key, JSON.stringify({ at: Date.now(), data })); } catch (e) { /* storage unavailable */ }
+    return data;
+  }
+
+  async function live(m) {
+    if (window.MODS_ARE_EXAMPLES) return; // local preview data points at made-up repos
+    let data;
+    try { data = await fetchLive(m.repo); } catch (e) { return; }
+    if (!data) return;
+    const note = $('#live-note');
+
+    if (data.gone) {
+      note.innerHTML = `<div class="notice notice-warn"><strong>This mod's GitHub repository has been removed</strong>, so its files can't be downloaded any more. It will disappear from ${esc(SITE.name)} at the next update.</div>`;
+      document.querySelectorAll('#mod a.btn[href*="/releases/download/"]').forEach(a => {
+        a.removeAttribute('href');
+        a.classList.add('btn-disabled');
+        a.setAttribute('aria-disabled', 'true');
+      });
+      return;
+    }
+
+    let total = 0;
+    m.releases.forEach(r => r.assets.forEach(a => {
+      if (data.counts[a.url] !== undefined) a.downloads = data.counts[a.url];
+      total += a.downloads || 0;
+    }));
+    m.totalDownloads = total;
+    m.stars = data.stars;
+    $('[data-live="downloads"]').textContent = fmtNum(total);
+    $('[data-live="stars"]').textContent = fmtNum(data.stars);
+    document.querySelectorAll('[data-dl]').forEach(el => {
+      const n = data.counts[el.dataset.dl];
+      if (n !== undefined) el.textContent = fmtNum(n);
+    });
+
+    // A release newer than anything listed, with files we haven't seen: it's waiting for its scan.
+    const known = new Set(m.releases.flatMap(r => r.assets.map(a => a.url)));
+    const n = data.newest;
+    const listedDate = latest(m) ? latest(m).date : '';
+    if (n && n.date.slice(0, 10) >= listedDate && n.urls.length && !n.urls.some(u => known.has(u))) {
+      note.innerHTML = `<div class="notice"><strong>${esc(n.tag)} was just released.</strong> It will appear here within a few hours, once its files have been virus-scanned.</div>`;
+    }
   }
 
   // Full-size screenshot viewer: click a thumbnail, arrows or swipe to move, Esc or click outside to close.

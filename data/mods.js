@@ -1,5 +1,6 @@
 // EXAMPLE DATA. The build workflow will generate this file from mods/*.json
 // plus each repo's GitHub Releases. Repos and download links below are fictional.
+window.MODS_ARE_EXAMPLES = true;
 window.MODS = [
   {
     id: 'wayfarers-lanterns',
