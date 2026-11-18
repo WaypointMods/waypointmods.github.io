@@ -1,5 +1,5 @@
 name: Add your mod
-description: Put your mod on the site. Your files stay in your own GitHub repository. No approval needed.
+description: Put your mod on the site. Your files stay in your own GitHub repository. Checked automatically.
 title: "Add: "
 labels: ["submission"]
 body:
