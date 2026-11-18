@@ -32,11 +32,15 @@
     return Math.floor(d / 365) + ' yr ago';
   }
 
-  const downloads = m => m.releases.reduce((a, r) => a + r.assets.reduce((b, x) => b + (x.downloads || 0), 0), 0);
   const latest = m => m.releases[0];
   const authorLabel = m => m.authorName || m.author;
   const hasOwnName = m => m.authorName && m.authorName.toLowerCase() !== m.author.toLowerCase();
-  const updated = m => (latest(m) ? latest(m).date : m.created);
+  // Work out each mod's totals once, instead of on every sort and every keystroke.
+  MODS.forEach(m => {
+    m.totalDownloads = m.releases.reduce((a, r) => a + r.assets.reduce((b, x) => b + (x.downloads || 0), 0), 0);
+    m.lastUpdated = latest(m) ? latest(m).date : m.created;
+    m.searchText = [m.name, m.summary, m.author, m.authorName || '', m.category, ...m.tags].join(' ').toLowerCase();
+  });
   const issueUrl = (template, title) =>
     `https://github.com/${SITE.indexRepo}/issues/new?template=${encodeURIComponent(template)}` +
     (title ? '&title=' + encodeURIComponent(title) : '');
@@ -48,10 +52,10 @@
   }
 
   const SORTS = {
-    popular: (a, b) => downloads(b) - downloads(a),
-    updated: (a, b) => updated(b).localeCompare(updated(a)),
+    popular: (a, b) => b.totalDownloads - a.totalDownloads,
+    updated: (a, b) => b.lastUpdated.localeCompare(a.lastUpdated),
     new: (a, b) => b.created.localeCompare(a.created),
-    endorsed: (a, b) => b.endorsements - a.endorsements,
+    stars: (a, b) => b.stars - a.stars,
     name: (a, b) => a.name.localeCompare(b.name)
   };
 
@@ -110,8 +114,8 @@
         <p class="card-sum">${esc(m.summary)}</p>
         <div class="meta">
           <span>by ${esc(authorLabel(m))}</span>
-          <span title="Downloads">${svg('dl')} ${fmtNum(downloads(m))}</span>
-          <span title="GitHub stars">${svg('heart')} ${fmtNum(m.endorsements)}</span>
+          <span title="Downloads">${svg('dl')} ${fmtNum(m.totalDownloads)}</span>
+          <span title="GitHub stars">${svg('heart')} ${fmtNum(m.stars)}</span>
           ${r ? `<span title="Updated ${esc(fmtDate(r.date))}">${svg('clock')} ${ago(r.date)}</span>` : ''}
         </div>
       </div>
@@ -172,7 +176,7 @@
   // ---------- pages ----------
   function home() {
     $('#stat-mods').textContent = MODS.length;
-    $('#stat-dl').textContent = fmtNum(MODS.reduce((a, m) => a + downloads(m), 0));
+    $('#stat-dl').textContent = fmtNum(MODS.reduce((a, m) => a + m.totalDownloads, 0));
     $('#stat-authors').textContent = new Set(MODS.map(m => m.author)).size;
     if (!MODS.length) {
       document.querySelectorAll('[data-needs-mods]').forEach(s => { s.hidden = true; });
@@ -186,11 +190,7 @@
       `<a class="chip" href="browse.html?cat=${encodeURIComponent(c)}">${esc(c)}<small>${cats[c]}</small></a>`).join('');
   }
 
-  function matches(m, q) {
-    if (!q) return true;
-    const hay = [m.name, m.summary, m.author, m.authorName || '', m.category, ...m.tags].join(' ').toLowerCase();
-    return q.toLowerCase().split(/\s+/).every(w => hay.includes(w));
-  }
+  const matches = (m, words) => words.every(w => m.searchText.includes(w));
 
   function browse() {
     const p = new URLSearchParams(location.search);
@@ -205,13 +205,17 @@
         <span>${esc(label)}</span><small>${n}</small></label>`;
     };
 
-    function render() {
-      const cats = countBy(m => m.category);
-      const games = countBy(m => m.games);
+    // The filter lists only change when a filter is picked, not while typing in the search box.
+    const cats = countBy(m => m.category);
+    const games = countBy(m => m.games);
+    function renderFilters() {
       $('#f-cat').innerHTML = opt('cat', '', 'All', MODS.length) + Object.keys(cats).sort().map(c => opt('cat', c, c, cats[c])).join('');
       $('#f-game').innerHTML = opt('game', '', 'All', MODS.length) + Object.keys(GAMES).map(g => opt('game', g, GAMES[g], games[g] || 0)).join('');
+    }
 
-      const list = MODS.filter(m => (!st.cat || m.category === st.cat) && (!st.game || m.games.includes(st.game)) && matches(m, st.q))
+    function render() {
+      const words = st.q.toLowerCase().split(/\s+/).filter(Boolean);
+      const list = MODS.filter(m => (!st.cat || m.category === st.cat) && (!st.game || m.games.includes(st.game)) && matches(m, words))
         .sort(SORTS[st.sort]);
       $('#count').textContent = `${list.length} mod${list.length === 1 ? '' : 's'}`;
       $('#results').innerHTML = list.length ? list.map(card).join('')
@@ -224,9 +228,10 @@
       try { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '')); } catch (e) { /* file:// in some browsers */ }
     }
 
-    $('.filters').addEventListener('change', e => { if (e.target.name) { st[e.target.name] = e.target.value; render(); } });
+    $('.filters').addEventListener('change', e => { if (e.target.name) { st[e.target.name] = e.target.value; renderFilters(); render(); } });
     q.addEventListener('input', () => { st.q = q.value.trim(); render(); });
     sort.addEventListener('change', () => { st.sort = sort.value; render(); });
+    renderFilters();
     render();
   }
 
@@ -297,10 +302,10 @@
             : `<a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener">${esc(m.author)}</a>`}</div>
           <p class="lead">${esc(m.summary)}</p>
           <div class="statrow">
-            <div><b>${fmtNum(downloads(m))}</b>downloads</div>
-            <div><b>${fmtNum(m.endorsements)}</b>stars</div>
+            <div><b>${fmtNum(m.totalDownloads)}</b>downloads</div>
+            <div><b>${fmtNum(m.stars)}</b>stars</div>
             <div><b>${r ? 'v' + esc(r.version) : '-'}</b>version</div>
-            <div><b>${ago(updated(m))}</b>updated</div>
+            <div><b>${ago(m.lastUpdated)}</b>updated</div>
           </div>
           ${m.images && m.images.length ? `<div class="gallery">${m.images.map((u, i) =>
             `<button type="button" class="thumb" data-shot="${i}" aria-label="Open screenshot ${i + 1} of ${m.images.length}">
@@ -334,7 +339,7 @@
               <dt>Games</dt><dd>${m.games.map(g => esc(GAMES[g] || g)).join('<br>')}</dd>
               <dt>Category</dt><dd><a href="browse.html?cat=${encodeURIComponent(m.category)}">${esc(m.category)}</a></dd>
               <dt>Created</dt><dd>${esc(fmtDate(m.created))}</dd>
-              <dt>Updated</dt><dd>${esc(fmtDate(updated(m)))}</dd>
+              <dt>Updated</dt><dd>${esc(fmtDate(m.lastUpdated))}</dd>
               <dt>License</dt><dd>${esc(m.license || 'Not stated')}</dd>
             </dl>
           </div>

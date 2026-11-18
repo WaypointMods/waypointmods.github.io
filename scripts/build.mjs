@@ -10,7 +10,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { ROOT, ARCHIVE_RE, readMods, validateMod, gh, today, hueFor } from './lib.mjs';
+import { ROOT, ARCHIVE_RE, USER_AGENT, readMods, validateMod, gh, today, hueFor } from './lib.mjs';
 
 const CHECK_ONLY = process.argv.includes('--check');
 const MAX_RELEASES = 5;                 // newest releases shown per mod
@@ -65,7 +65,7 @@ async function vt(url, opts = {}) {
 
 async function download(a) {
   const file = path.join(os.tmpdir(), `modindex-${a.id}-${Date.now()}`);
-  const res = await fetch(a.browser_download_url, { headers: { 'User-Agent': 'mod-index-build' } });
+  const res = await fetch(a.browser_download_url, { headers: { 'User-Agent': USER_AGENT } });
   if (!res.ok) throw new Error(`download ${a.name}: ${res.status}`);
   const hash = crypto.createHash('sha256');
   const out = fs.createWriteStream(file);
@@ -138,7 +138,6 @@ async function checkAsset(key, a) {
     if (dl.sha256 !== e.sha256) {
       // Replaced under the same name: treat it as a new file and scan it again.
       Object.assign(e, { sha256: dl.sha256, status: 'queued', changed: today() });
-      delete e.seenSha256;
       delete e.vt;
       delete e.uploaded;
       delete e.note;
@@ -152,18 +151,29 @@ async function checkAsset(key, a) {
 }
 
 // ---------- 3. build each mod ----------
+// Ask GitHub about every repo first, a few at a time. Scanning stays one file at a time below,
+// because VirusTotal's free tier only allows 4 requests a minute anyway.
+async function fetchRepo(mod) {
+  try {
+    const [repo, releases] = await Promise.all([gh(`/repos/${mod.repo}`), gh(`/repos/${mod.repo}/releases?per_page=30`)]);
+    return repo.private ? { error: 'repository is private' } : { repo, releases };
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+const fetched = new Array(entries.length);
+let next = 0;
+await Promise.all(Array.from({ length: Math.min(8, entries.length) }, async () => {
+  while (next < entries.length) { const i = next++; fetched[i] = await fetchRepo(entries[i].mod); }
+}));
+
 const out = [];
 const needsReview = [];
-for (const { mod } of entries) {
-  let repo, releases;
-  try {
-    repo = await gh(`/repos/${mod.repo}`);
-    releases = await gh(`/repos/${mod.repo}/releases?per_page=30`);
-  } catch (err) {
-    report.unavailable.push(`${mod.id}: ${err.message}`);
-    continue;
-  }
-  if (repo.private) { report.unavailable.push(`${mod.id}: repository is private`); continue; }
+const liveRepos = new Set();
+for (const [i, { mod }] of entries.entries()) {
+  const { repo, releases, error } = fetched[i];
+  if (error) { report.unavailable.push(`${mod.id}: ${error}`); continue; }
+  liveRepos.add(repo.full_name.toLowerCase());
 
   const rels = releases
     .filter(r => !r.draft && (mod.includePrereleases || !r.prerelease) && r.published_at)
@@ -205,7 +215,7 @@ for (const { mod } of entries) {
     summary: mod.summary, description: mod.description, games: mod.games, category: mod.category,
     tags: mod.tags, requirements: mod.requirements, images: mod.images || [],
     license: mod.license || (spdx && spdx !== 'NOASSERTION' ? spdx : ''),
-    created: mod.created, endorsements: repo.stargazers_count,
+    created: mod.created, stars: repo.stargazers_count,
     hue: mod.hue ?? hueFor(mod.id),
     releases: outRels
   });
@@ -213,6 +223,13 @@ for (const { mod } of entries) {
 }
 
 // ---------- 4. write state and site ----------
+// Forget files from mods that are no longer listed. A repo that is only temporarily unreachable
+// keeps its records, so it isn't rescanned when it comes back.
+const keepRepos = new Set([...liveRepos, ...entries.map(x => x.mod.repo.toLowerCase())]);
+let pruned = 0;
+for (const k of Object.keys(state)) {
+  if (!keepRepos.has(k.slice(0, k.indexOf('@')).toLowerCase())) { delete state[k]; pruned++; }
+}
 fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
 const sorted = Object.fromEntries(Object.keys(state).sort().map(k => [k, state[k]]));
 fs.writeFileSync(STATE_FILE, JSON.stringify(sorted, null, 2) + '\n');
@@ -257,7 +274,8 @@ if (needsReview.length && process.env.GITHUB_REPOSITORY && process.env.GITHUB_TO
 
 // ---------- 6. report ----------
 const section = (title, items) => items.length ? `### ${title} (${items.length})\n${items.map(i => `- ${i}`).join('\n')}\n\n` : '';
-const summary = `## Site build\n\n${report.listed.length} of ${entries.length} mods listed. VirusTotal calls: ${vtCalls}${VT ? '' : ' (no VT_API_KEY set: files are listed as not virus-scanned)'}.\n\n` +
+const summary = `## Site build\n\n${report.listed.length} of ${entries.length} mods listed. VirusTotal calls: ${vtCalls}${VT ? '' : ' (no VT_API_KEY set: files are listed as not virus-scanned)'}.` +
+  `${pruned ? ` Forgot ${pruned} file record(s) from removed mods.` : ''}\n\n` +
   section('Flagged by VirusTotal', report.flagged) + section('Hidden', report.hidden) + section('Repository unavailable', report.unavailable) +
   section('Files replaced and rescanned', report.changed) + section('Scanned this build', report.scanned);
 if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);

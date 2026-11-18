@@ -14,7 +14,7 @@ window.MODS = [
     requirements: [],
     license: 'MIT',
     created: '2025-03-14',
-    endorsements: 1840,
+    stars: 1840,
     hue: 38,
     releases: [
       { version: '1.3.0', date: '2026-11-09', notes: '- Added lanterns to the Riften to Ivarstead road\n- Lanterns now sway in strong wind\n- Fixed a floating lantern near Rorikstead',
@@ -38,7 +38,7 @@ window.MODS = [
     requirements: [],
     license: 'GPL-3.0',
     created: '2026-09-11',
-    endorsements: 960,
+    stars: 960,
     hue: 210,
     releases: [
       { version: '1.0.4', date: '2026-10-30', notes: '- Bows no longer play the sword sheathe sound\n- Small volume tweaks',
@@ -60,7 +60,7 @@ window.MODS = [
     requirements: [],
     license: 'CC BY 4.0',
     created: '2025-11-20',
-    endorsements: 2310,
+    stars: 2310,
     hue: 15,
     releases: [
       { version: '2.1.0', date: '2026-11-14', notes: '- New Dunmer inn sound set for Windhelm and Raven Rock\n- Crowd volume now updates when NPCs leave',
@@ -85,7 +85,7 @@ window.MODS = [
     requirements: [{ name: 'SKSE', url: 'https://skse.silverlock.org/' }],
     license: 'MIT',
     created: '2026-02-08',
-    endorsements: 640,
+    stars: 640,
     hue: 190,
     releases: [
       { version: '0.9.2', date: '2026-07-19', notes: '- Fixed missing icon for Dwemer ruins\n- Dimmed icons are easier to read on snowy map areas',
@@ -105,7 +105,7 @@ window.MODS = [
     requirements: [{ name: 'SKSE', url: 'https://skse.silverlock.org/' }],
     license: 'GPL-3.0',
     created: '2025-06-30',
-    endorsements: 3120,
+    stars: 3120,
     hue: 280,
     releases: [
       { version: '1.5.0', date: '2026-11-01', notes: '- Followers now catch up after boat and carriage travel\n- Fixed a rare stuck-in-doorway case in Solitude',
@@ -127,7 +127,7 @@ window.MODS = [
     requirements: [],
     license: 'CC BY-NC 4.0',
     created: '2024-10-12',
-    endorsements: 5200,
+    stars: 5200,
     hue: 140,
     releases: [
       { version: '3.0.0', date: '2026-10-05', notes: '- Remade every texture from scratch\n- New 1K file for VR players',
@@ -150,7 +150,7 @@ window.MODS = [
     requirements: [],
     license: 'MIT',
     created: '2024-12-01',
-    endorsements: 410,
+    stars: 410,
     hue: 55,
     releases: [
       { version: '1.12.0', date: '2026-11-16', notes: "- New patch for Wayfarer's Lanterns 1.3.0",
@@ -172,7 +172,7 @@ window.MODS = [
     requirements: [{ name: 'SKSE', url: 'https://skse.silverlock.org/' }],
     license: 'GPL-3.0',
     created: '2026-04-02',
-    endorsements: 220,
+    stars: 220,
     hue: 330,
     releases: [
       { version: '0.4.0', date: '2026-05-12', notes: '- Added quest completions\n- Journal pages now sorted by in-game date',

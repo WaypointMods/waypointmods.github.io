@@ -15,15 +15,19 @@ export const CATEGORIES = [
 export const GAME_LABELS = { 'Skyrim SE/AE': 'se', 'Skyrim VR': 'vr', 'Skyrim LE': 'le' };
 export const GAME_KEYS = Object.values(GAME_LABELS);
 
+// One place for every size limit; the form checks and the entry validator both read these.
+export const LIMITS = { name: 80, authorName: 40, summary: 160, description: 20000, tags: 8, tag: 24, images: 8, requirements: 20 };
+export const USER_AGENT = 'waypoint-build';
+
 export const ARCHIVE_RE = /\.(7z|zip|rar)$/i;
-export const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-export const REPO_RE = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/;
+const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const REPO_RE = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 // Images must be hosted by GitHub: issue uploads, or files in a public repository.
 export const IMAGE_RE = /^https:\/\/(?:github\.com\/user-attachments\/assets\/[0-9a-f-]{36}|user-images\.githubusercontent\.com\/\d+\/[\w.-]+\.(?:png|jpe?g|gif|webp)|raw\.githubusercontent\.com\/[\w.-]+\/[\w.-]+\/[^\s"'<>]+\.(?:png|jpe?g|gif|webp))$/i;
-export const MAX_IMAGES = 8;
 
 export const today = () => new Date().toISOString().slice(0, 10);
+export const isNone = v => /^none$/i.test(String(v ?? '').trim());
 
 export function slugify(s) {
   return String(s)
@@ -68,21 +72,22 @@ export function validateMod(mod, file) {
   if (!mod || typeof mod !== 'object') return ['entry is not an object'];
   if (!isStr(mod.id, 1, 60) || !ID_RE.test(mod.id)) e.push('id must be lowercase letters, numbers and dashes');
   else if (file && file !== mod.id + '.json') e.push(`file name must be ${mod.id}.json`);
-  if (!isStr(mod.name, 1, 80)) e.push('name must be 1-80 characters');
+  const L = LIMITS;
+  if (!isStr(mod.name, 1, L.name)) e.push(`name must be 1-${L.name} characters`);
   if (!isStr(mod.repo, 3, 141) || !REPO_RE.test(mod.repo)) e.push('repo must look like owner/name');
-  if (!isStr(mod.summary, 1, 160)) e.push('summary must be 1-160 characters');
-  if (!isStr(mod.description, 1, 20000)) e.push('description must be 1-20000 characters');
+  if (!isStr(mod.summary, 1, L.summary)) e.push(`summary must be 1-${L.summary} characters`);
+  if (!isStr(mod.description, 1, L.description)) e.push(`description must be 1-${L.description} characters`);
   if (!CATEGORIES.includes(mod.category)) e.push(`category must be one of: ${CATEGORIES.join(', ')}`);
   if (!Array.isArray(mod.games) || !mod.games.length || mod.games.some(g => !GAME_KEYS.includes(g))) e.push(`games must be a non-empty list of: ${GAME_KEYS.join(', ')}`);
-  if (!Array.isArray(mod.tags) || mod.tags.length > 8 || mod.tags.some(t => !isStr(t, 1, 24))) e.push('tags must be up to 8 strings of 1-24 characters');
-  if (!Array.isArray(mod.requirements) || mod.requirements.length > 20 ||
-      mod.requirements.some(r => !r || !isStr(r.name, 1, 80) || !isHttps(r.url))) e.push('requirements must be a list of { name, https url }');
+  if (!Array.isArray(mod.tags) || mod.tags.length > L.tags || mod.tags.some(t => !isStr(t, 1, L.tag))) e.push(`tags must be up to ${L.tags} strings of 1-${L.tag} characters`);
+  if (!Array.isArray(mod.requirements) || mod.requirements.length > L.requirements ||
+      mod.requirements.some(r => !r || !isStr(r.name, 1, L.name) || !isHttps(r.url))) e.push('requirements must be a list of { name, https url }');
   if (!isStr(mod.created, 10, 10) || !DATE_RE.test(mod.created)) e.push('created must be YYYY-MM-DD');
   if (mod.hue !== undefined && !(Number.isInteger(mod.hue) && mod.hue >= 0 && mod.hue < 360)) e.push('hue must be a whole number 0-359');
   if (mod.license !== undefined && !isStr(mod.license, 0, 40)) e.push('license must be up to 40 characters');
-  if (mod.authorName !== undefined && !isStr(mod.authorName, 1, 40)) e.push('authorName must be 1-40 characters');
-  if (mod.images !== undefined && (!Array.isArray(mod.images) || mod.images.length > MAX_IMAGES ||
-      mod.images.some(u => typeof u !== 'string' || !IMAGE_RE.test(u)))) e.push(`images must be up to ${MAX_IMAGES} GitHub-hosted image links`);
+  if (mod.authorName !== undefined && !isStr(mod.authorName, 1, L.authorName)) e.push(`authorName must be 1-${L.authorName} characters`);
+  if (mod.images !== undefined && (!Array.isArray(mod.images) || mod.images.length > L.images ||
+      mod.images.some(u => typeof u !== 'string' || !IMAGE_RE.test(u)))) e.push(`images must be up to ${L.images} GitHub-hosted image links`);
   if (mod.includePrereleases !== undefined && typeof mod.includePrereleases !== 'boolean') e.push('includePrereleases must be true or false');
   return e;
 }
@@ -94,7 +99,7 @@ export async function gh(p, { method = 'GET', body } = {}) {
     headers: {
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'mod-index-build',
+      'User-Agent': USER_AGENT,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(body ? { 'Content-Type': 'application/json' } : {})
     },
