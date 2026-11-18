@@ -144,6 +144,7 @@
       const open = new RegExp(`\\[${tag}(?:=[^\\]]*)?\\]`, 'gi'), close = new RegExp(`\\[\\/${tag}\\]`, 'gi');
       if (count(open) && count(open) === count(close)) s = s.replace(open, block(a)).replace(close, block(b));
     }
+    s = s.replace(/\[\/\*\]/g, ''); // some editors close list items with [/*]; the next item closes it anyway
     if (count(/\[list(?:=[^\]]*)?\]/gi) && count(/\[list(?:=[^\]]*)?\]/gi) === count(/\[\/list\]/gi)) {
       const stack = [];
       s = s.replace(/\[list(=[^\]]*)?\]|\[\/list\]|\[\*\]/gi, (m, num) => {
@@ -207,7 +208,7 @@
       if ((m = line.match(/^(#{1,6})\s+(.+?)\s*#*$/))) { flush(); const h = Math.min(6, Math.max(3, m[1].length + 1)); out.push(`<h${h}>${inline(m[2])}</h${h}>`); return; }
       if (/^(-{3,}|\*{3,}|_{3,})$/.test(line)) { flush(); out.push('<hr>'); return; }
       if ((m = line.match(/^&gt;\s?(.*)$/))) { flushP(); flushL(); quote.push(m[1]); return; }
-      if ((m = line.match(/^[-*+•]\s+(.+)$/)) || (m = line.match(/^\d{1,3}[.)]\s+(.+)$/))) {
+      if ((m = line.match(/^(?:[-*+•]\s+|\[\*\]\s*)(.+)$/)) || (m = line.match(/^\d{1,3}[.)]\s+(.+)$/))) { // [*] without [list] too
         const tag = /^\d/.test(line) ? 'ol' : 'ul';
         flushP(); flushQ();
         if (list && list.tag !== tag) flushL();
