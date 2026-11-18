@@ -83,6 +83,7 @@
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     shield: '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/>',
     alert: '<path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4m0 3h.01"/>',
+    box: '<path d="M21 8 12 3 3 8v8l9 5 9-5V8z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
     pin: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
     moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/>'
@@ -178,6 +179,7 @@
         <nav aria-label="Footer">
           <a href="add.html">Add your mod</a>
           <a href="add.html#rules">Rules</a>
+          <a href="helper.html">Mod manager helper</a>
           <a href="${issueUrl('report-mod.yml')}" target="_blank" rel="noopener">Report a problem</a>
           <a href="about.html">About</a>
         </nav>
@@ -254,7 +256,11 @@
     return () => { renderFilters(); render(); };
   }
 
-  function release(r, isLatest) {
+  // waypoint:// links are opened by the Waypoint helper (helper.html), which fetches the file from
+  // GitHub, checks its SHA-256 against Waypoint's list and drops it in the mod manager's downloads.
+  const managerLink = (m, a) => `waypoint://download?mod=${encodeURIComponent(m.id)}&file=${encodeURIComponent(a.name)}`;
+
+  function release(m, r, isLatest) {
     return `<article class="release">
       <div class="release-head"><h3>v${esc(r.version)}</h3>${isLatest ? '<span class="badge">Latest</span>' : ''}<span class="muted">${esc(fmtDate(r.date))}</span></div>
       ${r.assets.map(a => `<div class="asset">
@@ -268,7 +274,10 @@
               : `<span title="${esc(SCAN_LABEL[scanOf(a)])}">${svg('shield', 12)} ${scanOf(a) === 'private' ? 'Private scan' : 'VirusTotal'}</span>`}
           </div>
         </div>
-        <a class="btn btn-sm${isLatest ? ' btn-primary' : ''}" href="${esc(a.url)}">${svg('dl')} Download</a>
+        <div class="asset-actions">
+          <a class="btn btn-sm${isLatest ? ' btn-primary' : ''}" href="${esc(a.url)}">${svg('dl')} Download</a>
+          <a class="btn btn-sm" href="${esc(managerLink(m, a))}" title="Needs the Waypoint helper">${svg('box')} MO2 / Vortex</a>
+        </div>
       </div>`).join('')}
     </article>`;
   }
@@ -341,7 +350,7 @@
             <button class="tab" role="tab" data-tab="comments">Comments</button>
           </div>
           <section class="panel prose" role="tabpanel" id="p-description">${md(m.description)}</section>
-          <section class="panel" role="tabpanel" id="p-files" hidden>${m.releases.map((x, i) => release(x, i === 0)).join('')}</section>
+          <section class="panel" role="tabpanel" id="p-files" hidden>${m.releases.map((x, i) => release(m, x, i === 0)).join('')}</section>
           <section class="panel" role="tabpanel" id="p-changelog" hidden>${m.releases.map(x =>
             `<div class="cl"><h3>v${esc(x.version)}<span class="muted">${esc(fmtDate(x.date))}</span></h3><div class="prose">${md(x.notes)}</div></div>`).join('')}</section>
           <section class="panel" role="tabpanel" id="p-comments" hidden><div id="giscus"></div></section>
@@ -350,6 +359,8 @@
           <div class="side-card dl-box">
             ${main
               ? `<a class="btn btn-primary btn-lg" href="${esc(main.url)}">${svg('dl', 18)} Download v${esc(r.version)}</a>
+                 <a class="btn" href="${esc(managerLink(m, main))}">${svg('box', 16)} Download with MO2 / Vortex</a>
+                 <a class="dl-note" href="helper.html">Needs the free Waypoint helper (one-time setup)</a>
                  <div class="dl-note">${esc(main.name)} · ${fmtSize(main.size)}</div>
                  ${r.assets.length > 1 ? `<a class="dl-note" href="#files" data-goto="files">+ ${r.assets.length - 1} more file${r.assets.length > 2 ? 's' : ''} in this release</a>` : ''}`
               : '<div class="dl-note">No files released yet.</div>'}
@@ -359,6 +370,12 @@
             ${main ? '<a class="dl-note" href="about.html#scans">What do the scan types mean?</a>' : ''}
             <a class="btn" href="https://github.com/${esc(m.repo)}" target="_blank" rel="noopener">Star or view on GitHub</a>
           </div>
+          ${main ? `<details class="side-card install-tip">
+            <summary>How to install</summary>
+            <p><strong>Mod Organizer 2:</strong> drag the downloaded archive into MO2's <em>Downloads</em> tab (or use the archive icon, <em>Install a new mod from an archive</em>), then double-click it to install.</p>
+            <p><strong>Vortex:</strong> drag the archive onto Vortex's <em>Mods</em> page, then click <em>Install</em> and enable it.</p>
+            <p>If the mod has install options, your mod manager shows them during the install. With the <a href="helper.html">Waypoint helper</a>, the file lands in your downloads automatically.</p>
+          </details>` : ''}
           <div class="side-card"><h4>Details</h4>
             <dl class="facts">
               <dt>Games</dt><dd>${m.games.map(g => esc(GAMES[g] || g)).join('<br>')}</dd>

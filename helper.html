@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mod manager helper</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="helper">
+  <header id="site-header" class="site-header"></header>
+  <main>
+    <article class="page prose">
+      <h1>Download with your mod manager</h1>
+      <p class="lead">The Waypoint helper lets the <strong>Download with MO2 / Vortex</strong> button send a mod straight to your mod manager's downloads, like Nexus's "Mod Manager Download". It's free, small and open source, and you set it up once.</p>
+
+      <h2>Set it up</h2>
+      <ol>
+        <li><a class="btn btn-primary" href="helper/waypoint-helper.zip">Download the helper (.zip)</a></li>
+        <li>Extract the zip anywhere and double-click <strong>Install Waypoint Helper.cmd</strong>.</li>
+        <li>Answer three questions: your mod manager (MO2 or Vortex), your game, and your downloads folder.</li>
+        <li>On any mod page, press <strong>Download with MO2 / Vortex</strong>. The first time, your browser asks whether to open the link: allow it.</li>
+      </ol>
+      <div class="notice"><strong>Windows may warn you</strong> when you open the .cmd file, because it was downloaded from the internet. Choose <em>More info</em> then <em>Run anyway</em> if you're happy with what it does (below). It needs no admin rights and only changes settings for your own Windows user.</div>
+
+      <h2>What it does</h2>
+      <ul>
+        <li>Looks the mod up in Waypoint's own list, so a link can't point it at any other file.</li>
+        <li>Downloads the file from the author's GitHub release, and nowhere else.</li>
+        <li>Checks the file's SHA-256 fingerprint matches the one Waypoint recorded. If it doesn't, the file is deleted and you're told why.</li>
+        <li>Warns you and asks first if the file wasn't virus-scanned.</li>
+        <li>Puts the file in your downloads folder. For MO2 it also adds the mod name and version, so it shows up properly in the Downloads tab.</li>
+        <li>Then you install it in your mod manager as usual, including any install options the mod has.</li>
+      </ul>
+      <p>The helper is a few short PowerShell scripts that come with Windows; nothing else is installed. Read them before running if you like: <a href="helper/waypoint-helper.ps1">waypoint-helper.ps1</a>, <a href="helper/install.ps1">install.ps1</a>, <a href="helper/uninstall.ps1">uninstall.ps1</a>.</p>
+
+      <h2>Change settings or remove it</h2>
+      <p>To change your mod manager, game or folder, run <strong>Install Waypoint Helper.cmd</strong> again. To remove the helper completely, run <strong>Uninstall Waypoint Helper.cmd</strong> from the same zip. Mods you already downloaded stay where they are.</p>
+
+      <h2>Good to know</h2>
+      <ul>
+        <li><strong>Windows only</strong>, like MO2 and Vortex themselves.</li>
+        <li><strong>Vortex:</strong> if a download doesn't appear in Vortex's Downloads page straight away, press Refresh there.</li>
+        <li><strong>Prefer not to use it?</strong> The normal Download button always works. Drag the archive into MO2's Downloads tab or onto Vortex's Mods page.</li>
+      </ul>
+    </article>
+  </main>
+  <footer id="site-footer" class="site-footer"></footer>
+  <script src="data/site.js"></script>
+  <script src="data/mods.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

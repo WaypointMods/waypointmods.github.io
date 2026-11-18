@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import { ROOT, ARCHIVE_RE, USER_AGENT, readMods, validateMod, gh, today, hueFor, scanMode, ensureClamAV, clamScan } from './lib.mjs';
 
 const CHECK_ONLY = process.argv.includes('--check');
@@ -24,7 +25,7 @@ const VT_MAX = Number(process.env.VT_MAX_CALLS || 100);
 const VT_FLAG_AT = Number(process.env.VT_FLAG_AT || 2);
 const STATE_FILE = path.join(ROOT, 'state', 'assets.json');
 const OUT = path.join(ROOT, '_site');
-const SITE_FILES = ['index.html', 'browse.html', 'mod.html', 'add.html', 'about.html', '.nojekyll', 'assets', 'data/site.js'];
+const SITE_FILES = ['index.html', 'browse.html', 'mod.html', 'add.html', 'about.html', 'helper.html', '.nojekyll', 'assets', 'helper', 'data/site.js'];
 
 // ---------- 1. validate the registry ----------
 const entries = readMods();
@@ -307,6 +308,16 @@ for (const f of SITE_FILES) {
 fs.mkdirSync(path.join(OUT, 'data'), { recursive: true });
 fs.writeFileSync(path.join(OUT, 'data', 'mods.js'), `// Generated ${new Date().toISOString()}\nwindow.MODS = ${JSON.stringify(out)};\n`);
 fs.writeFileSync(path.join(OUT, 'data', 'mods.json'), JSON.stringify(out));
+
+// Pack the mod manager helper into one zip for people to download (helper.html links to it).
+{
+  const zipPath = path.join(OUT, 'helper', 'waypoint-helper.zip');
+  const files = fs.readdirSync(path.join(ROOT, 'helper')).map(f => path.join(ROOT, 'helper', f));
+  const r = process.platform === 'win32'
+    ? spawnSync('powershell', ['-NoProfile', '-Command', `Compress-Archive -Force -DestinationPath '${zipPath}' -Path ${files.map(f => `'${f}'`).join(',')}`])
+    : spawnSync('zip', ['-j', '-q', zipPath, ...files]);
+  if (r.status !== 0) console.warn('Could not create the helper zip.');
+}
 
 // GitHub Pages lets browsers cache files for 10 minutes. Stamp each build's script and style links
 // so a page always loads the data from the same build, instead of a stale mod list.
