@@ -1,1 +1,17 @@
-{}
+{
+  "eargsm/MoreCarriageRoutes@v1.0.2/More.Carriage.Route.7z": {
+    "assetId": 761703317,
+    "size": 11894,
+    "updatedAt": "2026-11-18T03:22:24Z",
+    "sha256": "976b9936ced66f9b2065f62c6b2eb85d97f1aaea3773efe34c8fff73273ebd5d",
+    "status": "clean",
+    "firstSeen": "2026-11-18",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-18"
+  }
+}
