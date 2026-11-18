@@ -1,0 +1,36 @@
+{
+  "id": "fellowship",
+  "name": "Fellowship",
+  "repo": "eargsm/Fellowship",
+  "summary": "SKSE plugin for Skyrim: travel with up to 20 followers and 20 animal companions using the vanilla follower dialogue",
+  "description": "PASTE YOUR DESCRIPTION HERE (it is on your clipboard)",
+  "category": "Followers",
+  "games": [
+    "se"
+  ],
+  "tags": [],
+  "requirements": [
+    {
+      "name": "Address Library for SKSE Plugins",
+      "url": "https://www.nexusmods.com/skyrimspecialedition/mods/32444"
+    }
+  ],
+  "created": "2026-11-18",
+  "hue": 347,
+  "authorName": "ItsRainmoon",
+  "images": [
+    "https://github.com/user-attachments/assets/0e697236-0994-4afe-992a-45297c252169"
+  ],
+  "scan": "private",
+  "ai": "generated",
+  "aiParts": [
+    "code"
+  ],
+  "permissions": {
+    "upload": "ask",
+    "modify": "ask",
+    "convert": "ask",
+    "assets": "ask",
+    "commercial": "no"
+  }
+}
