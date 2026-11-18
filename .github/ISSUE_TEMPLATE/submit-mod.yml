@@ -70,7 +70,7 @@ body:
     id: description
     attributes:
       label: Description
-      description: "Formats like Nexus: paste your Nexus description as it is (BBCode such as [b], [size], [url], [img], [spoiler], [youtube]), or use Markdown. For headings use [size] or ## (not ###)."
+      description: "Supports BBCode ([b], [size], [color], [url], [img], [list], [spoiler], [youtube] and more) and Markdown. For headings use [size] or ## (not ###)."
     validations:
       required: true
   - type: textarea

@@ -99,8 +99,12 @@
   // below become HTML again, and links and images must be http(s). Used for descriptions,
   // changelogs (GitHub release notes, which are Markdown), credits and permission notes.
   const URL_OK = /^https?:\/\/[^\s"'<>\u0002\u0003]+$/i;
-  const COLOR_OK = /^(#[0-9a-f]{3,8}|[a-z]{3,20})$/i;
+  const COLOR_OK = /^(#[0-9a-f]{3,8}|[a-z]{3,20}|rgba?\(\d{1,3},\d{1,3},\d{1,3}(,(0|1|0?\.\d+))?\))$/i;
   const SIZES = { 1: '.75em', 2: '.875em', 3: '1em', 4: '1.25em', 5: '1.5em', 6: '1.9em', 7: '2.3em' };
+  // A [color=...] or [size=...] value as authors write it, maybe in quotes or with spaces. null if not safe.
+  const bare = v => String(v).replace(/&quot;|&#39;|\s/g, '');
+  const colorOf = v => (COLOR_OK.test(bare(v)) ? bare(v) : null);
+  const sizeOf = v => SIZES[bare(v)] || null;
   const ytId = v => (/^[\w-]{11}$/.test(v) ? v : ((v.match(/(?:[?&]v=|youtu\.be\/|embed\/|shorts\/)([\w-]{11})/) || [])[1] || null));
   const BLOCK = '\u0001'; // marks a line holding generated block HTML, passed through as it is
 
@@ -113,7 +117,8 @@
     const yt = id => hold(`<button type="button" class="yt" data-yt="${id}"><span class="yt-play" aria-hidden="true">▶</span><span>Play video<small>Loads from YouTube</small></span></button>`);
     const block = h => `\n${BLOCK}${h}\n`;
 
-    let s = esc(String(src || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')).replace(/\r\n?/g, '\n');
+    let s = esc(String(src || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')).replace(/\r\n?/g, '\n')
+      .replace(/^[^\S\n]+$/gm, ''); // a line of only spaces (often non-breaking ones copied from a web page) is a blank line
 
     // Code is kept exactly as written.
     s = s.replace(/^```[^\n]*\n([\s\S]*?)^```[ \t]*$/gm, (_, c) => block(hold(`<pre><code>${c.replace(/\n$/, '')}</code></pre>`)));
@@ -149,11 +154,21 @@
       });
     }
     s = s.replace(/\[line\]|\[hr\]/gi, block('<hr>'));
-    // Size and colour around several paragraphs become a block, so they don't break the paragraphs.
-    s = s.replace(/\[(size|colou?r)=([^\]\n]+)\]((?:(?!\[\/\1\])[\s\S])*?\n[ \t]*\n(?:(?!\[\/\1\])[\s\S])*?)\[\/\1\]/gi, (m, tag, v, body) => {
-      const style = /^size$/i.test(tag) ? (SIZES[v] ? `font-size:${SIZES[v]}` : '') : (COLOR_OK.test(v) ? `color:${v}` : '');
-      return style ? block(`<div style="${style}">`) + body + block('</div>') : m;
-    });
+    // Text styles around several paragraphs, or around a block such as [center] or [list], become a
+    // block of their own, so they don't break the paragraphs. Inside one paragraph they stay inline (below).
+    const STYLE_OF = {
+      b: () => 'font-weight:700', i: () => 'font-style:italic', u: () => 'text-decoration:underline', s: () => 'text-decoration:line-through',
+      size: v => (sizeOf(v) ? `font-size:${sizeOf(v)}` : null), color: v => (colorOf(v) ? `color:${colorOf(v)}` : null), font: () => ''
+    };
+    for (let pass = 0; pass < 4; pass++) {
+      const before = s;
+      s = s.replace(/\[(b|i|u|s|size|colou?r|font)(?:\s*=\s*([^\]\n]+))?\]((?:(?!\[\1[\]\s=])(?!\[\/\1\])[\s\S])*?(?:\n\n|\n\u0001)(?:(?!\[\1[\]\s=])(?!\[\/\1\])[\s\S])*?)\[\/\1\]/gi, (m, tag, v, body) => {
+        const style = STYLE_OF[tag.toLowerCase().replace('colour', 'color')](v || '');
+        if (style === null) return body;
+        return style ? block(`<div style="${style}">`) + body + block('</div>') : body;
+      });
+      if (s === before) break;
+    }
 
     // Inline formatting inside one paragraph.
     function inline(t) {
@@ -164,8 +179,9 @@
           .replace(/\[u\]([\s\S]*?)\[\/u\]/gi, '<u>$1</u>')
           .replace(/\[s\]([\s\S]*?)\[\/s\]/gi, '<del>$1</del>')
           .replace(/\[font=[^\]]*\]([\s\S]*?)\[\/font\]/gi, '$1')
-          .replace(/\[size=(\d)\]([\s\S]*?)\[\/size\]/gi, (m, n, x) => (SIZES[n] ? `<span style="font-size:${SIZES[n]}">${x}</span>` : x))
-          .replace(/\[colou?r=([^\]]+)\]([\s\S]*?)\[\/colou?r\]/gi, (m, c, x) => (COLOR_OK.test(c) ? `<span style="color:${c}">${x}</span>` : x));
+          .replace(/\[size\s*=\s*([^\]]+)\]([\s\S]*?)\[\/size\]/gi, (m, n, x) => (sizeOf(n) ? `<span style="font-size:${sizeOf(n)}">${x}</span>` : x))
+          // innermost colour first, so nested colours each keep their own
+          .replace(/\[colou?r\s*=\s*([^\]]+)\]((?:(?!\[colou?r[\s=])[\s\S])*?)\[\/colou?r\]/gi, (m, c, x) => (colorOf(c) ? `<span style="color:${colorOf(c)}">${x}</span>` : x));
         if (t === before) break;
       }
       return t
