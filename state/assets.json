@@ -1,4 +1,19 @@
 {
+  "eargsm/Fellowship@v1.4.0/Fellowship.1.4.0.7z": {
+    "assetId": 762392334,
+    "size": 4175254,
+    "updatedAt": "2026-11-18T07:30:50Z",
+    "sha256": "e545a72f440f6e60d74c193df65bcb91542f7fff9dcbeb045aaf43034ec1d637",
+    "status": "clean",
+    "firstSeen": "2026-11-18",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-18"
+  },
   "eargsm/MoreCarriageRoutes@v1.0.2/More.Carriage.Route.7z": {
     "assetId": 761703317,
     "size": 11894,
