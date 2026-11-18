@@ -10,57 +10,190 @@
 <body data-page="add">
   <header id="site-header" class="site-header"></header>
   <main>
-    <article class="page prose">
-      <h1>Add your mod</h1>
-      <p class="lead">Your files stay in your own GitHub repository. This site only lists them, so you keep full control and nobody pays anything. If the automatic checks pass, your mod goes live.</p>
+    <section class="add-hero topo-bg" data-topo="share">
+      <div class="wrap add-hero-inner">
+        <p class="eyebrow">Leave your mark on the trail</p>
+        <h1>Add your mod</h1>
+        <p class="lead">Four short steps. Your files stay in your own GitHub repository; Waypoint only points the way. If the automatic checks pass, your mod goes live.</p>
+      </div>
+    </section>
 
-      <h2>What you need</h2>
-      <ul>
-        <li>A free GitHub account</li>
-        <li>A public repository for the mod. It can hold just a README; sharing your source is optional.</li>
-        <li>A release with your mod archive attached (.7z, .zip or .rar, up to 2 GB per file)</li>
-      </ul>
-
-      <h2>1. Publish a release</h2>
-      <ol>
-        <li>Open your repository on GitHub and select <strong>Releases</strong>, then <strong>Draft a new release</strong>.</li>
-        <li>Create a tag with the version number, for example <code>v1.0.0</code>.</li>
-        <li>Write the changelog in the description. It appears on your mod page.</li>
-        <li>Attach your archive and select <strong>Publish release</strong>.</li>
+    <div class="wrap add-wrap">
+      <ol class="stepper" id="stepper" aria-label="Steps">
+        <li><button type="button" data-go="0"><span>1</span>Your mod</button></li>
+        <li><button type="button" data-go="1"><span>2</span>About it</button></li>
+        <li><button type="button" data-go="2"><span>3</span>Your choices</button></li>
+        <li><button type="button" data-go="3"><span>4</span>Check and send</button></li>
       </ol>
 
-      <h2>2. Add it here</h2>
-      <p>The form asks for the repository, mod name, a one-line summary, the full description, category, supported games, requirements, whether you used AI, and what others may do with your mod. It opens on GitHub. Automatic checks reply within a minute or two. If something needs fixing, the reply says what, and you edit the issue to try again.</p>
-      <div class="notice"><strong>How long until it shows?</strong> Usually 2 to 5 minutes after the bot's reply: the site rebuilds and your files are virus-scanned first. Files VirusTotal hasn't seen before take a few minutes longer while it analyses them. With no scan, it's about a minute or two. If you had the site open just before, press <strong>Ctrl + F5</strong> to reload, because browsers can keep an old copy of the page for up to 10 minutes.</div>
-      <p>Two questions every mod answers:</p>
-      <ul>
-        <li><strong>AI use:</strong> <em>No AI used</em>, <em>AI-assisted</em> (AI helped, for example with code, translation or touch-ups, but the work is mainly yours) or <em>AI-generated</em> (a large part, such as voices, textures or models, was made by AI), plus which parts used it. It's shown on your mod's card and page, and visitors can filter by it, so please be honest.</li>
-        <li><strong>Permissions:</strong> whether others may upload your mod elsewhere, modify and re-release it, convert it to other games or versions, use its assets in their own mods, or use it in paid mods. Each one is <em>Yes</em>, <em>Ask me first</em> or <em>No</em>, and you can add credits and notes. They appear on your mod's Permissions tab.</li>
-      </ul>
-      <p>Optional extras:</p>
-      <ul>
-        <li><strong>Display name:</strong> the author name shown on the site, for example your Nexus name. Your GitHub account is always shown next to it.</li>
-        <li><strong>Screenshots:</strong> drag or paste up to 8 images into the form. GitHub hosts them for free. Pick which one is the <strong>cover picture</strong>: it is shown on your mod's card and as the banner at the top of its page.</li>
-        <li><strong>Virus scan:</strong> pick how your files are checked. Visitors see which one you picked.
-          <ul>
-            <li><strong>Private scan</strong> (recommended, preselected): ClamAV scans the file inside GitHub's build, and only its fingerprint is checked on VirusTotal. Your file never leaves GitHub.</li>
-            <li><strong>Full scan with VirusTotal:</strong> 70+ antivirus engines, which catch more brand-new malware. Files VirusTotal hasn't seen are uploaded to it, and its paid users can access them.</li>
-            <li><strong>No scan:</strong> nothing is checked, and your mod shows a red <strong>Not virus-scanned</strong> warning so visitors can decide for themselves.</li>
-          </ul>
-          <a href="about.html#scans">More about the scans</a>
-        </li>
-      </ul>
-      <p>You can only add repositories you own. For a repository owned by an organization, make your membership of that organization public first.</p>
-      <p class="cta"><a class="btn btn-primary btn-lg" data-issue="submit-mod.yml" href="#" target="_blank" rel="noopener">Open the form</a></p>
+      <form class="wizard" id="wizard" novalidate>
+        <!-- Step 1 -->
+        <section class="wstep" data-step="0" aria-labelledby="s1h">
+          <h2 id="s1h">Where is your mod?</h2>
+          <p class="muted">Paste the link to your mod's GitHub repository. We'll check it's ready before you fill in anything else.</p>
+          <div class="field">
+            <label for="f-repo">GitHub repository</label>
+            <div class="repo-row">
+              <input class="input" id="f-repo" name="repo" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://github.com/your-name/your-mod">
+              <button class="btn btn-primary" type="button" id="check-repo">Check</button>
+            </div>
+          </div>
+          <div id="repo-result" aria-live="polite"></div>
+          <details class="help">
+            <summary>Not on GitHub yet? How to get ready</summary>
+            <ol>
+              <li>Make a free account at <a href="https://github.com/signup" target="_blank" rel="noopener">github.com</a>.</li>
+              <li>Create a <a href="https://github.com/new" target="_blank" rel="noopener">new public repository</a> for the mod. It can hold just a README; sharing your source is optional.</li>
+              <li>Open the repository, select <strong>Releases</strong>, then <strong>Draft a new release</strong>.</li>
+              <li>Create a tag with the version number, for example <code>v1.0.0</code>, and write the changelog in the description.</li>
+              <li>Attach your mod archive (.7z, .zip or .rar, up to 2 GB) and select <strong>Publish release</strong>.</li>
+            </ol>
+          </details>
+        </section>
 
-      <h2>3. Updating your mod</h2>
-      <p>Publish a new release in the same repository. The site notices it within a minute and lists it once its files are virus-scanned, usually 2 to 5 minutes after you publish. Until then your mod page shows a "just released" notice. You don't need to add it again.</p>
-      <p>To change the name, display name, summary, description, screenshots, cover picture, category, games, tags, requirements, AI disclosure, permissions, credits or virus scan setting, use the <a data-issue="edit-mod.yml" href="#" target="_blank" rel="noopener">edit form</a>. Edits show within a few minutes.</p>
+        <!-- Step 2 -->
+        <section class="wstep" data-step="1" aria-labelledby="s2h" hidden>
+          <h2 id="s2h">Tell people about it</h2>
+          <div class="field">
+            <label for="f-name">Mod name</label>
+            <input class="input" id="f-name" name="name" maxlength="80" required>
+          </div>
+          <div class="field">
+            <label for="f-summary">One-line summary <small class="count-of" data-for="f-summary"></small></label>
+            <input class="input" id="f-summary" name="summary" maxlength="160" required placeholder="What does it do, in one sentence?">
+          </div>
+          <div class="field">
+            <span class="label" id="cat-label">Category</span>
+            <div class="tiles" id="f-category" role="radiogroup" aria-labelledby="cat-label"></div>
+          </div>
+          <div class="field">
+            <span class="label" id="games-label">Works on</span>
+            <div class="toggles" role="group" aria-labelledby="games-label">
+              <label class="toggle"><input type="checkbox" name="games" value="Skyrim SE/AE"><span>Skyrim SE/AE</span></label>
+              <label class="toggle"><input type="checkbox" name="games" value="Skyrim VR"><span>Skyrim VR</span></label>
+              <label class="toggle"><input type="checkbox" name="games" value="Skyrim LE"><span>Skyrim LE</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-description">Description <small class="count-of" data-for="f-description"></small></label>
+            <textarea class="input" id="f-description" name="description" rows="9" maxlength="20000" required placeholder="What it does, how to install it, known issues..."></textarea>
+            <small class="hint">Optional formatting: <code>## Heading</code>, <code>- list item</code>, <code>**bold**</code>, <code>[link](https://...)</code>.</small>
+          </div>
+          <details class="help more" id="more-about">
+            <summary>More (optional): display name, requirements, tags</summary>
+            <div class="field">
+              <label for="f-author-name">Display name</label>
+              <input class="input" id="f-author-name" name="author-name" maxlength="40" placeholder="For example your Nexus name">
+              <small class="hint">Shown as the author. Your GitHub name is shown next to it.</small>
+            </div>
+            <div class="field">
+              <span class="label">Requirements</span>
+              <div id="reqs"></div>
+              <button class="btn btn-sm" type="button" id="add-req">+ Add a requirement</button>
+              <small class="hint">Leave empty if it only needs the base game.</small>
+            </div>
+            <div class="field">
+              <label for="f-tags">Tags</label>
+              <input class="input" id="f-tags" name="tags" placeholder="lighting, roads, night">
+              <small class="hint">Up to 8, separated by commas.</small>
+            </div>
+          </details>
+        </section>
 
+        <!-- Step 3 -->
+        <section class="wstep" data-step="2" aria-labelledby="s3h" hidden>
+          <h2 id="s3h">Your choices</h2>
+          <div class="field">
+            <span class="label" id="ai-label">Did you use AI to make it?</span>
+            <div class="choices" role="radiogroup" aria-labelledby="ai-label">
+              <label class="choice"><input type="radio" name="ai" value="none"><b>No AI used</b><small>Everything is made by you or the people you credit.</small></label>
+              <label class="choice"><input type="radio" name="ai" value="assisted"><b>AI-assisted</b><small>AI helped, for example with code, translation or touch-ups, but the work is mainly yours.</small></label>
+              <label class="choice"><input type="radio" name="ai" value="generated"><b>AI-generated</b><small>A large part, such as voices, textures or models, was made by AI.</small></label>
+            </div>
+            <div class="toggles" id="ai-parts" role="group" aria-label="Which parts used AI" hidden>
+              <span class="hint">Which parts?</span>
+              <label class="toggle"><input type="checkbox" name="ai-parts" value="Voices or other audio"><span>Voices or audio</span></label>
+              <label class="toggle"><input type="checkbox" name="ai-parts" value="Textures or images"><span>Textures or images</span></label>
+              <label class="toggle"><input type="checkbox" name="ai-parts" value="Meshes or models"><span>Meshes or models</span></label>
+              <label class="toggle"><input type="checkbox" name="ai-parts" value="Scripts or code"><span>Scripts or code</span></label>
+              <label class="toggle"><input type="checkbox" name="ai-parts" value="Text, dialogue or descriptions"><span>Text or dialogue</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <span class="label">What may other people do with your mod?</span>
+            <div class="perm-pick" id="perm-pick"></div>
+          </div>
+          <details class="help more">
+            <summary>Credits and notes (optional)</summary>
+            <div class="field">
+              <label for="f-credits">Credits</label>
+              <textarea class="input" id="f-credits" name="credits" rows="3" placeholder="People whose work you used or who helped"></textarea>
+            </div>
+            <div class="field">
+              <label for="f-permission-notes">Notes about permissions</label>
+              <textarea class="input" id="f-permission-notes" name="permission-notes" rows="3" placeholder="For example: credit me if you use my textures"></textarea>
+            </div>
+          </details>
+          <div class="field">
+            <span class="label" id="scan-label">Virus scan</span>
+            <div class="choices" role="radiogroup" aria-labelledby="scan-label">
+              <label class="choice"><input type="radio" name="scan" value="private" checked><b>Private scan <em>recommended</em></b><small>ClamAV checks the file inside GitHub, and only its fingerprint is looked up on VirusTotal. Your file never leaves GitHub.</small></label>
+              <label class="choice"><input type="radio" name="scan" value="full"><b>Full scan with VirusTotal</b><small>70+ antivirus engines catch more brand-new malware, but new files are uploaded to VirusTotal, where its paying customers can access them.</small></label>
+              <label class="choice"><input type="radio" name="scan" value="off"><b>No scan</b><small>Nothing is checked, and your mod shows a red "Not virus-scanned" warning.</small></label>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 4 -->
+        <section class="wstep" data-step="3" aria-labelledby="s4h" hidden>
+          <h2 id="s4h">Check and send</h2>
+          <div class="send-grid">
+            <div>
+              <span class="label">How your card will look</span>
+              <div id="preview"></div>
+              <p class="hint">Screenshots are added on the next page, and the first one becomes the cover picture.</p>
+            </div>
+            <div>
+              <span class="label">Before you send</span>
+              <div class="rules-check">
+                <label class="check"><input type="checkbox" name="rules" value="I made this mod, or I have the author's permission to list it."><span>I made this mod, or I have the author's permission to list it.</span></label>
+                <label class="check"><input type="checkbox" name="rules" value="It contains no sexually explicit content."><span>It contains no sexually explicit content.</span></label>
+                <label class="check"><input type="checkbox" name="rules" value="It's free to download. If supporters get a newer version first somewhere else (early access), it's released here for free within 3 months."><span>It's free to download. If supporters get a newer version first somewhere else (early access), it's released here for free within 3 months.</span></label>
+              </div>
+              <a href="#rules" class="hint">Read all the rules</a>
+              <div class="next-box">
+                <b>What happens next</b>
+                <ol>
+                  <li><strong>Send</strong> opens a short GitHub form with all your answers already in it. Sign in there if asked, as the owner of the repository.</li>
+                  <li>Optional: drag up to 8 screenshots into the <strong>Screenshots</strong> box.</li>
+                  <li>Scroll down and press <strong>Create</strong>.</li>
+                  <li>A bot replies within a minute or two. If all is well, your mod shows up on Waypoint 2 to 5 minutes later.</li>
+                </ol>
+              </div>
+              <div id="send-note"></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="wnav">
+          <button class="btn" type="button" id="back">Back</button>
+          <span class="werror" id="werror" role="alert"></span>
+          <button class="btn btn-primary" type="button" id="next">Next</button>
+          <a class="btn btn-primary btn-lg" id="send" href="#" target="_blank" rel="noopener" hidden>Send to Waypoint</a>
+        </div>
+      </form>
+      <p class="hint add-alt">Prefer GitHub's own form? <a data-issue="submit-mod.yml" href="#" target="_blank" rel="noopener">Open it directly</a>. Your answers on this page are kept in this browser until you send them.</p>
+    </div>
+
+    <article class="page prose add-more">
+      <h2>Updating your mod</h2>
+      <p>Publish a new release in the same repository. Waypoint notices it within a minute and lists it once its files are virus-scanned, usually 2 to 5 minutes after you publish. You don't need to add it again.</p>
+      <p>To change the name, description, screenshots, cover picture, category, games, tags, requirements, AI use, permissions, credits or virus scan, use the <a data-issue="edit-mod.yml" href="#" target="_blank" rel="noopener">edit form</a>. Edits show within a few minutes.</p>
       <div class="notice"><strong>About replaced files.</strong> Every file's SHA-256 hash is recorded. If you replace a file in an existing release, it's scanned again like a new one. A file flagged by the virus scan hides the whole mod until it's looked at, and turning the scan off afterwards doesn't undo that.</div>
+      <p>You can only add repositories you own. For a repository owned by an organization, make your membership of that organization public first.</p>
 
       <h2 id="rules">Rules</h2>
-      <p>Mods are listed without manual review, so these rules are enforced through reports. Mods are removed for:</p>
+      <p>Mods are listed automatically, so these rules are enforced through reports. Mods are removed for:</p>
       <ul class="rules">
         <li>Reuploading someone else's mod without their permission</li>
         <li>Sexually explicit content, which GitHub does not allow</li>
@@ -76,5 +209,6 @@
   <script src="data/site.js"></script>
   <script src="data/mods.js"></script>
   <script src="assets/app.js"></script>
+  <script src="assets/add.js"></script>
 </body>
 </html>

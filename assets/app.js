@@ -86,6 +86,7 @@
     shield: '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/>',
     alert: '<path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4m0 3h.01"/>',
     box: '<path d="M21 8 12 3 3 8v8l9 5 9-5V8z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
     pin: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
     moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/>'
@@ -786,6 +787,9 @@
       dlg.showModal();
     }));
   }
+
+  // Shared with add.js (the guided Add your mod page).
+  window.Waypoint = { esc, svg, card, catIcon, issueUrl, CATEGORIES: Object.keys(CAT_ICON), ARCHIVE_RE, fmtSize };
 
   if (['home', 'browse', 'mod'].includes(page)) getStats(); // start the request before drawing the page
   shell();

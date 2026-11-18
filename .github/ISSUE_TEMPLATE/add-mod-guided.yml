@@ -1,0 +1,28 @@
+name: Add your mod (filled in by the Waypoint page)
+description: Opened by the Add your mod page on waypointmods.github.io, with your answers filled in. Start on that page.
+title: "Add: "
+labels: ["submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Your answers from the Waypoint page are below. Add screenshots if you like, then press **Create**.
+        To change an answer, go back to the Waypoint page and send again, or edit the text carefully, keeping each `###` line as it is.
+  - type: textarea
+    id: answers
+    attributes:
+      label: Your answers
+      description: Filled in by the Add your mod page on waypointmods.github.io.
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: "Optional. Drag or paste up to 8 images here (PNG, JPG, GIF or WebP). GitHub hosts them for free. The first one is the cover picture."
+  - type: input
+    id: cover
+    attributes:
+      label: Cover picture
+      description: "Optional. To use a different screenshot as the cover, type its number: 2 for the second, and so on."
+      placeholder: "1"

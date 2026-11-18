@@ -1,0 +1,309 @@
+// Guided "Add your mod" page. It checks the repository with GitHub's public API, collects the answers in
+// four short steps, and then opens a short GitHub form with every answer filled in, so the author only
+// adds screenshots and presses Create. The bot (scripts/submission.mjs) reads it like the full form.
+(function () {
+  'use strict';
+
+  const W = window.Waypoint;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const form = $('#wizard');
+  const steps = $$('.wstep');
+  const DRAFT = 'waypoint-add-draft';
+
+  // Exact option texts of .github/ISSUE_TEMPLATE/submit-mod.yml, which the bot (scripts/lib.mjs) expects.
+  const AI_OPTION = {
+    none: 'No AI used',
+    assisted: 'AI-assisted: AI helped, but the work is mainly mine',
+    generated: 'AI-generated: a large part was made by AI'
+  };
+  const SCAN_OPTION = {
+    private: 'Private scan: ClamAV + VirusTotal fingerprint (recommended)',
+    full: 'Full scan with VirusTotal',
+    off: 'No scan'
+  };
+  const PERMS = [
+    ['perm-upload', 'Upload it to other sites', 'Ask me first', '', 'Upload to other sites'],
+    ['perm-modify', 'Modify and re-release it', 'Ask me first', 'For example fixes, patches or translations that include your files', 'Modify and re-release'],
+    ['perm-convert', 'Convert it to other games or versions', 'Ask me first', 'For example to Skyrim VR or LE', 'Convert to other games or versions'],
+    ['perm-assets', 'Use its assets in their own mods', 'Ask me first', 'Meshes, textures, sounds or scripts', 'Use assets in other mods'],
+    ['perm-commercial', 'Use it in paid or commercial mods', 'No', '', 'Use in paid or commercial mods']
+  ];
+  const ANSWERS = ['Yes', 'Ask me first', 'No'];
+  // Longer links than this risk GitHub's "414 URI Too Long"; the description is then copied by hand.
+  const MAX_URL = 7500;
+
+  let at = 0;
+  let reached = 0;
+  let repo = null; // { full, owner, org, version, file } once the check passed
+
+  // ---------- build the pickers ----------
+  $('#f-category').innerHTML = W.CATEGORIES.map(c =>
+    `<label class="tile"><input type="radio" name="category" value="${W.esc(c)}">${W.catIcon(c, 22, 1.8)}<span>${W.esc(c)}</span></label>`).join('');
+  $('#perm-pick').innerHTML = PERMS.map(([id, label, def, hint]) =>
+    `<div class="perm-row" role="radiogroup" aria-label="${W.esc(label)}">
+      <span class="perm-q"><b>${W.esc(label)}</b>${hint ? `<small>${W.esc(hint)}</small>` : ''}</span>
+      <span class="seg">${ANSWERS.map(a =>
+        `<label><input type="radio" name="${id}" value="${a}"${a === def ? ' checked' : ''}><span>${a === 'Ask me first' ? 'Ask first' : a}</span></label>`).join('')}</span>
+    </div>`).join('');
+
+  function addReq(name = '', url = '') {
+    const row = document.createElement('div');
+    row.className = 'req-row';
+    row.innerHTML = `<input class="input" data-req="name" placeholder="Name, e.g. SKSE" aria-label="Requirement name" value="${W.esc(name)}">
+      <input class="input" data-req="url" placeholder="https://..." aria-label="Requirement link" value="${W.esc(url)}">
+      <button type="button" class="icon-btn" aria-label="Remove this requirement">×</button>`;
+    row.querySelector('button').addEventListener('click', () => { row.remove(); save(); });
+    $('#reqs').appendChild(row);
+    return row;
+  }
+  $('#add-req').addEventListener('click', () => { addReq().querySelector('input').focus(); });
+
+  // ---------- reading the answers ----------
+  const val = name => { const el = form.elements[name]; return el ? String(el.value || '').trim() : ''; };
+  const picked = name => $$(`input[name="${name}"]:checked`, form).map(i => i.value);
+  const reqs = () => $$('.req-row').map(r => ({ name: $('[data-req="name"]', r).value.trim(), url: $('[data-req="url"]', r).value.trim() }))
+    .filter(q => q.name || q.url);
+
+  // ---------- draft kept in this browser ----------
+  function save() {
+    const data = { repo: val('repo'), reqs: reqs(), checked: {}, values: {} };
+    $$('input, textarea', form).forEach(el => {
+      if (!el.name) return;
+      if (el.type === 'radio' || el.type === 'checkbox') { if (el.checked) (data.checked[el.name] = data.checked[el.name] || []).push(el.value); }
+      else data.values[el.name] = el.value;
+    });
+    try { localStorage.setItem(DRAFT, JSON.stringify(data)); } catch (e) { /* private mode */ }
+  }
+  function restore() {
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(DRAFT) || 'null'); } catch (e) { /* ignore */ }
+    if (!data) return false;
+    Object.entries(data.values || {}).forEach(([k, v]) => { const el = form.elements[k]; if (el && 'value' in el && !(el instanceof RadioNodeList)) el.value = v; });
+    Object.entries(data.checked || {}).forEach(([k, vs]) => {
+      $$(`input[name="${k}"]`, form).forEach(i => { i.checked = vs.includes(i.value); });
+    });
+    (data.reqs || []).forEach(q => addReq(q.name, q.url));
+    if (reqs().length) $('#more-about').open = true;
+    return !!data.repo;
+  }
+  form.addEventListener('input', () => { save(); counts(); aiParts(); });
+  form.addEventListener('change', () => { save(); aiParts(); });
+
+  function counts() {
+    $$('.count-of').forEach(c => {
+      const el = $('#' + c.dataset.for);
+      c.textContent = `${el.value.length} / ${el.maxLength}`;
+    });
+  }
+  function aiParts() {
+    const ai = picked('ai')[0];
+    $('#ai-parts').hidden = !(ai === 'assisted' || ai === 'generated');
+  }
+
+  // ---------- step 1: check the repository ----------
+  function parseRepo(s) {
+    s = s.trim().replace(/\.git$/, '').replace(/\/+$/, '');
+    const m = s.match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+)/i) || s.match(/^([\w.-]+)\/([\w.-]+)$/);
+    return m ? `${m[1]}/${m[2]}` : null;
+  }
+  const ok = t => `<li class="ok">${W.svg('check', 16)}<span>${t}</span></li>`;
+  const bad = t => `<li class="bad">${W.svg('alert', 16)}<span>${t}</span></li>`;
+  const result = html => { $('#repo-result').innerHTML = html; };
+
+  async function checkRepo() {
+    repo = null;
+    const full = parseRepo(val('repo'));
+    if (!full) {
+      result(`<ul class="checks">${bad('That doesn\'t look like a GitHub repository link. It should look like <code>https://github.com/your-name/your-mod</code>.')}</ul>`);
+      return false;
+    }
+    const listed = (window.MODS_ARE_EXAMPLES ? [] : window.MODS || []).find(m => m.repo.toLowerCase() === full.toLowerCase());
+    if (listed) {
+      result(`<ul class="checks">${ok(`<b>${W.esc(listed.name)}</b> is already on Waypoint. <a href="mod.html?id=${encodeURIComponent(listed.id)}">See its page</a>, or change it with the <a href="${W.issueUrl('edit-mod.yml')}" target="_blank" rel="noopener">edit form</a>. New releases show up on their own.`)}</ul>`);
+      return false;
+    }
+    const btn = $('#check-repo');
+    btn.disabled = true;
+    btn.textContent = 'Checking...';
+    try {
+      const api = p => fetch('https://api.github.com/repos/' + full + p, { headers: { Accept: 'application/vnd.github+json' } });
+      const [r1, r2] = await Promise.all([api(''), api('/releases?per_page=20')]);
+      if (r1.status === 404) {
+        result(`<ul class="checks">${bad('We can\'t find <b>' + W.esc(full) + '</b>. Check the link, and make sure the repository is <b>public</b>.')}</ul>`);
+        return false;
+      }
+      if (!r1.ok || !r2.ok) {
+        // Rate limit or network trouble: let them carry on; the bot checks everything again anyway.
+        repo = { full, owner: full.split('/')[0], org: false };
+        result(`<ul class="checks">${ok('GitHub didn\'t answer just now, so we couldn\'t check <b>' + W.esc(full) + '</b>. You can carry on: the automatic checks look at it again after you send.')}</ul>`);
+        return true;
+      }
+      const info = await r1.json();
+      const rels = (await r2.json()).filter(r => !r.draft && !r.prerelease);
+      const rel = rels.find(r => r.assets.some(a => W.ARCHIVE_RE.test(a.name)));
+      const owner = info.owner.login;
+      const org = info.owner.type === 'Organization';
+      const lines = [ok(`Found <b>${W.esc(info.full_name)}</b>.`)];
+      if (!rel) {
+        lines.push(bad(rels.length
+          ? 'Its releases have no .7z, .zip or .rar attached. Edit the release and attach your mod archive.'
+          : 'It has no published release yet. See <b>How to get ready</b> below: step 3 onwards.'));
+        result(`<ul class="checks">${lines.join('')}</ul>`);
+        $('.help').open = !rels.length;
+        return false;
+      }
+      const file = rel.assets.find(a => W.ARCHIVE_RE.test(a.name));
+      lines.push(ok(`Latest release <b>${W.esc(rel.tag_name)}</b> with <b>${W.esc(file.name)}</b> (${W.fmtSize(file.size)}).`));
+      lines.push(ok(org
+        ? `It belongs to the organization <b>${W.esc(owner)}</b>. Make your membership of it <a href="https://github.com/orgs/${W.esc(owner)}/people" target="_blank" rel="noopener">public</a> before you send.`
+        : `It belongs to <b>${W.esc(owner)}</b>. You'll send it while signed in to GitHub as ${W.esc(owner)}.`));
+      result(`<ul class="checks">${lines.join('')}</ul>`);
+      repo = { full: info.full_name, owner, org, version: rel.tag_name.replace(/^v(?=\d)/i, '') };
+      // Helpful starting values, only where the author hasn't typed anything yet.
+      if (!val('name')) form.elements.name.value = info.name.replace(/[-_]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, c => c.toUpperCase());
+      if (!val('summary') && info.description) form.elements.summary.value = info.description.slice(0, 160);
+      form.elements.repo.value = 'https://github.com/' + info.full_name;
+      save();
+      counts();
+      return true;
+    } catch (e) {
+      repo = { full, owner: full.split('/')[0], org: false };
+      result(`<ul class="checks">${ok('We couldn\'t reach GitHub to check it. You can carry on: the automatic checks look at it again after you send.')}</ul>`);
+      return true;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Check';
+    }
+  }
+  $('#check-repo').addEventListener('click', checkRepo);
+  form.elements.repo.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkRepo(); } });
+  form.elements.repo.addEventListener('input', () => { repo = null; });
+
+  // ---------- validation per step ----------
+  function problem(i) {
+    if (i === 0) return repo ? '' : 'Check your repository first.';
+    if (i === 1) {
+      if (!val('name')) return 'Give your mod a name.';
+      if (!val('summary')) return 'Write a one-line summary.';
+      if (!picked('category').length) return 'Pick a category.';
+      if (!picked('games').length) return 'Tick at least one game it works on.';
+      if (!val('description')) return 'Write a description.';
+      const half = reqs().find(q => !q.name || !/^https?:\/\//.test(q.url));
+      if (half) return 'Each requirement needs a name and a link starting with https://.';
+      if (val('tags').split(',').filter(t => t.trim()).length > 8) return 'Use 8 tags at most.';
+    }
+    if (i === 2 && !picked('ai').length) return 'Say whether you used AI.';
+    if (i === 3 && picked('rules').length < 3) return 'Tick all three boxes to confirm the rules.';
+    return '';
+  }
+
+  // ---------- the GitHub link ----------
+  // GitHub fills in text boxes from a link, but not dropdowns or tick boxes. So the page opens a small
+  // form (add-mod-guided.yml) with one "Your answers" box, holding every answer in the same
+  // "### Question" layout GitHub writes for the full form. The bot reads both the same way.
+  // A "###" line typed by the author would start a new question, so it becomes "##".
+  const safe = t => String(t).replace(/^#{3,}[ \t]/gm, '## ');
+  const ticks = (all, on) => all.map(x => `- [${on.includes(x) ? 'X' : ' '}] ${x}`).join('\n');
+
+  function answers(withDescription) {
+    const ai = picked('ai')[0];
+    const out = [
+      ['Repository', repo ? repo.full : parseRepo(val('repo')) || val('repo')],
+      ['Mod name', val('name')],
+      ['Display name', val('author-name')],
+      ['Summary', val('summary')],
+      ['Category', picked('category')[0] || ''],
+      ['Games', ticks(['Skyrim SE/AE', 'Skyrim VR', 'Skyrim LE'], picked('games'))],
+      ['Description', withDescription ? val('description') : 'PASTE YOUR DESCRIPTION HERE (it is on your clipboard)'],
+      ['Requirements', reqs().map(r => `${r.name} | ${r.url}`).join('\n')],
+      ['Tags', val('tags')],
+      ['AI use', AI_OPTION[ai] || ''],
+      ['Which parts used AI?', ai === 'none' ? '' : ticks($$('input[name="ai-parts"]').map(i => i.value), picked('ai-parts'))],
+      ...PERMS.map(([id, , , , label]) => [label, picked(id)[0]]),
+      ['Credits', val('credits')],
+      ['Permission notes', val('permission-notes')],
+      ['Virus scan', SCAN_OPTION[picked('scan')[0] || 'private']]
+    ];
+    return out.map(([q, v]) => `### ${q}\n\n${v ? safe(v) : '_No response_'}`).join('\n\n');
+  }
+
+  function buildUrl(withDescription) {
+    const q = new URLSearchParams();
+    q.set('template', 'add-mod-guided.yml');
+    q.set('title', 'Add: ' + val('name'));
+    q.set('answers', answers(withDescription));
+    return `https://github.com/${SITE.indexRepo}/issues/new?` + q.toString().replace(/\+/g, '%20');
+  }
+
+  function preview() {
+    const scan = picked('scan')[0] || 'private';
+    const ai = picked('ai')[0];
+    const m = {
+      id: 'preview', name: val('name') || 'Your mod', summary: val('summary') || 'Your one-line summary.',
+      author: repo ? repo.owner : 'you', authorName: val('author-name'), category: picked('category')[0] || 'Other',
+      images: [], tags: [], stars: 0, totalDownloads: 0, ai, scanMode: scan === 'off' ? 'off' : scan,
+      releases: [{ version: repo && repo.version ? repo.version : '1.0.0', date: '', assets: [{ scan: scan === 'off' ? 'unscanned' : scan, downloads: 0 }] }]
+    };
+    $('#preview').innerHTML = W.card(m).replace(/^<a /, '<div ').replace(/<\/a>$/, '</div>').replace(/href="[^"]*"/, '');
+    const long = buildUrl(true).length > MAX_URL;
+    $('#send').href = buildUrl(!long);
+    $('#send-note').innerHTML = long
+      ? `<div class="notice"><strong>Your description is long</strong>, too long to carry over in the link. Copy it now and on GitHub, replace the line <strong>PASTE YOUR DESCRIPTION HERE</strong> with it.
+          <p><button class="btn btn-sm" type="button" id="copy-desc">Copy description</button></p></div>`
+      : '';
+    const copy = $('#copy-desc');
+    if (copy) copy.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(val('description')); copy.textContent = 'Copied'; }
+      catch (e) { form.elements.description.select(); copy.textContent = 'Press Ctrl + C to copy'; go(1); }
+    });
+  }
+
+  // ---------- moving between steps ----------
+  function go(i) {
+    at = Math.max(0, Math.min(steps.length - 1, i));
+    reached = Math.max(reached, at);
+    steps.forEach((s, k) => { s.hidden = k !== at; });
+    $$('#stepper button').forEach((b, k) => {
+      b.disabled = k > reached;
+      if (k === at) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+      b.parentNode.classList.toggle('done', k < reached && k !== at);
+    });
+    $('#back').hidden = at === 0;
+    $('#next').hidden = at === steps.length - 1;
+    $('#send').hidden = at !== steps.length - 1;
+    $('#werror').textContent = '';
+    if (at === steps.length - 1) preview();
+  }
+  async function next() {
+    if (at === 0 && !repo) await checkRepo();
+    const p = problem(at);
+    $('#werror').textContent = p;
+    if (p) return;
+    go(at + 1);
+    $('#stepper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const first = $('input:not([type=radio]):not([type=checkbox]), textarea', steps[at]);
+    if (first && at === 1) first.focus({ preventScroll: true });
+  }
+  $('#next').addEventListener('click', next);
+  $('#back').addEventListener('click', () => { go(at - 1); });
+  $$('#stepper button').forEach(b => b.addEventListener('click', () => {
+    const to = Number(b.dataset.go);
+    for (let k = 0; k < to; k++) if (problem(k)) { go(k); $('#werror').textContent = problem(k); return; }
+    go(to);
+  }));
+  $('#send').addEventListener('click', e => {
+    const p = problem(3);
+    if (p) { e.preventDefault(); $('#werror').textContent = p; return; }
+    preview(); // make sure the link carries the very latest answers
+  });
+  form.addEventListener('change', e => { if (at === 3) preview(); if (e.target.name === 'rules') $('#werror').textContent = ''; });
+  form.addEventListener('submit', e => e.preventDefault());
+
+  // ---------- start ----------
+  const hadRepo = restore();
+  counts();
+  aiParts();
+  go(0);
+  if (hadRepo) checkRepo();
+})();
