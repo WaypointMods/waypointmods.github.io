@@ -1,0 +1,17 @@
+Waypoint: what the LICENSE does not cover
+
+Mod listings
+  Everything about a listed mod belongs to its author: the name, summary, description, screenshots,
+  credits, permission notes and other details in mods/*.json, and the mod's files, which stay in the
+  author's own GitHub repository. By adding a mod, its author lets Waypoint display these details
+  and link to the files. Authors can change or remove their listing at any time. The mod's own
+  license and permissions say what others may do with it.
+
+Fonts (assets/fonts)
+  Fraunces, Inter and JetBrains Mono are used under the SIL Open Font License 1.1. Their licenses
+  are in assets/fonts/OFL-*.txt.
+
+Services the site uses
+  GitHub (hosting, releases, Discussions), giscus (comments), Cloudflare Workers (live stats),
+  VirusTotal and ClamAV (virus scans) are run by their own owners under their own terms. None of
+  their code is included here.

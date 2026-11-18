@@ -9,6 +9,7 @@ body:
         Before you start, publish a release on your mod's GitHub repository with the .7z, .zip or .rar attached.
         Automatic checks reply here within a minute or two. If everything passes, your mod usually goes live 2 to 5 minutes later, once its files are virus-scanned.
         You can only add repositories you own.
+        By adding a mod, you let Waypoint show its name, description, screenshots and the other details you send, and link to its files. They stay yours: you can change them or take the mod off Waypoint at any time.
   - type: input
     id: repo
     attributes:

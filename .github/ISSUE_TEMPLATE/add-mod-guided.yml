@@ -8,6 +8,7 @@ body:
       value: |
         Your answers from the Waypoint page are below. Add screenshots if you like, then press **Create**.
         To change an answer, go back to the Waypoint page and send again, or edit the text carefully, keeping each `###` line as it is.
+        By adding a mod, you let Waypoint show its name, description, screenshots and the other details you send, and link to its files. They stay yours: you can change them or take the mod off Waypoint at any time.
   - type: textarea
     id: answers
     attributes:

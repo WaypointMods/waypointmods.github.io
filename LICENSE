@@ -1,0 +1,19 @@
+Copyright (c) 2026 Rainmoon. All rights reserved.
+
+This repository holds the code of Waypoint (https://waypointmods.github.io): the web pages, styles,
+scripts, build and submission workflows, the stats Worker and the Waypoint helper.
+
+You may read this code, and view and fork this repository on GitHub as GitHub's Terms of Service
+allow. No other permission is given: you may not copy, modify, publish, run elsewhere, distribute,
+sublicense or sell this code, in whole or in part, without written permission from the copyright
+holder.
+
+You may download, install and use the Waypoint helper (the helper/ folder, also offered on the site
+as a zip) on your own computer, unchanged, to download mods from Waypoint.
+
+This does not cover the material listed in NOTICE, which keeps its own owners and terms.
+
+THE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE CODE OR ITS USE.
