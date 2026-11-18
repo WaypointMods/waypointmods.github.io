@@ -6,17 +6,37 @@
   <title>Waypoint</title>
   <meta name="description" content="Free, non-commercial Skyrim mod index. Authors host files on GitHub; we list, scan and organise them.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body data-page="home">
   <header id="site-header" class="site-header"></header>
   <main>
-    <section class="hero">
-      <div class="wrap">
-        <h1>Free mod hosting for Skyrim authors.</h1>
-        <p>Authors keep their files on GitHub. We list them, scan them and keep the pages tidy. No paid tiers, no download limits, no ads.</p>
+    <section class="hero bp">
+      <svg class="hero-art" viewBox="0 0 620 460" aria-hidden="true">
+        <g fill="none" stroke-width="2" style="stroke: var(--line)">
+          <polygon points="547.8,216.6 546.3,229.8 526.1,237.7 522.4,248.3 533.3,267.1 526.2,278.3 504.6,276.6 496.6,284.6 498.3,306.2 487.1,313.3 468.3,302.4 457.7,306.1 449.8,326.3 436.6,327.8 424.4,309.8 413.2,308.6 397.3,323.4 384.8,319.0 381.6,297.5 372.1,291.6 351.4,298.0 342.0,288.6 348.4,267.9 342.5,258.4 321.0,255.2 316.6,242.7 331.4,226.8 330.2,215.6 312.2,203.4 313.7,190.2 333.9,182.3 337.6,171.7 326.7,152.9 333.8,141.7 355.4,143.4 363.4,135.4 361.7,113.8 372.9,106.7 391.7,117.6 402.3,113.9 410.2,93.7 423.4,92.2 435.6,110.2 446.8,111.4 462.7,96.6 475.2,101.0 478.4,122.5 487.9,128.4 508.6,122.0 518.0,131.4 511.6,152.1 517.5,161.6 539.0,164.8 543.4,177.3 528.6,193.2 529.8,204.4"/>
+          <circle cx="430" cy="210" r="46"/>
+          <circle cx="430" cy="210" r="10"/>
+          <polygon points="347.8,335.1 346.0,345.0 331.7,349.4 327.7,356.4 331.0,371.0 323.3,377.5 309.4,371.7 301.9,374.4 295.1,387.8 284.9,387.8 278.1,374.4 270.6,371.7 256.7,377.5 249.0,371.0 252.3,356.4 248.3,349.4 234.0,345.0 232.2,335.1 244.2,326.0 245.6,318.1 237.4,305.5 242.5,296.7 257.5,297.5 263.6,292.3 265.5,277.4 275.0,274.0 286.0,284.2 294.0,284.2 305.0,274.0 314.5,277.4 316.4,292.3 322.5,297.5 337.5,296.7 342.6,305.5 334.4,318.1 335.8,326.0"/>
+          <circle cx="290" cy="330" r="22"/>
+          <path d="M300 92 L560 92 M300 84 L300 100 M560 84 L560 100" stroke-width="1.5"/>
+        </g>
+        <text x="430" y="80" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" style="fill: var(--line-text)">Ø 260</text>
+        <path d="M40 410 C 120 380, 150 300, 230 300 S 330 390, 420 360 S 540 250, 600 210" fill="none" style="stroke: var(--accent)" stroke-width="2.5" stroke-dasharray="2 10" stroke-linecap="round"/>
+        <circle cx="40" cy="410" r="7" style="fill: var(--accent)"/>
+        <circle cx="230" cy="300" r="7" style="fill: var(--accent)"/>
+        <path d="M600 214 c0 0-14-12-14-24a14 14 0 0 1 28 0c0 12-14 24-14 24z" style="fill: var(--accent)"/>
+        <circle cx="600" cy="190" r="5" style="fill: var(--hero)"/>
+        <text x="44" y="440" font-family="JetBrains Mono, monospace" font-size="12" style="fill: var(--line-text)">START</text>
+        <text x="612" y="246" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" style="fill: var(--line-text)">YOUR MOD</text>
+      </svg>
+      <div class="wrap hero-inner">
+        <p class="eyebrow">Free mod hosting for Skyrim</p>
+        <h1>The workshop where Skyrim mods are shared.</h1>
+        <p class="lead">Authors keep their files on GitHub. Waypoint lists them, checks them for viruses and keeps every page tidy. No paid tiers, no download limits, no ads.</p>
         <form class="search" action="browse.html" role="search">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <svg class="ico-lg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <input class="input input-lg" name="q" type="search" placeholder="Search mods, tags or authors" aria-label="Search mods">
         </form>
         <div class="stats">
@@ -35,36 +55,40 @@
 
     <section class="section" data-needs-mods>
       <div class="wrap">
-        <div class="section-head"><h2>Popular</h2><a href="browse.html">See all</a></div>
+        <div class="section-head"><h2>Popular</h2><a href="browse.html">See all mods</a></div>
         <div class="grid" id="popular"></div>
       </div>
     </section>
 
     <section class="section" data-needs-mods>
       <div class="wrap">
-        <div class="section-head"><h2>Recently updated</h2><a href="browse.html?sort=updated">See all</a></div>
-        <div class="grid" id="updated"></div>
+        <h2>Browse by category</h2>
+        <div class="cats" id="cats"></div>
       </div>
     </section>
 
     <section class="section" data-needs-mods>
       <div class="wrap">
-        <div class="section-head"><h2>Categories</h2></div>
-        <div class="chips" id="cats"></div>
+        <div class="section-head"><h2>Recently updated</h2><a href="browse.html?sort=updated">See all</a></div>
+        <div class="rows" id="updated"></div>
       </div>
     </section>
 
     <section class="section">
       <div class="wrap">
-        <div class="section-head"><h2>How it works</h2></div>
-        <div class="steps">
-          <div class="step"><div class="step-n">1</div><h3>Publish on GitHub</h3><p>Put your mod archive in a release on your own GitHub repository. It's free, with up to 2 GB per file.</p></div>
-          <div class="step"><div class="step-n">2</div><h3>Add it here</h3><p>Fill in a short form with the repo, description and requirements. It goes live automatically, with no waiting for approval.</p></div>
-          <div class="step"><div class="step-n">3</div><h3>Scanned and listed</h3><p>Files are virus-scanned and their hashes recorded. New releases show up automatically.</p></div>
-        </div>
-        <div class="btn-row cta">
-          <a class="btn btn-primary" href="add.html">Add your mod</a>
-          <a class="btn" href="about.html">How the site works</a>
+        <div class="share bp">
+          <div class="share-head">
+            <div>
+              <h2>Share your mod</h2>
+              <p>Free, no approval queue, and your files stay in your own GitHub repository.</p>
+            </div>
+            <a class="btn btn-primary btn-lg" href="add.html">Add your mod</a>
+          </div>
+          <div class="steps">
+            <div class="step"><div class="step-n">STEP 01</div><h3>Publish on GitHub</h3><p class="muted">Attach your mod archive to a release on your own repository. Free, up to 2 GB per file.</p></div>
+            <div class="step"><div class="step-n">STEP 02</div><h3>Fill in a short form</h3><p class="muted">Name, description, screenshots. Checked automatically, with no waiting for approval.</p></div>
+            <div class="step"><div class="step-n">STEP 03</div><h3>Live in minutes</h3><p class="muted">Virus-scanned and listed. New versions appear on their own when you publish them.</p></div>
+          </div>
         </div>
       </div>
     </section>

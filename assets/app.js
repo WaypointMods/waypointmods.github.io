@@ -78,7 +78,7 @@
   // ---------- icons ----------
   const P = {
     dl: '<path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/>',
-    heart: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',
+    star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     shield: '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/>',
@@ -115,28 +115,56 @@
   }
 
   // ---------- shared pieces ----------
+  // Line drawings of a tool per category: the blueprint cover when a mod has no screenshot.
+  const CAT_ICON = {
+    'Animation': '<circle cx="13" cy="4" r="2"/><path d="m7 21 3-7 3 3v5M7 12l3-4 4 1 3 3M10 8l-1 6"/>',
+    'Armour and Weapons': '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="M12 8v8M9 11h6"/>',
+    'Audio': '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    'Bug Fixes': '<path d="M8 2l1.9 1.9M16 2l-1.9 1.9M9 7.1V6a3 3 0 0 1 6 0v1.1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6zM12 20v-9M6.5 13H3M21 13h-3.5M6 9l-3-2M18 9l3-2M6 17l-3 2M18 17l3 2"/>',
+    'Combat': '<path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/>',
+    'Followers': '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+    'Gameplay': '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/><circle cx="12" cy="12" r="7"/>',
+    'Immersion': '<path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/>',
+    'Patches': '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+    'Quests': '<path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>',
+    'UI': '<rect x="3" y="4" width="18" height="12" rx="1"/><path d="M8 20h8M12 16v4"/>',
+    'Utilities': '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-2.4z"/>',
+    'Visuals': '<rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 15 5-5 4 4 3-3 6 6M15 9h.01"/>',
+    'Other': '<path d="M21 8 12 3 3 8v8l9 5 9-5V8z"/><path d="m3 8 9 5 9-5M12 13v8"/>'
+  };
+  const catIcon = (c, size, width) =>
+    `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICON[c] || CAT_ICON.Other}</svg>`;
+
   function cover(m) {
-    const initials = m.name.replace(/[^A-Za-z0-9 ]/g, '').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
     const img = m.images && m.images[0];
-    // If the picture fails to load, it removes itself and the initials show through.
-    return `<div class="cover" style="--h:${Number(m.hue) || 30}"><span>${esc(initials)}</span>${img
-      ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</div>`;
+    const r = latest(m);
+    // A screenshot when there is one; if it fails to load it removes itself and the drawing shows through.
+    return `<div class="cover bp-fine">${catIcon(m.category, 76, 1.1)}
+      <span class="cover-tag">${esc(m.category)}</span>
+      ${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
+      ${r ? `<span class="cover-ver">v${esc(r.version)}</span>` : ''}</div>`;
   }
   function card(m) {
-    const r = latest(m);
     return `<a class="card" href="mod.html?id=${encodeURIComponent(m.id)}">
       <div class="card-media">${cover(m)}${unscanned(m) ? `<span class="warn-pill" title="${esc(scanReason(m))}">${svg('alert', 12)} Not virus-scanned</span>` : ''}</div>
       <div class="card-body">
-        <div class="kicker">${esc(m.category)}</div>
         <h3>${esc(m.name)}</h3>
         <p class="card-sum">${esc(m.summary)}</p>
         <div class="meta">
-          <span>by ${esc(authorLabel(m))}</span>
-          <span title="Downloads">${svg('dl')} ${fmtNum(m.totalDownloads)}</span>
-          <span title="GitHub stars">${svg('heart')} ${fmtNum(m.stars)}</span>
-          ${r ? `<span title="Updated ${esc(fmtDate(r.date))}">${svg('clock')} ${ago(r.date)}</span>` : ''}
+          <span>by <strong>${esc(authorLabel(m))}</strong></span>
+          <span title="Downloads">${svg('dl', 13)} ${fmtNum(m.totalDownloads)}</span>
+          <span title="GitHub stars">${svg('star', 13)} ${fmtNum(m.stars)}</span>
         </div>
       </div>
+    </a>`;
+  }
+  function row(m) {
+    const r = latest(m);
+    return `<a class="row" href="mod.html?id=${encodeURIComponent(m.id)}">
+      <span class="cat-icon">${catIcon(m.category, 20, 1.8)}</span>
+      <span class="row-main"><b>${esc(m.name)}</b><small>${esc(m.category)} · by ${esc(authorLabel(m))}</small></span>
+      ${r ? `<span class="ver">v${esc(r.version)}</span>` : ''}
+      <span class="row-when">${ago(m.lastUpdated)}</span>
     </a>`;
   }
 
@@ -151,19 +179,26 @@
 
   // ---------- header / footer ----------
   function shell() {
-    const nav = [['browse', 'browse.html', 'Browse'], ['add', 'add.html', 'Add your mod'], ['about', 'about.html', 'About']];
+    const nav = [['browse', 'browse.html', 'Browse'], ['about', 'about.html', 'About']];
     const h = $('#site-header');
     if (h) {
       h.innerHTML = `<div class="wrap hdr">
         <a class="logo" href="index.html"><span class="logo-mark">${svg('pin', 18)}</span>${esc(SITE.name)}</a>
         <nav class="nav" aria-label="Main">${nav.map(([k, href, label]) =>
           `<a href="${href}"${k === page ? ' class="active" aria-current="page"' : ''}>${label}</a>`).join('')}</nav>
-        ${page === 'browse' || page === 'home' ? '' : `<form class="search hdr-search" action="browse.html" role="search">
-          ${svg('search', 16)}<input class="input" name="q" type="search" placeholder="Search mods" aria-label="Search mods"></form>`}
-        <button class="icon-btn" id="theme-btn" type="button" aria-label="Switch light or dark theme"></button>
+        <div class="hdr-tools">
+          ${page === 'browse' || page === 'home' ? '' : `<form class="search hdr-search" action="browse.html" role="search">
+            ${svg('search', 16)}<input class="input" name="q" type="search" placeholder="Search mods" aria-label="Search mods"></form>`}
+          <button class="icon-btn" id="theme-btn" type="button"></button>
+          ${page === 'add' ? '' : '<a class="btn btn-primary hdr-add" href="add.html">Add your mod</a>'}
+        </div>
       </div>`;
       const btn = $('#theme-btn');
-      const paint = () => { btn.innerHTML = svg(currentTheme() === 'dark' ? 'sun' : 'moon', 18); };
+      const paint = () => {
+        const dark = currentTheme() === 'dark';
+        btn.innerHTML = svg(dark ? 'sun' : 'moon', 18);
+        btn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+      };
       paint();
       btn.addEventListener('click', () => {
         const next = currentTheme() === 'dark' ? 'light' : 'dark';
@@ -202,10 +237,11 @@
     $('#no-mods').hidden = !!mods.length;
     if (!mods.length) return;
     $('#popular').innerHTML = mods.slice().sort(SORTS.popular).slice(0, 4).map(card).join('');
-    $('#updated').innerHTML = mods.slice().sort(SORTS.updated).slice(0, 4).map(card).join('');
+    $('#updated').innerHTML = mods.slice().sort(SORTS.updated).slice(0, 5).map(row).join('');
     const cats = countBy(mods, m => m.category);
     $('#cats').innerHTML = Object.keys(cats).sort().map(c =>
-      `<a class="chip" href="browse.html?cat=${encodeURIComponent(c)}">${esc(c)}<small>${cats[c]}</small></a>`).join('');
+      `<a class="cat" href="browse.html?cat=${encodeURIComponent(c)}"><span class="cat-icon">${catIcon(c, 20, 1.8)}</span>
+        <span><b>${esc(c)}</b><small>${cats[c]} mod${cats[c] === 1 ? '' : 's'}</small></span></a>`).join('');
     return home;
   }
 
@@ -320,21 +356,33 @@
     const main = r && r.assets[0];
     const fileCount = m.releases.reduce((a, x) => a + x.assets.length, 0);
 
+    // Blueprint banner: the category's tool drawn large, a measurement line and the dotted route.
+    const size = main ? fmtSize(main.size).toUpperCase() : '';
     root.innerHTML = `
-      <div class="banner">${cover(m)}</div>
-      <div class="mod-layout">
-        <div>
-          <div class="kicker">${esc(m.category)}</div>
-          <h1 class="mod-title">${esc(m.name)}</h1>
-          <div class="byline">by ${hasOwnName(m)
-            ? `<strong>${esc(m.authorName)}</strong> · <a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener" title="GitHub account">@${esc(m.author)}</a>`
-            : `<a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener">${esc(m.author)}</a>`}</div>
-          <p class="lead">${esc(m.summary)}</p>
-          <div class="statrow">
-            <div><b data-live="downloads">${fmtNum(m.totalDownloads)}</b>downloads</div>
-            <div><b data-live="stars">${fmtNum(m.stars)}</b>stars</div>
-            <div><b>${r ? 'v' + esc(r.version) : '-'}</b>version</div>
-            <div><b>${ago(m.lastUpdated)}</b>updated</div>
+      <div class="banner bp">
+        <svg viewBox="0 0 1440 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <g transform="translate(1010 40) scale(7.5)" fill="none" stroke-width="0.28" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--line)">${CAT_ICON[m.category] || CAT_ICON.Other}</g>
+          <path d="M1010 230 L1190 230 M1010 222 L1010 238 M1190 222 L1190 238" stroke-width="1.5" style="stroke: var(--line)"/>
+          <text x="1100" y="252" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" style="fill: var(--line-text)">${esc(m.category.toUpperCase())}${size ? ' · ' + esc(size) : ''}</text>
+          <path d="M700 210 C 780 190, 820 120, 900 130 S 960 60, 990 70" fill="none" stroke-width="2.5" stroke-dasharray="2 10" stroke-linecap="round" style="stroke: var(--accent)"/>
+          <circle cx="700" cy="210" r="6" style="fill: var(--accent)"/>
+        </svg>
+      </div>
+      <div class="wrap mod-layout">
+        <div class="mod-main">
+          <div class="mod-head">
+            <span class="kicker">${esc(m.category)}</span>
+            <h1 class="mod-title">${esc(m.name)}</h1>
+            <div class="byline">by ${hasOwnName(m)
+              ? `<strong>${esc(m.authorName)}</strong> · <a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener" title="GitHub account">@${esc(m.author)}</a>`
+              : `<a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener">${esc(m.author)}</a>`}</div>
+            <p class="lead">${esc(m.summary)}</p>
+            <div class="statrow">
+              <div><b data-live="downloads">${fmtNum(m.totalDownloads)}</b>downloads</div>
+              <div><b data-live="stars">${fmtNum(m.stars)}</b>stars</div>
+              <div><b>${r ? 'v' + esc(r.version) : '-'}</b>version</div>
+              <div><b>${ago(m.lastUpdated)}</b>updated</div>
+            </div>
           </div>
           ${unscanned(m) ? `<div class="notice notice-warn scan-warn">${svg('alert', 16)}<div><strong>Not virus-scanned.</strong> ${esc(scanReason(m))}
             Only download it if you trust the author, and scan the file with your own antivirus before opening it.
@@ -355,19 +403,21 @@
             `<div class="cl"><h3>v${esc(x.version)}<span class="muted">${esc(fmtDate(x.date))}</span></h3><div class="prose">${md(x.notes)}</div></div>`).join('')}</section>
           <section class="panel" role="tabpanel" id="p-comments" hidden><div id="giscus"></div></section>
         </div>
-        <aside>
+        <aside class="mod-side">
           <div class="side-card dl-box">
             ${main
-              ? `<a class="btn btn-primary btn-lg" href="${esc(main.url)}">${svg('dl', 18)} Download v${esc(r.version)}</a>
-                 <a class="btn" href="${esc(managerLink(m, main))}">${svg('box', 16)} Download with MO2 / Vortex</a>
-                 <a class="dl-note" href="helper.html">Needs the free Waypoint helper (one-time setup)</a>
-                 <div class="dl-note">${esc(main.name)} · ${fmtSize(main.size)}</div>
-                 ${r.assets.length > 1 ? `<a class="dl-note" href="#files" data-goto="files">+ ${r.assets.length - 1} more file${r.assets.length > 2 ? 's' : ''} in this release</a>` : ''}`
+              ? `<a class="btn btn-primary btn-lg" href="${esc(main.url)}">${svg('dl', 20)} Download v${esc(r.version)}</a>
+                 <a class="btn" href="${esc(managerLink(m, main))}">${svg('box', 18)} Download with MO2 / Vortex</a>
+                 <a class="dl-note center" href="helper.html">Needs the free Waypoint helper (one-time setup)</a>`
               : '<div class="dl-note">No files released yet.</div>'}
-            ${main ? (scanOf(main) === 'unscanned'
-              ? `<div class="dl-note warn-text">${svg('alert')} Not virus-scanned${noScanChosen(m) ? ' (author\'s choice)' : ''}. File hash recorded.</div>`
-              : `<div class="dl-note">${svg('shield')} ${esc(SCAN_LABEL[scanOf(main)])}. File hash recorded.</div>`) : ''}
-            ${main ? '<a class="dl-note" href="about.html#scans">What do the scan types mean?</a>' : ''}
+            ${main ? `<div class="dl-sep">
+              <div class="dl-note file">${esc(main.name)} · ${fmtSize(main.size)}</div>
+              ${r.assets.length > 1 ? `<a class="dl-note" href="#files" data-goto="files">+ ${r.assets.length - 1} more file${r.assets.length > 2 ? 's' : ''} in this release</a>` : ''}
+              ${scanOf(main) === 'unscanned'
+                ? `<div class="dl-note warn-text">${svg('alert', 16)} Not virus-scanned${noScanChosen(m) ? ' (author\'s choice)' : ''}. File hash recorded.</div>`
+                : `<div class="dl-note good">${svg('shield', 16)} ${esc(SCAN_LABEL[scanOf(main)])}. File hash recorded.</div>`}
+              <a class="dl-note" href="about.html#scans">What do the scan types mean?</a>
+            </div>` : ''}
             <a class="btn" href="https://github.com/${esc(m.repo)}" target="_blank" rel="noopener">Star or view on GitHub</a>
           </div>
           ${main ? `<details class="side-card install-tip">
