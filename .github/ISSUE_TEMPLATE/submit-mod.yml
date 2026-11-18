@@ -91,6 +91,76 @@ body:
       description: Up to 8, separated by commas.
       placeholder: lighting, roads, night
   - type: dropdown
+    id: ai
+    attributes:
+      label: AI use
+      description: "Be honest: it's shown on your mod's card and page, and visitors can filter by it. AI-assisted means AI helped (for example with code, translation or touch-ups) but the work is mainly yours. AI-generated means a large part, such as voices, textures or models, was made by AI."
+      options:
+        - No AI used
+        - "AI-assisted: AI helped, but the work is mainly mine"
+        - "AI-generated: a large part was made by AI"
+    validations:
+      required: true
+  - type: checkboxes
+    id: ai-parts
+    attributes:
+      label: Which parts used AI?
+      description: Only if you used AI. Tick every part it was used for.
+      options:
+        - label: Voices or other audio
+        - label: Textures or images
+        - label: Meshes or models
+        - label: Scripts or code
+        - label: Text, dialogue or descriptions
+  - type: markdown
+    attributes:
+      value: |
+        ### Permissions
+        What may other people do with your mod? This is shown on your mod's Permissions tab.
+  - type: dropdown
+    id: perm-upload
+    attributes:
+      label: Upload to other sites
+      options: ["Yes", "Ask me first", "No"]
+      default: 1
+  - type: dropdown
+    id: perm-modify
+    attributes:
+      label: Modify and re-release
+      description: For example fixes, patches or translations that include your files.
+      options: ["Yes", "Ask me first", "No"]
+      default: 1
+  - type: dropdown
+    id: perm-convert
+    attributes:
+      label: Convert to other games or versions
+      description: For example to Skyrim VR or LE.
+      options: ["Yes", "Ask me first", "No"]
+      default: 1
+  - type: dropdown
+    id: perm-assets
+    attributes:
+      label: Use assets in other mods
+      description: Meshes, textures, sounds or scripts used in someone else's mod.
+      options: ["Yes", "Ask me first", "No"]
+      default: 1
+  - type: dropdown
+    id: perm-commercial
+    attributes:
+      label: Use in paid or commercial mods
+      options: ["Yes", "Ask me first", "No"]
+      default: 2
+  - type: textarea
+    id: credits
+    attributes:
+      label: Credits
+      description: "Optional. People whose work you used or who helped. Same formatting as the description."
+  - type: textarea
+    id: permission-notes
+    attributes:
+      label: Permission notes
+      description: Optional. Anything else people should know, for example "credit me if you use my textures".
+  - type: dropdown
     id: scan
     attributes:
       label: Virus scan

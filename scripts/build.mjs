@@ -289,6 +289,8 @@ for (const [i, { mod }] of entries.entries()) {
     id: mod.id, name: mod.name, author: repo.owner.login, authorName: mod.authorName || '', repo: repo.full_name,
     summary: mod.summary, description: mod.description, games: mod.games, category: mod.category,
     tags: mod.tags, requirements: mod.requirements, images: mod.images || [], scanMode: scanMode(mod),
+    ai: mod.ai || '', aiParts: mod.aiParts || [], permissions: mod.permissions || {},
+    credits: mod.credits || '', permissionNotes: mod.permissionNotes || '',
     license: mod.license || (spdx && spdx !== 'NOASSERTION' ? spdx : ''),
     created: mod.created, stars: repo.stargazers_count,
     hue: mod.hue ?? hueFor(mod.id),

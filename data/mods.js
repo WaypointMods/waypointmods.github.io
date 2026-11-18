@@ -49,7 +49,7 @@ window.MODS = [
     ]
   },
   {
-    id: 'tavern-chatter',
+    id: 'tavern-chatter', ai: 'assisted', aiParts: ['audio'], permissions: { upload: 'ask', modify: 'yes', convert: 'yes', assets: 'ask', commercial: 'no' }, credits: 'Crowd recordings by **emberquill**, cleaned up with an AI noise tool.', permissionNotes: 'Translations are welcome. Please link back to this page.',
     name: 'Tavern Chatter',
     author: 'emberquill',
     repo: 'emberquill/tavern-chatter',
@@ -94,7 +94,7 @@ window.MODS = [
     ]
   },
   {
-    id: 'steadfast-followers',
+    id: 'steadfast-followers', ai: 'none',
     name: 'Steadfast Followers',
     author: 'ashvale',
     repo: 'ashvale/steadfast-followers',
@@ -116,7 +116,7 @@ window.MODS = [
     ]
   },
   {
-    id: 'snowberry-flora',
+    id: 'snowberry-flora', ai: 'none', permissions: { upload: 'no', modify: 'ask', convert: 'yes', assets: 'no', commercial: 'no' },
     name: 'Snowberry Flora',
     author: 'mossgarden',
     repo: 'mossgarden/snowberry-flora',
@@ -161,7 +161,7 @@ window.MODS = [
     ]
   },
   {
-    id: 'hearth-ledger',
+    id: 'hearth-ledger', ai: 'generated', aiParts: ['code', 'text'], permissions: { upload: 'yes', modify: 'yes', convert: 'yes', assets: 'yes', commercial: 'ask' },
     name: 'Hearth Ledger',
     author: 'emberquill',
     repo: 'emberquill/hearth-ledger',

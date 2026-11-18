@@ -30,8 +30,13 @@
       </ol>
 
       <h2>2. Add it here</h2>
-      <p>The form asks for the repository, mod name, a one-line summary, the full description, category, supported games and requirements. It opens on GitHub. Automatic checks reply within a minute or two. If something needs fixing, the reply says what, and you edit the issue to try again.</p>
+      <p>The form asks for the repository, mod name, a one-line summary, the full description, category, supported games, requirements, whether you used AI, and what others may do with your mod. It opens on GitHub. Automatic checks reply within a minute or two. If something needs fixing, the reply says what, and you edit the issue to try again.</p>
       <div class="notice"><strong>How long until it shows?</strong> Usually 2 to 5 minutes after the bot's reply: the site rebuilds and your files are virus-scanned first. Files VirusTotal hasn't seen before take a few minutes longer while it analyses them. With no scan, it's about a minute or two. If you had the site open just before, press <strong>Ctrl + F5</strong> to reload, because browsers can keep an old copy of the page for up to 10 minutes.</div>
+      <p>Two questions every mod answers:</p>
+      <ul>
+        <li><strong>AI use:</strong> <em>No AI used</em>, <em>AI-assisted</em> (AI helped, for example with code, translation or touch-ups, but the work is mainly yours) or <em>AI-generated</em> (a large part, such as voices, textures or models, was made by AI), plus which parts used it. It's shown on your mod's card and page, and visitors can filter by it, so please be honest.</li>
+        <li><strong>Permissions:</strong> whether others may upload your mod elsewhere, modify and re-release it, convert it to other games or versions, use its assets in their own mods, or use it in paid mods. Each one is <em>Yes</em>, <em>Ask me first</em> or <em>No</em>, and you can add credits and notes. They appear on your mod's Permissions tab.</li>
+      </ul>
       <p>Optional extras:</p>
       <ul>
         <li><strong>Display name:</strong> the author name shown on the site, for example your Nexus name. Your GitHub account is always shown next to it.</li>
@@ -50,7 +55,7 @@
 
       <h2>3. Updating your mod</h2>
       <p>Publish a new release in the same repository. The site notices it within a minute and lists it once its files are virus-scanned, usually 2 to 5 minutes after you publish. Until then your mod page shows a "just released" notice. You don't need to add it again.</p>
-      <p>To change the name, display name, summary, description, screenshots, category, games, tags, requirements or virus scan setting, use the <a data-issue="edit-mod.yml" href="#" target="_blank" rel="noopener">edit form</a>. Edits show within a few minutes.</p>
+      <p>To change the name, display name, summary, description, screenshots, category, games, tags, requirements, AI disclosure, permissions, credits or virus scan setting, use the <a data-issue="edit-mod.yml" href="#" target="_blank" rel="noopener">edit form</a>. Edits show within a few minutes.</p>
 
       <div class="notice"><strong>About replaced files.</strong> Every file's SHA-256 hash is recorded. If you replace a file in an existing release, it's scanned again like a new one. A file flagged by the virus scan hides the whole mod until it's looked at, and turning the scan off afterwards doesn't undo that.</div>
 
@@ -62,6 +67,8 @@
         <li>Files that fail the malware scan, or unexplained executables in the archive</li>
         <li>Paywalled or "early access" files</li>
         <li>Missing or misleading requirements</li>
+        <li>Hiding or misstating AI use</li>
+        <li>Using other people's work against their stated permissions</li>
       </ul>
     </article>
   </main>

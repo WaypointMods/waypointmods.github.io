@@ -17,7 +17,7 @@ export const GAME_LABELS = { 'Skyrim SE/AE': 'se', 'Skyrim VR': 'vr', 'Skyrim LE
 export const GAME_KEYS = Object.values(GAME_LABELS);
 
 // One place for every size limit; the form checks and the entry validator both read these.
-export const LIMITS = { name: 80, authorName: 40, summary: 160, description: 20000, tags: 8, tag: 24, images: 8, requirements: 20 };
+export const LIMITS = { name: 80, authorName: 40, summary: 160, description: 20000, tags: 8, tag: 24, images: 8, requirements: 20, notes: 3000 };
 export const USER_AGENT = 'waypoint-build';
 
 // Virus scan choice in the forms -> value stored in mods/<id>.json (a full scan stores nothing).
@@ -28,6 +28,30 @@ export const SCAN_MODES = {
 };
 // 'full' | 'private' | 'off'
 export const scanMode = mod => (mod.scan === false ? 'off' : mod.scan === 'private' ? 'private' : 'full');
+
+// Permissions, as on Nexus. Form question -> key in mods/<id>.json; each answer is 'yes' | 'ask' | 'no'.
+export const PERMISSIONS = {
+  'Upload to other sites': 'upload',
+  'Modify and re-release': 'modify',
+  'Convert to other games or versions': 'convert',
+  'Use assets in other mods': 'assets',
+  'Use in paid or commercial mods': 'commercial'
+};
+export const PERMISSION_ANSWERS = { 'Yes': 'yes', 'Ask me first': 'ask', 'No': 'no' };
+
+// AI disclosure. Form answer -> stored value, and which parts used AI.
+export const AI_USE = {
+  'No AI used': 'none',
+  'AI-assisted: AI helped, but the work is mainly mine': 'assisted',
+  'AI-generated: a large part was made by AI': 'generated'
+};
+export const AI_PARTS = {
+  'Voices or other audio': 'audio',
+  'Textures or images': 'images',
+  'Meshes or models': 'models',
+  'Scripts or code': 'code',
+  'Text, dialogue or descriptions': 'text'
+};
 
 export const ARCHIVE_RE = /\.(7z|zip|rar)$/i;
 const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -100,6 +124,17 @@ export function validateMod(mod, file) {
       mod.images.some(u => typeof u !== 'string' || !IMAGE_RE.test(u)))) e.push(`images must be up to ${L.images} GitHub-hosted image links`);
   if (mod.includePrereleases !== undefined && typeof mod.includePrereleases !== 'boolean') e.push('includePrereleases must be true or false');
   if (mod.scan !== undefined && !Object.values(SCAN_MODES).includes(mod.scan)) e.push('scan must be "private" or false (leave it out for a full scan)');
+  // Older entries may predate these fields; the site then shows "Not stated".
+  if (mod.ai !== undefined && !Object.values(AI_USE).includes(mod.ai)) e.push(`ai must be one of: ${Object.values(AI_USE).join(', ')}`);
+  if (mod.aiParts !== undefined && (!Array.isArray(mod.aiParts) || mod.aiParts.some(p => !Object.values(AI_PARTS).includes(p)))) e.push(`aiParts must be a list of: ${Object.values(AI_PARTS).join(', ')}`);
+  if (mod.permissions !== undefined) {
+    const ok = mod.permissions && typeof mod.permissions === 'object' && !Array.isArray(mod.permissions) &&
+      Object.entries(mod.permissions).every(([k, v]) => Object.values(PERMISSIONS).includes(k) && Object.values(PERMISSION_ANSWERS).includes(v));
+    if (!ok) e.push(`permissions must map ${Object.values(PERMISSIONS).join('/')} to yes, ask or no`);
+  }
+  for (const k of ['credits', 'permissionNotes']) {
+    if (mod[k] !== undefined && !isStr(mod[k], 1, L.notes)) e.push(`${k} must be 1-${L.notes} characters`);
+  }
   return e;
 }
 

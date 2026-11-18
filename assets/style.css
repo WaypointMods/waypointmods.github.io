@@ -305,6 +305,30 @@ h1, h2 { font-family: var(--serif); font-weight: 700; }
 .install-tip p strong { color: var(--text); }
 .report { font-size: 13px; color: var(--muted); }
 
+/* AI disclosure and permissions */
+.head-tags { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.ai-tag { display: inline-flex; align-items: center; font-family: var(--mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border-strong); color: var(--muted); white-space: nowrap; }
+.ai-tag.ai-generated { color: var(--accent); border-color: var(--accent); }
+.ai-tag.ai-none { color: var(--good); border-color: var(--good); }
+.mod-head .ai-tag { font-size: 12px; padding: 4px 9px; }
+.panel-h { font-family: var(--serif); font-size: 22px; margin: 26px 0 12px; }
+.panel-h:first-child { margin-top: 0; }
+.perms { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.perm { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-top: 1px solid var(--border); }
+.perm:first-child { border-top: 0; }
+.perm-what { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.perm-what b { font-weight: 600; }
+.perm-what small { color: var(--muted); font-size: 13px; }
+.perm-icon { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; flex: none; border: 1px solid currentColor; }
+.perm-ans { font-weight: 600; font-size: 14px; text-align: right; }
+.perm-yes { color: var(--good); }
+.perm-no { color: var(--warn); }
+.perm-ask, .perm-unset { color: var(--accent); }
+@media (max-width: 560px) { .perm { flex-wrap: wrap; } .perm-ans { flex-basis: 100%; text-align: left; padding-left: 48px; } }
+.ai-box { display: flex; gap: 14px; align-items: flex-start; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+.ai-box p { margin: 0; }
+.small { font-size: 13px; margin-top: 18px; }
+
 /* Text pages */
 .page { max-width: 780px; padding: 48px 24px 20px; margin: 0 auto; }
 .page h1 { font-size: clamp(32px, 4.5vw, 44px); margin: 0 0 14px; }

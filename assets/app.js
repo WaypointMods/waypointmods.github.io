@@ -132,6 +132,28 @@
     'Visuals': '<rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 15 5-5 4 4 3-3 6 6M15 9h.01"/>',
     'Other': '<path d="M21 8 12 3 3 8v8l9 5 9-5V8z"/><path d="m3 8 9 5 9-5M12 13v8"/>'
   };
+  // AI disclosure and Nexus-style permissions (stored by the Add / Edit forms).
+  const AI_LABEL = { none: 'No AI used', assisted: 'AI-assisted', generated: 'AI-generated' };
+  const AI_TEXT = {
+    none: 'The author says no AI was used to make this mod.',
+    assisted: 'The author says AI helped make this mod, but the work is mainly theirs.',
+    generated: 'The author says a large part of this mod was made by AI.'
+  };
+  const AI_PART_LABEL = { audio: 'voices or other audio', images: 'textures or images', models: 'meshes or models', code: 'scripts or code', text: 'text, dialogue or descriptions' };
+  const aiTag = m => (m.ai === 'assisted' || m.ai === 'generated') ? `<span class="ai-tag ai-${m.ai}">${AI_LABEL[m.ai]}</span>` : '';
+  const PERM_INFO = [
+    ['upload', 'Upload to other sites', 'Re-uploading this mod to other websites.'],
+    ['modify', 'Modify and re-release', 'Releasing fixes, patches or translations that include its files.'],
+    ['convert', 'Convert to other games or versions', 'Porting it, for example to Skyrim VR or LE.'],
+    ['assets', 'Use assets in other mods', 'Using its meshes, textures, sounds or scripts in your own mod.'],
+    ['commercial', 'Use in paid or commercial mods', 'Using any part of it in something that is sold.']
+  ];
+  const PERM_ANSWER = {
+    yes: ['Allowed', '<path d="M20 6 9 17l-5-5"/>'],
+    ask: ['Ask the author first', '<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.6V14M12 17h.01"/>'],
+    no: ['Not allowed', '<path d="M18 6 6 18M6 6l12 12"/>']
+  };
+
   const catIcon = (c, size, width) =>
     `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICON[c] || CAT_ICON.Other}</svg>`;
 
@@ -154,6 +176,7 @@
           <span>by <strong>${esc(authorLabel(m))}</strong></span>
           <span title="Downloads">${svg('dl', 13)} ${fmtNum(m.totalDownloads)}</span>
           <span title="GitHub stars">${svg('star', 13)} ${fmtNum(m.stars)}</span>
+          ${aiTag(m)}
         </div>
       </div>
     </a>`;
@@ -249,7 +272,8 @@
 
   function browse() {
     const p = new URLSearchParams(location.search);
-    const st = { q: p.get('q') || '', cat: p.get('cat') || '', game: p.get('game') || '', sort: SORTS[p.get('sort')] ? p.get('sort') : 'popular' };
+    const st = { q: p.get('q') || '', cat: p.get('cat') || '', game: p.get('game') || '', ai: p.get('ai') || '', sort: SORTS[p.get('sort')] ? p.get('sort') : 'popular' };
+    const aiOf = m => m.ai || 'unset';
     const q = $('#q'), sort = $('#sort');
     q.value = st.q;
     sort.value = st.sort;
@@ -267,18 +291,23 @@
       const games = countBy(mods, m => m.games);
       $('#f-cat').innerHTML = opt('cat', '', 'All', mods.length) + Object.keys(cats).sort().map(c => opt('cat', c, c, cats[c])).join('');
       $('#f-game').innerHTML = opt('game', '', 'All', mods.length) + Object.keys(GAMES).map(g => opt('game', g, GAMES[g], games[g] || 0)).join('');
+      const ai = countBy(mods, aiOf);
+      $('#f-ai').innerHTML = opt('ai', '', 'All', mods.length) +
+        ['none', 'assisted', 'generated'].map(k => opt('ai', k, AI_LABEL[k], ai[k] || 0)).join('') +
+        (ai.unset ? opt('ai', 'unset', 'Not stated', ai.unset) : '');
     }
 
     function render() {
       const words = st.q.toLowerCase().split(/\s+/).filter(Boolean);
-      const list = listed().filter(m => (!st.cat || m.category === st.cat) && (!st.game || m.games.includes(st.game)) && matches(m, words))
+      const list = listed().filter(m => (!st.cat || m.category === st.cat) && (!st.game || m.games.includes(st.game)) &&
+        (!st.ai || aiOf(m) === st.ai) && matches(m, words))
         .sort(SORTS[st.sort]);
       $('#count').textContent = `${list.length} mod${list.length === 1 ? '' : 's'}`;
       $('#results').innerHTML = list.length ? list.map(card).join('')
         : '<div class="empty">No mods match these filters. <a href="browse.html">Clear filters</a></div>';
 
       const u = new URLSearchParams();
-      ['q', 'cat', 'game'].forEach(k => { if (st[k]) u.set(k, st[k]); });
+      ['q', 'cat', 'game', 'ai'].forEach(k => { if (st[k]) u.set(k, st[k]); });
       if (st.sort !== 'popular') u.set('sort', st.sort);
       const qs = u.toString();
       try { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '')); } catch (e) { /* file:// in some browsers */ }
@@ -340,6 +369,32 @@
     box.appendChild(s);
   }
 
+  function permissionsPanel(m) {
+    const p = m.permissions || {};
+    const stated = PERM_INFO.some(([k]) => p[k]);
+    const rows = PERM_INFO.map(([k, title, desc]) => {
+      const [label, icon] = PERM_ANSWER[p[k]] || ['Not stated, so ask the author', PERM_ANSWER.ask[1]];
+      return `<div class="perm">
+        <span class="perm-icon perm-${p[k] || 'unset'}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg></span>
+        <span class="perm-what"><b>${title}</b><small>${desc}</small></span>
+        <span class="perm-ans perm-${p[k] || 'unset'}">${label}</span>
+      </div>`;
+    }).join('');
+    const parts = (m.aiParts || []).map(x => AI_PART_LABEL[x]).filter(Boolean);
+    return `
+      <h3 class="panel-h">Permissions</h3>
+      ${stated ? '' : '<div class="notice">The author hasn\'t stated permissions for this mod. Ask them before reusing any of it.</div>'}
+      <div class="perms">${rows}</div>
+      ${m.permissionNotes ? `<h3 class="panel-h">Notes from the author</h3><div class="prose">${md(m.permissionNotes)}</div>` : ''}
+      ${m.credits ? `<h3 class="panel-h">Credits</h3><div class="prose">${md(m.credits)}</div>` : ''}
+      <h3 class="panel-h">AI use</h3>
+      <div class="ai-box">
+        <span class="ai-tag ai-${m.ai || 'unset'}">${AI_LABEL[m.ai] || 'Not stated'}</span>
+        <p>${m.ai ? AI_TEXT[m.ai] : 'The author hasn\'t said whether AI was used.'}${parts.length ? ` Used for: ${esc(parts.join(', '))}.` : ''}</p>
+      </div>
+      <p class="muted small">License: ${esc(m.license || 'not stated')}. Permissions are the author's own statement; Waypoint doesn't check them. If in doubt, ask the author.</p>`;
+  }
+
   function modPage() {
     const id = new URLSearchParams(location.search).get('id');
     const m = MODS.find(x => x.id === id);
@@ -371,7 +426,7 @@
       <div class="wrap mod-layout">
         <div class="mod-main">
           <div class="mod-head">
-            <span class="kicker">${esc(m.category)}</span>
+            <div class="head-tags"><span class="kicker">${esc(m.category)}</span>${aiTag(m)}</div>
             <h1 class="mod-title">${esc(m.name)}</h1>
             <div class="byline">by ${hasOwnName(m)
               ? `<strong>${esc(m.authorName)}</strong> · <a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener" title="GitHub account">@${esc(m.author)}</a>`
@@ -395,12 +450,14 @@
             <button class="tab" role="tab" data-tab="description">Description</button>
             <button class="tab" role="tab" data-tab="files">Files<small>${fileCount}</small></button>
             <button class="tab" role="tab" data-tab="changelog">Changelog</button>
+            <button class="tab" role="tab" data-tab="permissions">Permissions</button>
             <button class="tab" role="tab" data-tab="comments">Comments</button>
           </div>
           <section class="panel prose" role="tabpanel" id="p-description">${md(m.description)}</section>
           <section class="panel" role="tabpanel" id="p-files" hidden>${m.releases.map((x, i) => release(m, x, i === 0)).join('')}</section>
           <section class="panel" role="tabpanel" id="p-changelog" hidden>${m.releases.map(x =>
             `<div class="cl"><h3>v${esc(x.version)}<span class="muted">${esc(fmtDate(x.date))}</span></h3><div class="prose">${md(x.notes)}</div></div>`).join('')}</section>
+          <section class="panel" role="tabpanel" id="p-permissions" hidden>${permissionsPanel(m)}</section>
           <section class="panel" role="tabpanel" id="p-comments" hidden><div id="giscus"></div></section>
         </div>
         <aside class="mod-side">

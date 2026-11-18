@@ -4,7 +4,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  CATEGORIES, GAME_LABELS, ARCHIVE_RE, IMAGE_RE, LIMITS, SCAN_MODES, scanMode, clean, oneLine, slugify, hueFor, today, isNone,
+  CATEGORIES, GAME_LABELS, ARCHIVE_RE, IMAGE_RE, LIMITS, SCAN_MODES, PERMISSIONS, PERMISSION_ANSWERS, AI_USE, AI_PARTS,
+  scanMode, clean, oneLine, slugify, hueFor, today, isNone,
   readMods, writeMod, validateMod, gh, setOutput
 } from './lib.mjs';
 
@@ -93,6 +94,32 @@ function parseImages(v) {
   return images.slice(0, LIMITS.images);
 }
 
+// ---------- AI disclosure and permissions ----------
+function parseAi(v) {
+  if (!(v in AI_USE)) { errors.push('AI use: pick one of the options from the list.'); return undefined; }
+  return AI_USE[v];
+}
+const parseAiParts = v => checked(v).map(l => AI_PARTS[l]).filter(Boolean);
+const checkAiParts = m => {
+  if (m.ai === 'none' && m.aiParts && m.aiParts.length) errors.push('AI use: you picked "No AI used" but ticked parts that used AI. Change one of the two.');
+};
+// Reads each permission question; the edit form also offers "No change", which leaves it out.
+function parsePermissions(get) {
+  const out = {};
+  for (const [label, key] of Object.entries(PERMISSIONS)) {
+    const v = get(label);
+    if (!v || v === 'No change') continue;
+    if (!(v in PERMISSION_ANSWERS)) errors.push(`${label}: pick Yes, Ask me first or No.`);
+    else out[key] = PERMISSION_ANSWERS[v];
+  }
+  return out;
+}
+function parseNotes(label, v) {
+  const s = clean(v, LIMITS.notes + 1);
+  if (s.length > LIMITS.notes) errors.push(`${label}: keep it under ${LIMITS.notes.toLocaleString('en')} characters.`);
+  return s;
+}
+
 // ---------- checking the repository ----------
 // Returns the repo, or null after recording why it can't be used.
 async function loadRepo(full) {
@@ -159,6 +186,16 @@ if (mode === 'submit') {
   if (scanChoice && !(scanChoice in SCAN_MODES)) errors.push('Virus scan: pick one of the options from the list.');
   else if (scanChoice && SCAN_MODES[scanChoice] !== undefined) mod.scan = SCAN_MODES[scanChoice];
 
+  mod.ai = parseAi(f['AI use']);
+  const aiParts = parseAiParts(f['Which parts used AI?']);
+  if (aiParts.length) mod.aiParts = aiParts;
+  checkAiParts(mod);
+  mod.permissions = parsePermissions(label => f[label]);
+  const credits = parseNotes('Credits', f['Credits']);
+  if (credits) mod.credits = credits;
+  const permissionNotes = parseNotes('Permission notes', f['Permission notes']);
+  if (permissionNotes) mod.permissionNotes = permissionNotes;
+
   const repo = full && await loadRepo(full);
   if (repo) {
     mod.repo = repo.full_name;
@@ -191,6 +228,16 @@ if (mode === 'submit') {
       else if (SCAN_MODES[v('Virus scan')] === undefined) unset('scan');
       else set('scan', SCAN_MODES[v('Virus scan')]);
     }
+    if (v('AI use') && v('AI use') !== 'No change') { const ai = parseAi(v('AI use')); if (ai) set('ai', ai); }
+    const aiParts = parseAiParts(v('Which parts used AI?'));
+    if (aiParts.length) set('aiParts', aiParts);
+    else if (mod.ai === 'none' && mod.aiParts) unset('aiParts'); // "No AI used" clears the old list
+    checkAiParts(mod);
+    const perms = parsePermissions(v);
+    if (Object.keys(perms).length) set('permissions', { ...(mod.permissions || {}), ...perms });
+    for (const [label, key] of [['Credits', 'credits'], ['Permission notes', 'permissionNotes']]) {
+      if (v(label)) isNone(v(label)) ? unset(key) : set(key, parseNotes(label, v(label)));
+    }
     if (!changed.length && !errors.length) errors.push('Nothing to change: every field matches what is listed now.');
     await loadRepo(mod.repo);
   }
@@ -217,7 +264,10 @@ const siteUrl = siteRepo.toLowerCase() === `${siteOwner.toLowerCase()}.github.io
   ? `https://${siteRepo.toLowerCase()}/`
   : `https://${siteOwner.toLowerCase()}.github.io/${siteRepo}/`;
 const page = `${siteUrl}mod.html?id=${mod.id}`;
-const FIELD_NAMES = { authorName: 'display name', name: 'mod name', images: 'screenshots', scan: 'virus scan setting' };
+const FIELD_NAMES = {
+  authorName: 'display name', name: 'mod name', images: 'screenshots', scan: 'virus scan setting',
+  ai: 'AI disclosure', aiParts: 'AI parts', permissionNotes: 'permission notes'
+};
 const WHEN = {
   full: `It will appear at ${page}, usually within 2 to 5 minutes, once the site has rebuilt and VirusTotal has checked its files. ` +
     'Files VirusTotal hasn\'t seen before take a few minutes longer while it analyses them.',

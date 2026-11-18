@@ -1,5 +1,5 @@
 name: Edit a mod
-description: Change a listed mod's name, summary, description, screenshots, category, games, requirements, tags or virus scan setting.
+description: Change a listed mod's details, screenshots, AI disclosure, permissions or virus scan setting.
 title: "Edit: "
 labels: ["edit"]
 body:
@@ -80,6 +80,67 @@ body:
     attributes:
       label: Tags
       description: "Replaces all tags. Up to 8, separated by commas. Write none to clear them."
+  - type: dropdown
+    id: ai
+    attributes:
+      label: AI use
+      options:
+        - No change
+        - No AI used
+        - "AI-assisted: AI helped, but the work is mainly mine"
+        - "AI-generated: a large part was made by AI"
+      default: 0
+  - type: checkboxes
+    id: ai-parts
+    attributes:
+      label: Which parts used AI?
+      description: Leave all unticked to keep the current list. If you tick any, they replace it.
+      options:
+        - label: Voices or other audio
+        - label: Textures or images
+        - label: Meshes or models
+        - label: Scripts or code
+        - label: Text, dialogue or descriptions
+  - type: dropdown
+    id: perm-upload
+    attributes:
+      label: Upload to other sites
+      options: ["No change", "Yes", "Ask me first", "No"]
+      default: 0
+  - type: dropdown
+    id: perm-modify
+    attributes:
+      label: Modify and re-release
+      options: ["No change", "Yes", "Ask me first", "No"]
+      default: 0
+  - type: dropdown
+    id: perm-convert
+    attributes:
+      label: Convert to other games or versions
+      options: ["No change", "Yes", "Ask me first", "No"]
+      default: 0
+  - type: dropdown
+    id: perm-assets
+    attributes:
+      label: Use assets in other mods
+      options: ["No change", "Yes", "Ask me first", "No"]
+      default: 0
+  - type: dropdown
+    id: perm-commercial
+    attributes:
+      label: Use in paid or commercial mods
+      options: ["No change", "Yes", "Ask me first", "No"]
+      default: 0
+  - type: textarea
+    id: credits
+    attributes:
+      label: Credits
+      description: Replaces the credits. Write none to remove them.
+  - type: textarea
+    id: permission-notes
+    attributes:
+      label: Permission notes
+      description: Replaces the permission notes. Write none to remove them.
   - type: dropdown
     id: scan
     attributes:
