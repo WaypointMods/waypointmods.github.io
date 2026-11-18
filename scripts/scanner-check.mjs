@@ -38,14 +38,14 @@ else {
   const cleanFile = path.join(dir, 'readme.txt');
   fs.writeFileSync(eicar, EICAR);
   fs.writeFileSync(cleanFile, 'Just a harmless readme.\n');
-  const cases = [['plain file', eicar, true], ['clean file', cleanFile, false]];
-  if (spawnSync('zip', ['-j', '-q', path.join(dir, 'mod.zip'), eicar]).status === 0) cases.push(['inside a .zip', path.join(dir, 'mod.zip'), true]);
-  if (spawnSync('7z', ['a', '-bd', '-y', path.join(dir, 'mod.7z'), eicar], { stdio: 'ignore' }).status === 0) cases.push(['inside a .7z', path.join(dir, 'mod.7z'), true]);
+  const cases = [['EICAR as a plain file', eicar, true], ['a harmless file', cleanFile, false]];
+  if (spawnSync('zip', ['-j', '-q', path.join(dir, 'mod.zip'), eicar]).status === 0) cases.push(['EICAR inside a .zip', path.join(dir, 'mod.zip'), true]);
+  if (spawnSync('7z', ['a', '-bd', '-y', path.join(dir, 'mod.7z'), eicar], { stdio: 'ignore' }).status === 0) cases.push(['EICAR inside a .7z', path.join(dir, 'mod.7z'), true]);
   for (const [label, file, shouldFlag] of cases) {
     const r = clamScan(file);
     const flagged = r.result === 'infected';
     result(r.result !== 'error' && flagged === shouldFlag,
-      `ClamAV, EICAR ${label}: ${r.result === 'error' ? 'error ' + r.detail : flagged ? 'caught (' + r.name + ')' : 'passed as clean'}`);
+      `ClamAV, ${label}: ${r.result === 'error' ? 'error ' + r.detail : flagged ? 'caught (' + r.name + ')' : 'passed as clean'}`);
   }
   fs.rmSync(dir, { recursive: true, force: true });
 }
