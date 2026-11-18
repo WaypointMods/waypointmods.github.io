@@ -94,28 +94,129 @@
   const svg = (name, s = 14) =>
     `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name]}</svg>`;
 
-  // ---------- tiny markdown (headings, lists, bold, code, links) ----------
-  function inline(s) {
-    return s
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-  }
+  // ---------- text formatting: Markdown and Nexus-style BBCode ----------
+  // Authors can paste a Nexus description as it is. The text is HTML-escaped first; only the tags
+  // below become HTML again, and links and images must be http(s). Used for descriptions,
+  // changelogs (GitHub release notes, which are Markdown), credits and permission notes.
+  const URL_OK = /^https?:\/\/[^\s"'<>\u0002\u0003]+$/i;
+  const COLOR_OK = /^(#[0-9a-f]{3,8}|[a-z]{3,20})$/i;
+  const SIZES = { 1: '.75em', 2: '.875em', 3: '1em', 4: '1.25em', 5: '1.5em', 6: '1.9em', 7: '2.3em' };
+  const ytId = v => (/^[\w-]{11}$/.test(v) ? v : ((v.match(/(?:[?&]v=|youtu\.be\/|embed\/|shorts\/)([\w-]{11})/) || [])[1] || null));
+  const BLOCK = '\u0001'; // marks a line holding generated block HTML, passed through as it is
+
   function md(src) {
-    const out = [];
-    let list = null, para = [];
-    const flushP = () => { if (para.length) { out.push('<p>' + para.map(inline).join('<br>') + '</p>'); para = []; } };
-    const flushL = () => { if (list) { out.push('<ul>' + list.map(li => '<li>' + inline(li) + '</li>').join('') + '</ul>'); list = null; } };
-    esc(src || '').split('\n').forEach(raw => {
-      const line = raw.trim();
-      if (!line) { flushP(); flushL(); return; }
-      if (line.startsWith('## ')) { flushP(); flushL(); out.push('<h3>' + inline(line.slice(3)) + '</h3>'); return; }
-      if (/^[-*] /.test(line)) { flushP(); (list = list || []).push(line.slice(2)); return; }
-      flushL(); para.push(line);
+    const keep = [];
+    const hold = h => `\u0002${keep.push(h) - 1}\u0003`;
+    const unhold = s => { let t = s; for (let i = 0; i < 3 && t.includes('\u0002'); i++) t = t.replace(/\u0002(\d+)\u0003/g, (_, n) => keep[n]); return t; };
+    const linkOpen = u => hold(`<a href="${u}" target="_blank" rel="noopener nofollow ugc">`);
+    const img = (u, alt) => hold(`<img class="d-img" src="${u}" alt="${alt}" loading="lazy" referrerpolicy="no-referrer">`);
+    const yt = id => hold(`<button type="button" class="yt" data-yt="${id}"><span class="yt-play" aria-hidden="true">▶</span><span>Play video<small>Loads from YouTube</small></span></button>`);
+    const block = h => `\n${BLOCK}${h}\n`;
+
+    let s = esc(String(src || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')).replace(/\r\n?/g, '\n');
+
+    // Code is kept exactly as written.
+    s = s.replace(/^```[^\n]*\n([\s\S]*?)^```[ \t]*$/gm, (_, c) => block(hold(`<pre><code>${c.replace(/\n$/, '')}</code></pre>`)));
+    s = s.replace(/\[code\]([\s\S]*?)\[\/code\]/gi, (_, c) => block(hold(`<pre><code>${c.replace(/^\n|\n$/g, '')}</code></pre>`)));
+    s = s.replace(/`([^`\n]+)`/g, (_, c) => hold(`<code>${c}</code>`));
+
+    // Images, videos and links.
+    s = s.replace(/\[img(?:=[^\]]*)?\]\s*(\S+?)\s*\[\/img\]/gi, (m, u) => (URL_OK.test(u) ? img(u, '') : m));
+    s = s.replace(/!\[([^\]\n]*)\]\((\S+?)\)/g, (m, a, u) => (URL_OK.test(u) ? img(u, a) : m));
+    s = s.replace(/\[youtube\]\s*(\S+?)\s*\[\/youtube\]/gi, (m, v) => { const id = ytId(v); return id ? block(yt(id)) : m; });
+    s = s.replace(/\[url=(?:&quot;|&#39;)?([^\s\]]+?)(?:&quot;|&#39;)?\]([\s\S]*?)\[\/url\]/gi, (m, u, t) => (URL_OK.test(u) ? linkOpen(u) + t + hold('</a>') : m));
+    s = s.replace(/\[url\]\s*(\S+?)\s*\[\/url\]/gi, (m, u) => (URL_OK.test(u) ? linkOpen(u) + u + hold('</a>') : m));
+    s = s.replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+)\)/g, (m, t, u) => (URL_OK.test(u) ? linkOpen(u) + t + hold('</a>') : m));
+    s = s.replace(/(^|[\s(])(https?:\/\/[^\s<()\u0002\u0003\[\]]*[^\s<().,;:!?'"\u0002\u0003\[\]])/gm, (m, pre, u) => pre + linkOpen(u) + u + hold('</a>'));
+
+    // Block tags, only when every opening tag has its closing tag (otherwise they stay as text).
+    const count = re => (s.match(re) || []).length;
+    const BLOCKS = {
+      center: ['<div class="t-center">', '</div>'], right: ['<div class="t-right">', '</div>'], left: ['<div>', '</div>'],
+      quote: ['<blockquote>', '</blockquote>'], spoiler: ['<details class="spoiler"><summary>Spoiler</summary>', '</details>']
+    };
+    for (const [tag, [a, b]] of Object.entries(BLOCKS)) {
+      const open = new RegExp(`\\[${tag}(?:=[^\\]]*)?\\]`, 'gi'), close = new RegExp(`\\[\\/${tag}\\]`, 'gi');
+      if (count(open) && count(open) === count(close)) s = s.replace(open, block(a)).replace(close, block(b));
+    }
+    if (count(/\[list(?:=[^\]]*)?\]/gi) && count(/\[list(?:=[^\]]*)?\]/gi) === count(/\[\/list\]/gi)) {
+      const stack = [];
+      s = s.replace(/\[list(=[^\]]*)?\]|\[\/list\]|\[\*\]/gi, (m, num) => {
+        if (m === '[*]') return stack.length ? block('<li>') : m; // </li> is implied by the next <li>
+        if (/^\[\//.test(m)) return block(stack.pop() || '</ul>');
+        stack.push(num ? '</ol>' : '</ul>');
+        return block(num ? '<ol>' : '<ul>');
+      });
+    }
+    s = s.replace(/\[line\]|\[hr\]/gi, block('<hr>'));
+    // Size and colour around several paragraphs become a block, so they don't break the paragraphs.
+    s = s.replace(/\[(size|colou?r)=([^\]\n]+)\]((?:(?!\[\/\1\])[\s\S])*?\n[ \t]*\n(?:(?!\[\/\1\])[\s\S])*?)\[\/\1\]/gi, (m, tag, v, body) => {
+      const style = /^size$/i.test(tag) ? (SIZES[v] ? `font-size:${SIZES[v]}` : '') : (COLOR_OK.test(v) ? `color:${v}` : '');
+      return style ? block(`<div style="${style}">`) + body + block('</div>') : m;
     });
-    flushP(); flushL();
-    return out.join('');
+
+    // Inline formatting inside one paragraph.
+    function inline(t) {
+      for (let pass = 0; pass < 4; pass++) {
+        const before = t;
+        t = t.replace(/\[b\]([\s\S]*?)\[\/b\]/gi, '<strong>$1</strong>')
+          .replace(/\[i\]([\s\S]*?)\[\/i\]/gi, '<em>$1</em>')
+          .replace(/\[u\]([\s\S]*?)\[\/u\]/gi, '<u>$1</u>')
+          .replace(/\[s\]([\s\S]*?)\[\/s\]/gi, '<del>$1</del>')
+          .replace(/\[font=[^\]]*\]([\s\S]*?)\[\/font\]/gi, '$1')
+          .replace(/\[size=(\d)\]([\s\S]*?)\[\/size\]/gi, (m, n, x) => (SIZES[n] ? `<span style="font-size:${SIZES[n]}">${x}</span>` : x))
+          .replace(/\[colou?r=([^\]]+)\]([\s\S]*?)\[\/colou?r\]/gi, (m, c, x) => (COLOR_OK.test(c) ? `<span style="color:${c}">${x}</span>` : x));
+        if (t === before) break;
+      }
+      return t
+        .replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, '<strong>$1</strong>')
+        .replace(/__(?=\S)([\s\S]*?\S)__/g, '<strong>$1</strong>')
+        .replace(/~~(?=\S)([\s\S]*?\S)~~/g, '<del>$1</del>')
+        .replace(/(^|[^*\w])\*(?=\S)([^*\n]*?\S)\*(?![*\w])/g, '$1<em>$2</em>')
+        .replace(/(^|[^_\w])_(?=\S)([^_\n]*?\S)_(?![_\w])/g, '$1<em>$2</em>');
+    }
+
+    // Lines into blocks: headings, lists, quotes, dividers, paragraphs.
+    const out = [];
+    let para = [], list = null, quote = [];
+    const flushP = () => { if (para.length) { out.push('<p>' + inline(para.join('\n')).replace(/\n/g, '<br>') + '</p>'); para = []; } };
+    const flushL = () => { if (list) { out.push(`<${list.tag}>` + list.items.map(li => '<li>' + inline(li) + '</li>').join('') + `</${list.tag}>`); list = null; } };
+    const flushQ = () => { if (quote.length) { out.push('<blockquote><p>' + inline(quote.join('\n')).replace(/\n/g, '<br>') + '</p></blockquote>'); quote = []; } };
+    const flush = () => { flushP(); flushL(); flushQ(); };
+    s.split('\n').forEach(raw => {
+      const line = raw.trim();
+      if (!line) { flush(); return; }
+      if (line.startsWith(BLOCK)) { flush(); out.push(line.slice(1)); return; }
+      let m;
+      if ((m = line.match(/^(#{1,6})\s+(.+?)\s*#*$/))) { flush(); const h = Math.min(6, Math.max(3, m[1].length + 1)); out.push(`<h${h}>${inline(m[2])}</h${h}>`); return; }
+      if (/^(-{3,}|\*{3,}|_{3,})$/.test(line)) { flush(); out.push('<hr>'); return; }
+      if ((m = line.match(/^&gt;\s?(.*)$/))) { flushP(); flushL(); quote.push(m[1]); return; }
+      if ((m = line.match(/^[-*+•]\s+(.+)$/)) || (m = line.match(/^\d{1,3}[.)]\s+(.+)$/))) {
+        const tag = /^\d/.test(line) ? 'ol' : 'ul';
+        flushP(); flushQ();
+        if (list && list.tag !== tag) flushL();
+        (list = list || { tag, items: [] }).items.push(m[1]);
+        return;
+      }
+      flushL(); flushQ(); para.push(line);
+    });
+    flush();
+    return unhold(out.join('\n'));
   }
+
+  // Videos in descriptions load from YouTube only when the visitor presses play.
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('.yt[data-yt]');
+    if (!b || !/^[\w-]{11}$/.test(b.dataset.yt)) return;
+    const f = document.createElement('iframe');
+    f.className = 'yt-frame';
+    f.src = `https://www.youtube-nocookie.com/embed/${b.dataset.yt}?autoplay=1`;
+    f.title = 'YouTube video';
+    f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+    f.allowFullscreen = true;
+    f.referrerPolicy = 'strict-origin-when-cross-origin';
+    b.replaceWith(f);
+  });
 
   // ---------- shared pieces ----------
   // Line icons per category: drawn inside the waypoint pin on covers, banners and category links.
@@ -799,7 +900,7 @@
   }
 
   // Shared with add.js (the guided Add your mod page).
-  window.Waypoint = { esc, svg, card, catIcon, issueUrl, CATEGORIES: Object.keys(CAT_ICON), ARCHIVE_RE, fmtSize };
+  window.Waypoint = { esc, svg, md, card, catIcon, issueUrl, CATEGORIES: Object.keys(CAT_ICON), ARCHIVE_RE, fmtSize };
 
   if (['home', 'browse', 'mod'].includes(page)) getStats(); // start the request before drawing the page
   shell();

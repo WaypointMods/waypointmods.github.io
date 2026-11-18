@@ -108,7 +108,21 @@
     if (reqs().length) $('#more-about').open = true;
     return !!data.repo;
   }
-  form.addEventListener('input', () => { save(); counts(); aiParts(); });
+  form.addEventListener('input', e => { save(); counts(); aiParts(); if (e.target.name === 'description') descPreview(); });
+
+  // Description preview: exactly how it will look on the mod page.
+  function descPreview() {
+    const box = $('#desc-preview');
+    if (box.hidden) return;
+    box.innerHTML = val('description') ? W.md(form.elements.description.value) : '<p class="muted">Nothing to preview yet.</p>';
+  }
+  $('#desc-preview-btn').addEventListener('click', e => {
+    const box = $('#desc-preview');
+    box.hidden = !box.hidden;
+    e.currentTarget.textContent = box.hidden ? 'Preview' : 'Hide preview';
+    e.currentTarget.setAttribute('aria-expanded', String(!box.hidden));
+    descPreview();
+  });
   form.addEventListener('change', () => { save(); aiParts(); });
 
   function counts() {
