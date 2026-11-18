@@ -14,30 +14,39 @@
       <h1>About <span data-site-name></span></h1>
       <p class="lead">A free place to list Skyrim mods, run by the community with no paid tiers and no ads.</p>
 
-      <h2>How files are hosted</h2>
-      <p>This site doesn't store mod files. Each author publishes their mod as a release on their own GitHub repository, and the download buttons here link straight to that release. Download counts come from GitHub.</p>
-      <p>The site itself is a set of static pages on GitHub Pages, rebuilt every few hours by GitHub Actions. That's why it costs nothing to run.</p>
+      <h2>How it works</h2>
+      <p>This site doesn't store mod files. Each author publishes their mod as a release on their own GitHub repository, and the download buttons here link straight to that release. Screenshots are hosted by GitHub too.</p>
+      <p>Authors list their mods with a short form, and it's checked automatically: there's no waiting for approval. Only the owner of a GitHub repository can list or change its mod.</p>
+      <p>The pages themselves are static files on GitHub Pages, rebuilt by GitHub Actions whenever a mod is added or changed, and every few hours to pick up new releases. Download counts and stars are refreshed live, through a small free Cloudflare service, so they're never more than a few minutes old. That's how the whole site runs at no cost.</p>
 
       <h2>Safety</h2>
       <ul>
-        <li>Every new file is checked against VirusTotal before it is listed. Files over VirusTotal's 650 MB limit are marked "not virus-scanned".</li>
+        <li>Every new file is checked against VirusTotal before it can be downloaded here. Files over VirusTotal's 650 MB limit are marked "Not virus-scanned".</li>
+        <li>A new version appears only after its scan. Until then, the mod page shows a notice that it's on its way.</li>
         <li>Each file's SHA-256 hash is recorded and shown on the Files tab, so you can check your download matches.</li>
         <li>If an author replaces a file, it's scanned again. A file flagged by the scan hides the whole mod.</li>
-        <li>Mods are listed without manual review, and only by the owner of the GitHub repository. Anything that breaks the rules is removed when reported.</li>
-        <li>Anyone can report a mod from its page.</li>
+        <li>An author's display name is always shown next to their GitHub account, so nobody can pass themselves off as someone else.</li>
+        <li>Mods aren't reviewed by hand before they're listed, so rule breaks are dealt with through reports. Anyone can report a mod from its page.</li>
       </ul>
 
       <h2>Takedowns and reports</h2>
-      <p>If your work was uploaded without your permission, or a mod breaks the <a href="submit.html#rules">rules</a>, <a data-issue="report-mod.yml" href="#" target="_blank" rel="noopener">open a report</a>. Listings are removed while a report is looked into.</p>
+      <p>If your work was uploaded without your permission, or a mod breaks the <a href="submit.html#rules">rules</a>, <a data-issue="report-mod.yml" href="#" target="_blank" rel="noopener">open a report</a>. Mods that break the rules are removed.</p>
+
+      <h2>Privacy</h2>
+      <p>No accounts, no ads, no tracking and no cookies. While you browse, your browser loads the pages from GitHub Pages, screenshots from GitHub, and live download counts from the site's Cloudflare service, or from GitHub directly if that's unavailable. Your light or dark theme choice is saved in your own browser only.</p>
 
       <h2>Questions</h2>
       <dl class="faq">
         <dt>Does it work with mod managers?</dt>
         <dd>Not yet. Downloads are manual for now: download the archive and install it with Mod Organizer 2 or Vortex as usual.</dd>
         <dt>Why do I need a GitHub account?</dt>
-        <dd>Only authors and commenters need one. Downloading needs no account at all.</dd>
+        <dd>Only authors need one. Downloading needs no account at all.</dd>
+        <dt>I submitted or edited a mod. Why don't I see it yet?</dt>
+        <dd>It usually shows 2 to 5 minutes after the bot replies, once the site has rebuilt and the files are scanned. Files VirusTotal hasn't seen before can take until the next scheduled update, up to about 4 hours. Browsers also keep an old copy of the page for up to 10 minutes, so press Ctrl + F5 to reload.</dd>
+        <dt>Why isn't the newest version here yet?</dt>
+        <dd>New versions are listed once their files have been virus-scanned, at the next scheduled update, up to about 4 hours. The mod page tells you when one is waiting.</dd>
         <dt>What happens if an author deletes their repository?</dt>
-        <dd>The mod drops off the site at the next rebuild and comes back if the repository returns.</dd>
+        <dd>The mod page says so straight away and its downloads are switched off. It disappears from the lists at once, and from the site at the next update.</dd>
         <dt>How do I endorse a mod?</dt>
         <dd>Star its GitHub repository. The star count is shown on the mod page.</dd>
         <dt>Is this connected to Nexus Mods?</dt>

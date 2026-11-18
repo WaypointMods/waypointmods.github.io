@@ -213,9 +213,12 @@ const FIELD_NAMES = { authorName: 'display name', name: 'mod name', images: 'scr
 
 fs.writeFileSync(path.join(tmp, 'reply.md'), mode === 'submit'
   ? `Thanks, @${login}! **${mod.name}** passed the checks and is being published.\n\n` +
-    `It will appear at ${page} in a few minutes, once its files have been scanned.\n\n` +
-    'New versions show up automatically when you publish a GitHub release. To change the description or tags later, use the Edit a mod form.\n'
-  : `Done, @${login}. Updated the ${changed.map(k => FIELD_NAMES[k] || k).join(', ')} for **${mod.name}**. The change appears at ${page} in a few minutes.\n`);
+    `It will appear at ${page}, usually within 2 to 5 minutes, once the site has rebuilt and its files are virus-scanned. ` +
+    'Files VirusTotal hasn\'t seen before can take until the next scheduled update (up to about 4 hours).\n\n' +
+    'If you had the site open already, press Ctrl + F5 to reload: browsers can keep an old copy for up to 10 minutes.\n\n' +
+    'New versions show up automatically when you publish a GitHub release. To change the description, screenshots or tags later, use the Edit a mod form.\n'
+  : `Done, @${login}. Updated the ${changed.map(k => FIELD_NAMES[k] || k).join(', ')} for **${mod.name}**. ` +
+    `The change appears at ${page} within a few minutes (press Ctrl + F5 if you had the page open).\n`);
 setOutput('ok', 'true');
 setOutput('title', mode === 'submit' ? `Add ${mod.name}` : `Update ${mod.name}`);
 console.log(`Wrote mods/${mod.id}.json`);

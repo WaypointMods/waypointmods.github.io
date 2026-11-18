@@ -31,12 +31,18 @@
 
       <h2>2. Submit it here</h2>
       <p>The submission form asks for the repository, mod name, a one-line summary, the full description, category, supported games and requirements. It opens on GitHub. Automatic checks reply within a minute or two: if everything is fine your mod goes live a few minutes later, once its files are scanned. If something needs fixing, the reply says what, and you edit the issue to try again.</p>
+      <div class="notice"><strong>How long until it shows?</strong> Usually 2 to 5 minutes after the bot's reply: the site rebuilds and your files are virus-scanned first. Files VirusTotal hasn't seen before can take until the next scheduled update, up to about 4 hours. If you had the site open just before, press <strong>Ctrl + F5</strong> to reload, because browsers can keep an old copy of the page for up to 10 minutes.</div>
+      <p>Two optional extras:</p>
+      <ul>
+        <li><strong>Display name:</strong> the author name shown on the site, for example your Nexus name. Your GitHub account is always shown next to it.</li>
+        <li><strong>Screenshots:</strong> drag or paste up to 8 images into the form. The first one becomes the cover picture. GitHub hosts them for free.</li>
+      </ul>
       <p>You can only submit repositories you own. For a repository owned by an organization, make your membership of that organization public first.</p>
       <p class="cta"><a class="btn btn-primary btn-lg" data-issue="submit-mod.yml" href="#" target="_blank" rel="noopener">Open the submission form</a></p>
 
       <h2>3. Updating your mod</h2>
-      <p>Publish a new release in the same repository. The site checks for new releases every few hours, scans the new files and updates your page. You don't need to submit again.</p>
-      <p>To change your description, tags or requirements, use the <a data-issue="edit-mod.yml" href="#" target="_blank" rel="noopener">edit form</a>.</p>
+      <p>Publish a new release in the same repository. Your mod page shows a "just released" notice straight away, and the new version is listed within a few hours, once its files are scanned. You don't need to submit again.</p>
+      <p>To change the name, display name, summary, description, screenshots, category, games, tags or requirements, use the <a data-issue="edit-mod.yml" href="#" target="_blank" rel="noopener">edit form</a>. Edits show within a few minutes, the same way as a new submission.</p>
 
       <div class="notice"><strong>About replaced files.</strong> Every file's SHA-256 hash is recorded. If you replace a file in an existing release, it's scanned again like a new one. A file flagged by the virus scan hides the whole mod until it's looked at.</div>
 

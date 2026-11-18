@@ -4,6 +4,7 @@
   const SITE = window.SITE || { name: 'Waypoint', tagline: '', indexRepo: '', giscus: {} };
   const MODS = window.MODS || [];
   const GAMES = { se: 'Skyrim SE/AE', vr: 'Skyrim VR', le: 'Skyrim LE' };
+  const ARCHIVE_RE = /\.(7z|zip|rar)$/i;
   const page = document.body.dataset.page;
   const $ = (s, r = document) => r.querySelector(s);
 
@@ -405,12 +406,16 @@
     return data;
   }
 
-  const getStats = () => !SITE.statsUrl || window.MODS_ARE_EXAMPLES ? Promise.resolve(null) : remembered('stats', async () => {
-    try {
-      const res = await fetch(SITE.statsUrl);
-      return res.ok ? (await res.json()).repos : null;
-    } catch (e) { return null; }
-  });
+  // One shared request per page, however many parts of the page ask for it.
+  let statsRequest = null;
+  const getStats = () => statsRequest || (statsRequest = !SITE.statsUrl || window.MODS_ARE_EXAMPLES
+    ? Promise.resolve(null)
+    : remembered('stats', async () => {
+      try {
+        const res = await fetch(SITE.statsUrl);
+        return res.ok ? (await res.json()).repos : null;
+      } catch (e) { return null; }
+    }));
 
   const fetchRepoDirect = repo => remembered('live:' + repo, async () => {
     const api = p => fetch('https://api.github.com/repos/' + repo + p, { headers: { Accept: 'application/vnd.github+json' } });
@@ -424,7 +429,7 @@
       newest: rels.length ? {
         tag: rels[0].tag_name,
         date: rels[0].published_at,
-        urls: rels[0].assets.filter(a => /\.(7z|zip|rar)$/i.test(a.name)).map(a => a.browser_download_url)
+        urls: rels[0].assets.filter(a => ARCHIVE_RE.test(a.name)).map(a => a.browser_download_url)
       } : null
     };
   });
@@ -536,6 +541,7 @@
     }));
   }
 
+  if (['home', 'browse', 'mod'].includes(page)) getStats(); // start the request before drawing the page
   shell();
   if (page === 'mod') modPage();
   else if (page === 'home') liveLists(home());

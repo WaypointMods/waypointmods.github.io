@@ -3,7 +3,7 @@ window.SITE = {
   name: 'Waypoint',
   tagline: 'Free mod hosting for Skyrim authors',
   indexRepo: 'WaypointMods/waypointmods.github.io', // the repo that holds this site + submissions
-  statsUrl: 'https://waypoint-stats.elsevta.workers.dev/stats', // stats Worker (see worker/); empty = mod pages ask GitHub directly
+  statsUrl: 'https://waypoint-stats.waypointmods.workers.dev/stats', // stats Worker (see worker/); empty = mod pages ask GitHub directly
   giscus: {
     // Fill in from https://giscus.app once Discussions are enabled on indexRepo.
     repo: '',

@@ -213,6 +213,7 @@ h1, h2, h3 { line-height: 1.2; }
 .notice { background: var(--surface-2); border-radius: var(--radius); padding: 14px 16px; color: var(--muted); font-size: 14px; }
 .notice strong { color: var(--text); }
 #live-note .notice { margin-top: 16px; }
+.page .notice { margin: 16px 0; }
 .notice-warn { border-left: 3px solid #d1242f; }
 .btn-disabled, .btn-disabled:hover { opacity: .45; pointer-events: none; cursor: not-allowed; }
 .cta { margin: 18px 0; }
