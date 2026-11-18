@@ -8,8 +8,8 @@ Mod files stay in each author's own GitHub releases.
 | Part | What it does |
 |---|---|
 | `mods/<id>.json` | One file per listed mod. This is the registry. |
-| `.github/ISSUE_TEMPLATE/` | The Submit, Edit and Report forms. |
-| `.github/workflows/submission.yml` | When someone submits or edits, checks the form, commits `mods/<id>.json` straight to `main`, starts a build and closes the issue. No manual approval. Only a repo's owner (or a public member of the owning organization) can submit or edit it. Replies on the issue with problems if a check fails. |
+| `.github/ISSUE_TEMPLATE/` | The Add your mod, Edit and Report forms. |
+| `.github/workflows/submission.yml` | When someone adds or edits a mod, checks the form, commits `mods/<id>.json` straight to `main`, starts a build and closes the issue. No manual approval. Only a repo's owner (or a public member of the owning organization) can add or edit it. Authors can opt out of the virus scan; their mod then shows a "Not virus-scanned" warning. Replies on the issue with problems if a check fails. |
 | `.github/workflows/build.yml` | On every push to `main`, when the stats Worker spots a new release or deleted repo, and every 6 hours as a safety net: pulls releases, hashes and scans new files (waiting up to 3 minutes for VirusTotal), builds `_site/`, publishes to Pages. |
 | `.github/workflows/check.yml` | Validates `mods/*.json` on pull requests that people open by hand. |
 | `state/assets.json` | Written by the build: every file's approved SHA-256 hash and scan status. Committed back automatically. |
@@ -53,13 +53,13 @@ run `npx wrangler secret put BUILD_TOKEN --name waypoint-stats` again.
 
 ## Moderating
 
-Submissions and edits go live without review, so moderation is reactive:
+New mods and edits go live without review, so moderation is reactive:
 
 - **Reports** arrive as issues labelled `report`. Watch the repo (Watch → All activity) to get them by email.
 - **Remove a mod:** delete `mods/<id>.json` and commit. The build after that push takes it off the site.
 - **Block an author:** remove their mods and lock or delete their issues. GitHub's
   "Block user" on the organization stops them opening new issues.
-- **Every listing is in git history,** so you can always see who submitted what and when.
+- **Every listing is in git history,** so you can always see who added what and when.
 
 ### Scanning and replaced files
 

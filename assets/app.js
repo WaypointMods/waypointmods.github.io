@@ -36,6 +36,11 @@
   const latest = m => m.releases[0];
   const authorLabel = m => m.authorName || m.author;
   const hasOwnName = m => m.authorName && m.authorName.toLowerCase() !== m.author.toLowerCase();
+  // Files that weren't virus-scanned: the author opted out, or VirusTotal couldn't take them.
+  const unscanned = m => !!latest(m) && latest(m).assets.some(a => a.scan === 'unscanned');
+  const scanReason = m => m.scanSkipped
+    ? 'The author chose not to have these files virus-scanned.'
+    : 'These files are too large for VirusTotal, or the scanner was unavailable.';
   const sumDownloads = m => m.releases.reduce((a, r) => a + r.assets.reduce((b, x) => b + (x.downloads || 0), 0), 0);
   // Work out each mod's totals once, instead of on every sort and every keystroke.
   MODS.forEach(m => {
@@ -70,6 +75,7 @@
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     shield: '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/>',
+    alert: '<path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4m0 3h.01"/>',
     pin: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
     moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/>'
@@ -111,7 +117,7 @@
   function card(m) {
     const r = latest(m);
     return `<a class="card" href="mod.html?id=${encodeURIComponent(m.id)}">
-      ${cover(m)}
+      <div class="card-media">${cover(m)}${unscanned(m) ? `<span class="warn-pill" title="${esc(scanReason(m))}">${svg('alert', 12)} Not virus-scanned</span>` : ''}</div>
       <div class="card-body">
         <div class="kicker">${esc(m.category)}</div>
         <h3>${esc(m.name)}</h3>
@@ -137,7 +143,7 @@
 
   // ---------- header / footer ----------
   function shell() {
-    const nav = [['browse', 'browse.html', 'Browse'], ['submit', 'submit.html', 'Submit a mod'], ['about', 'about.html', 'About']];
+    const nav = [['browse', 'browse.html', 'Browse'], ['add', 'add.html', 'Add your mod'], ['about', 'about.html', 'About']];
     const h = $('#site-header');
     if (h) {
       h.innerHTML = `<div class="wrap hdr">
@@ -163,8 +169,8 @@
       f.innerHTML = `<div class="wrap ftr">
         <div>${esc(SITE.name)} is a free, non-commercial mod index. Files are hosted by their authors on GitHub.</div>
         <nav aria-label="Footer">
-          <a href="submit.html">Submit a mod</a>
-          <a href="submit.html#rules">Rules</a>
+          <a href="add.html">Add your mod</a>
+          <a href="add.html#rules">Rules</a>
           <a href="${issueUrl('report-mod.yml')}" target="_blank" rel="noopener">Report a problem</a>
           <a href="about.html">About</a>
         </nav>
@@ -251,7 +257,7 @@
             <span>${fmtSize(a.size)}</span>
             <span>${svg('dl', 12)} <span data-dl="${esc(a.url)}">${fmtNum(a.downloads)}</span></span>
             <span class="hash" title="SHA-256 ${esc(a.sha256)}">SHA-256 ${esc(String(a.sha256).slice(0, 12))}…</span>
-            ${a.scan === 'unscanned' ? '<span>Not virus-scanned</span>' : ''}
+            ${a.scan === 'unscanned' ? `<span class="warn-text">${svg('alert', 12)} Not virus-scanned</span>` : ''}
           </div>
         </div>
         <a class="btn btn-sm${isLatest ? ' btn-primary' : ''}" href="${esc(a.url)}">${svg('dl')} Download</a>
@@ -313,6 +319,8 @@
             <div><b>${r ? 'v' + esc(r.version) : '-'}</b>version</div>
             <div><b>${ago(m.lastUpdated)}</b>updated</div>
           </div>
+          ${unscanned(m) ? `<div class="notice notice-warn scan-warn">${svg('alert', 16)}<div><strong>Not virus-scanned.</strong> ${esc(scanReason(m))}
+            Only download it if you trust the author, and scan the file with your own antivirus before opening it.</div></div>` : ''}
           <div id="live-note"></div>
           ${m.images && m.images.length ? `<div class="gallery">${m.images.map((u, i) =>
             `<button type="button" class="thumb" data-shot="${i}" aria-label="Open screenshot ${i + 1} of ${m.images.length}">
@@ -336,9 +344,9 @@
                  <div class="dl-note">${esc(main.name)} · ${fmtSize(main.size)}</div>
                  ${r.assets.length > 1 ? `<a class="dl-note" href="#files" data-goto="files">+ ${r.assets.length - 1} more file${r.assets.length > 2 ? 's' : ''} in this release</a>` : ''}`
               : '<div class="dl-note">No files released yet.</div>'}
-            ${main ? `<div class="dl-note">${svg('shield')} ${main.scan === 'unscanned'
-              ? 'Not virus-scanned (too large or scanner unavailable). File hash recorded.'
-              : 'Checked on VirusTotal, file hash recorded'}</div>` : ''}
+            ${main ? (main.scan === 'unscanned'
+              ? `<div class="dl-note warn-text">${svg('alert')} Not virus-scanned${m.scanSkipped ? ' (author\'s choice)' : ''}. File hash recorded.</div>`
+              : `<div class="dl-note">${svg('shield')} Checked on VirusTotal, file hash recorded</div>`) : ''}
             <a class="btn" href="https://github.com/${esc(m.repo)}" target="_blank" rel="noopener">Star or view on GitHub</a>
           </div>
           <div class="side-card"><h4>Details</h4>
@@ -485,7 +493,9 @@
     const n = data.newest;
     const listedDate = latest(m) ? latest(m).date : '';
     if (n && n.date.slice(0, 10) >= listedDate && n.urls.length && !n.urls.some(u => known.has(u))) {
-      note.innerHTML = `<div class="notice"><strong>${esc(n.tag)} was just released.</strong> It will appear here in a few minutes, once its files have been virus-scanned.</div>`;
+      note.innerHTML = `<div class="notice"><strong>${esc(n.tag)} was just released.</strong> ${m.scanSkipped
+        ? 'It will appear here in a minute or two.'
+        : 'It will appear here in a few minutes, once its files have been virus-scanned.'}</div>`;
     }
   }
 

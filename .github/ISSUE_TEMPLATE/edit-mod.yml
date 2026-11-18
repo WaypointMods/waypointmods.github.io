@@ -1,5 +1,5 @@
 name: Edit a mod
-description: Change a listed mod's name, summary, description, category, games, requirements or tags.
+description: Change a listed mod's name, summary, description, screenshots, category, games, requirements, tags or virus scan setting.
 title: "Edit: "
 labels: ["edit"]
 body:
@@ -80,3 +80,13 @@ body:
     attributes:
       label: Tags
       description: "Replaces all tags. Up to 8, separated by commas. Write none to clear them."
+  - type: dropdown
+    id: scan
+    attributes:
+      label: Virus scan
+      description: "Skipped mods carry a Not virus-scanned warning on their card and page."
+      options:
+        - No change
+        - Scan my files
+        - Skip the virus scan
+      default: 0

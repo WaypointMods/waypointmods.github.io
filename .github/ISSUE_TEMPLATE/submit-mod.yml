@@ -1,14 +1,14 @@
-name: Submit a mod
-description: List your mod on the site. Your files stay in your own GitHub repository.
-title: "Submit: "
+name: Add your mod
+description: Put your mod on the site. Your files stay in your own GitHub repository. No approval needed.
+title: "Add: "
 labels: ["submission"]
 body:
   - type: markdown
     attributes:
       value: |
         Before you start, publish a release on your mod's GitHub repository with the .7z, .zip or .rar attached.
-        After you submit, automatic checks run and reply here within a minute or two. If everything passes, your mod usually goes live 2 to 5 minutes later, once its files are virus-scanned.
-        You can only submit repositories you own.
+        Automatic checks reply here within a minute or two. If everything passes, your mod usually goes live 2 to 5 minutes later, once its files are virus-scanned.
+        You can only add repositories you own.
   - type: input
     id: repo
     attributes:
@@ -90,6 +90,13 @@ body:
       label: Tags
       description: Up to 8, separated by commas.
       placeholder: lighting, roads, night
+  - type: checkboxes
+    id: scan
+    attributes:
+      label: Virus scan
+      description: "Your files are checked with VirusTotal before they can be downloaded here. VirusTotal may share uploaded files with its paid users. If you skip the scan, your mod is listed a little sooner but carries a clear Not virus-scanned warning on its card and page."
+      options:
+        - label: Skip the virus scan for this mod.
   - type: checkboxes
     id: rules
     attributes:

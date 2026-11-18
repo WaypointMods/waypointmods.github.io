@@ -24,7 +24,7 @@ const VT_MAX = Number(process.env.VT_MAX_CALLS || 100);
 const VT_FLAG_AT = Number(process.env.VT_FLAG_AT || 2);
 const STATE_FILE = path.join(ROOT, 'state', 'assets.json');
 const OUT = path.join(ROOT, '_site');
-const SITE_FILES = ['index.html', 'browse.html', 'mod.html', 'submit.html', 'about.html', '.nojekyll', 'assets', 'data/site.js'];
+const SITE_FILES = ['index.html', 'browse.html', 'mod.html', 'add.html', 'about.html', '.nojekyll', 'assets', 'data/site.js'];
 
 // ---------- 1. validate the registry ----------
 const entries = readMods();
@@ -102,7 +102,9 @@ async function awaitVerdict(e, a) {
 }
 
 // Look the hash up on VirusTotal; upload the file if VirusTotal has never seen it.
-async function scan(e, a, local) {
+// scanOn is false when the author chose to skip the scan: the file is still hashed, never sent anywhere.
+async function scan(e, a, local, scanOn) {
+  if (!scanOn) { e.status = 'unscanned'; e.note = 'opted-out'; return; }
   if (!VT) { e.status = 'unscanned'; e.note = 'no-key'; return; }
   if (vtCalls >= VT_MAX) { e.status = 'queued'; return; }
   delete e.note;
@@ -136,16 +138,17 @@ async function scan(e, a, local) {
   }
 }
 
-async function checkAsset(key, a) {
+async function checkAsset(key, a, scanOn) {
   let e = state[key];
   const meta = { assetId: a.id, size: a.size, updatedAt: a.updated_at };
   const same = e && e.assetId === a.id && e.size === a.size && e.updatedAt === a.updated_at;
 
   if (same) {
     // A moderator can set "rescan" (scan again) or "clean" (false positive) on a flagged file.
-    if (e.status === 'rescan' || e.status === 'pending' || e.status === 'queued' || (e.status === 'unscanned' && e.note === 'no-key' && VT)) {
-      await scan(e, a);
-    }
+    // A flagged file stays flagged even if the author later turns scanning off.
+    const waiting = ['rescan', 'pending', 'queued'].includes(e.status);
+    const canScanNow = e.status === 'unscanned' && ((e.note === 'no-key' && VT) || (e.note === 'opted-out' && scanOn));
+    if (waiting || canScanNow) await scan(e, a, undefined, scanOn);
     return e;
   }
 
@@ -153,7 +156,7 @@ async function checkAsset(key, a) {
   try {
     if (!e) {
       e = state[key] = { ...meta, sha256: dl.sha256, status: 'queued', firstSeen: today() };
-      await scan(e, a, dl);
+      await scan(e, a, dl, scanOn);
       return e;
     }
     Object.assign(e, meta);
@@ -164,7 +167,7 @@ async function checkAsset(key, a) {
       delete e.uploaded;
       delete e.note;
       report.changed.push(key);
-      await scan(e, a, dl);
+      await scan(e, a, dl, scanOn);
     }
     return e;
   } finally {
@@ -210,7 +213,7 @@ for (const [i, { mod }] of entries.entries()) {
     for (const a of r.assets.filter(x => ARCHIVE_RE.test(x.name) && x.state === 'uploaded')) {
       const key = `${repo.full_name}@${r.tag_name}/${a.name}`;
       let e;
-      try { e = await checkAsset(key, a); } catch (err) { console.warn(`${key}: ${err.message}`); ready = false; continue; }
+      try { e = await checkAsset(key, a, mod.scan !== false); } catch (err) { console.warn(`${key}: ${err.message}`); ready = false; continue; }
       if (e.status === 'flagged') { hideReason = `${a.name} flagged by VirusTotal`; report.flagged.push(key); }
       if (['pending', 'queued', 'rescan'].includes(e.status)) ready = false;
       assets.push({
@@ -235,7 +238,7 @@ for (const [i, { mod }] of entries.entries()) {
   out.push({
     id: mod.id, name: mod.name, author: repo.owner.login, authorName: mod.authorName || '', repo: repo.full_name,
     summary: mod.summary, description: mod.description, games: mod.games, category: mod.category,
-    tags: mod.tags, requirements: mod.requirements, images: mod.images || [],
+    tags: mod.tags, requirements: mod.requirements, images: mod.images || [], scanSkipped: mod.scan === false,
     license: mod.license || (spdx && spdx !== 'NOASSERTION' ? spdx : ''),
     created: mod.created, stars: repo.stargazers_count,
     hue: mod.hue ?? hueFor(mod.id),

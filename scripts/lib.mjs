@@ -89,6 +89,7 @@ export function validateMod(mod, file) {
   if (mod.images !== undefined && (!Array.isArray(mod.images) || mod.images.length > L.images ||
       mod.images.some(u => typeof u !== 'string' || !IMAGE_RE.test(u)))) e.push(`images must be up to ${L.images} GitHub-hosted image links`);
   if (mod.includePrereleases !== undefined && typeof mod.includePrereleases !== 'boolean') e.push('includePrereleases must be true or false');
+  if (mod.scan !== undefined && mod.scan !== false) e.push('scan can only be false (leave it out to scan)');
   return e;
 }
 
