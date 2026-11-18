@@ -16,6 +16,11 @@ body:
     validations:
       required: true
   - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: "Only if the Waypoint page said your description was too long to carry over: paste it here (it's on your clipboard). Otherwise leave this empty."
+  - type: textarea
     id: screenshots
     attributes:
       label: Screenshots

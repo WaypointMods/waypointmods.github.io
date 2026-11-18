@@ -8,8 +8,8 @@ body:
       value: |
         Your changes from the Waypoint page are filled in below. Add new screenshots if you like, then press **Create**.
         Anything not listed below stays as it is.
-  # Screenshots come before the changes on purpose: the bot reads the form top to bottom and the
-  # later answer wins, so "Screenshots: none" from the page is never undone by an empty box here.
+  # The bot never lets an empty box replace an answer, so "Screenshots: none" from the page stays
+  # even though this box is empty.
   - type: textarea
     id: screenshots
     attributes:
@@ -22,3 +22,8 @@ body:
       description: Filled in by the Change your mod page. Edit carefully, keeping each `###` line as it is.
     validations:
       required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: "Only if the Waypoint page said your description was too long to carry over: paste it here (it's on your clipboard). Otherwise leave this empty."

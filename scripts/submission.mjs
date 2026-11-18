@@ -25,12 +25,15 @@ const errors = [];
 
 // ---------- reading the form ----------
 // Issue forms render as "### Label\n\nvalue"; empty answers are "_No response_".
+// A question can appear twice (the guided pages put answers in one box, and their short forms also
+// have boxes such as Description or Screenshots): an answer is never replaced by an empty one.
 function parseForm(body) {
   const out = {};
   const parts = String(body || '').replace(/\r\n?/g, '\n').split(/^### +(.+)$/m);
   for (let i = 1; i < parts.length; i += 2) {
-    const v = parts[i + 1].trim();
-    out[parts[i].trim()] = v === '_No response_' ? '' : v;
+    const key = parts[i].trim();
+    const v = parts[i + 1].trim() === '_No response_' ? '' : parts[i + 1].trim();
+    if (v || !(key in out)) out[key] = v;
   }
   return out;
 }

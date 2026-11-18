@@ -334,7 +334,7 @@
       'Summary': val('summary'),
       'Category': picked('category')[0] || '',
       'Games': ticks(Object.values(GAMES), picked('games')),
-      'Description': withDescription ? val('description') : 'PASTE YOUR DESCRIPTION HERE (it is on your clipboard)',
+      'Description': val('description'),
       'Requirements': reqs().map(r => `${r.name} | ${r.url}`).join('\n'),
       'Tags': val('tags').split(',').map(t => t.trim()).filter(Boolean).join(', '),
       'AI use': AI_OPTION[ai] || '',
@@ -344,6 +344,8 @@
     out['Credits'] = val('credits');
     out['Permission notes'] = val('permission-notes');
     out['Virus scan'] = SCAN_OPTION[picked('scan')[0] || 'private'];
+    // Too long for the link: it goes into the short form's own Description box instead (pasted).
+    if (!withDescription) delete out['Description'];
     return out;
   }
 
@@ -355,7 +357,7 @@
     Object.keys(now).forEach(q => {
       if (q === 'Repository' || now[q] === base[q]) return;
       if (q === 'Which parts used AI?' && !picked('ai-parts').length) return; // empty means "keep"
-      if (q === 'Description' && !withDescription) { out.push([q, 'PASTE YOUR DESCRIPTION HERE (it is on your clipboard)']); return; }
+      if (q === 'Description' && !withDescription) return; // pasted into the form's Description box instead
       out.push([q, now[q] || (CLEARABLE.includes(q) ? 'none' : '')]);
     });
     if (picked('shots-remove').length) out.push(['Screenshots', 'none']);
@@ -379,7 +381,8 @@
     return `https://github.com/${SITE.indexRepo}/issues/new?` + q.toString().replace(/\+/g, '%20');
   }
 
-  const CHANGE_NAMES = { 'Which parts used AI?': 'AI parts', 'Screenshots': 'Screenshots' };
+  let longDesc = false; // the description doesn't fit in the GitHub link
+  const CHANGE_NAMES ={ 'Which parts used AI?': 'AI parts', 'Screenshots': 'Screenshots' };
   function preview() {
     const scan = picked('scan')[0] || 'private';
     const ai = picked('ai')[0];
@@ -401,11 +404,11 @@
         ? list.map(([q, v]) => `<li>${W.svg('check', 14)} <span><b>${W.esc(CHANGE_NAMES[q] || q)}</b>${v === 'none' ? ' (removed)' : ''}</span></li>`).join('')
         : '<li class="muted">Nothing yet. Go back and change something.</li>';
     }
-    const long = buildUrl(true).length > MAX_URL;
-    $('#send').href = (EDIT && !mod) ? '#' : buildUrl(!long);
-    $('#send-note').innerHTML = long
-      ? `<div class="notice"><strong>Your description is long</strong>, too long to carry over in the link. Copy it now and on GitHub, replace the line <strong>PASTE YOUR DESCRIPTION HERE</strong> with it.
-          <p><button class="btn btn-sm" type="button" id="copy-desc">Copy description</button></p></div>`
+    longDesc = buildUrl(true).length > MAX_URL;
+    $('#send').href = (EDIT && !mod) ? '#' : buildUrl(!longDesc);
+    $('#send-note').innerHTML = longDesc
+      ? `<div class="notice"><strong>Your description is long</strong>, too long for GitHub to carry over in the link. When you press Send, it's copied for you: on GitHub, click the <strong>Description</strong> box (under ${EDIT ? 'Your changes' : 'Your answers'}) and paste it with <strong>Ctrl + V</strong>.
+          <p><button class="btn btn-sm" type="button" id="copy-desc">Copy description again</button></p></div>`
       : '';
     const copy = $('#copy-desc');
     if (copy) copy.addEventListener('click', async () => {
@@ -451,6 +454,7 @@
     const p = problem(3);
     if (p) { e.preventDefault(); $('#werror').textContent = p; return; }
     preview(); // make sure the link carries the very latest answers
+    if (longDesc && navigator.clipboard) navigator.clipboard.writeText(form.elements.description.value).catch(() => {});
   });
   form.addEventListener('change', e => { if (at === 3) preview(); if (e.target.name === 'rules') $('#werror').textContent = ''; });
   form.addEventListener('submit', e => e.preventDefault());
