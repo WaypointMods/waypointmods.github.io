@@ -5,10 +5,10 @@ window.SITE = {
   indexRepo: 'WaypointMods/waypointmods.github.io', // the repo that holds this site + submissions
   statsUrl: 'https://waypoint-stats.waypointmods.workers.dev/stats', // stats Worker (see worker/); empty = mod pages ask GitHub directly
   giscus: {
-    // Fill in from https://giscus.app once Discussions are enabled on indexRepo.
-    repo: '',
-    repoId: '',
+    // Comments on mod pages: GitHub Discussions in indexRepo, through the giscus app.
+    repo: 'WaypointMods/waypointmods.github.io',
+    repoId: 'R_kgDOVx8_ZQ',
     category: 'Mod comments',
-    categoryId: ''
+    categoryId: 'DIC_kwDOVx8_Zc4DLZfD'
   }
 };

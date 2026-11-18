@@ -224,6 +224,8 @@
     </a>`;
   }
   // ---------- theme ----------
+  // giscus's own themes closest to Waypoint's dark and light look.
+  const giscusTheme = () => (currentTheme() === 'dark' ? 'transparent_dark' : 'light');
   function readTheme() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
   function currentTheme() {
     return document.documentElement.dataset.theme ||
@@ -260,6 +262,9 @@
         document.documentElement.dataset.theme = next;
         try { localStorage.setItem('theme', next); } catch (e) { /* private mode */ }
         paint();
+        // Comments (giscus) follow the site's theme switch.
+        const frame = document.querySelector('iframe.giscus-frame');
+        if (frame) frame.contentWindow.postMessage({ giscus: { setConfig: { theme: giscusTheme() } } }, 'https://giscus.app');
       });
     }
     const f = $('#site-footer');
@@ -463,7 +468,7 @@
     const attrs = {
       repo: g.repo, 'repo-id': g.repoId, category: g.category, 'category-id': g.categoryId,
       mapping: 'specific', term: m.id, strict: '1', 'reactions-enabled': '1', 'emit-metadata': '0',
-      'input-position': 'top', theme: 'preferred_color_scheme', lang: 'en', loading: 'lazy'
+      'input-position': 'top', theme: giscusTheme(), lang: 'en', loading: 'lazy'
     };
     Object.keys(attrs).forEach(k => s.setAttribute('data-' + k, attrs[k]));
     box.appendChild(s);
