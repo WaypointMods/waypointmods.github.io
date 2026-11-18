@@ -222,8 +222,11 @@ h1, h2 { font-family: var(--serif); font-weight: 700; }
 /* Mod page */
 .banner { position: relative; height: 260px; overflow: hidden; border-bottom: 1px solid var(--border); }
 .banner > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* With a cover screenshot: the picture fills the banner and fades into the page at the bottom. */
+.banner.has-img { height: 340px; }
 .banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.banner img + svg { display: none; }
+.banner.has-img::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 45%, var(--bg)); pointer-events: none; }
+@media (max-width: 560px) { .banner.has-img { height: 220px; } }
 .mod-layout { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; margin-top: -110px; position: relative; padding-bottom: 20px; }
 .mod-main { flex: 999 1 560px; min-width: 0; }
 .mod-side { flex: 1 1 340px; min-width: 0; }

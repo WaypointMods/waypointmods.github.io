@@ -77,7 +77,13 @@ body:
     id: screenshots
     attributes:
       label: Screenshots
-      description: "Optional. Drag or paste up to 8 images here (PNG, JPG, GIF or WebP). The first one is the cover picture. GitHub hosts them for free."
+      description: "Optional. Drag or paste up to 8 images here (PNG, JPG, GIF or WebP). GitHub hosts them for free."
+  - type: input
+    id: cover
+    attributes:
+      label: Cover picture
+      description: "Which screenshot is the cover? It's shown on your mod's card and as the banner on its page. 1 for the first, 2 for the second, and so on. Leave empty to use the first."
+      placeholder: "1"
   - type: textarea
     id: requirements
     attributes:

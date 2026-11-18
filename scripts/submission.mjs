@@ -94,6 +94,20 @@ function parseImages(v) {
   return images.slice(0, LIMITS.images);
 }
 
+// "Cover picture": a 1-based screenshot number. The chosen one moves to the front, because the first
+// screenshot is the cover everywhere (card, page banner, gallery start).
+function withCover(images, v) {
+  const s = String(v ?? '').trim();
+  if (!s) return images;
+  const n = Number(s);
+  if (!images || !images.length) { errors.push('Cover picture: add screenshots first; there is nothing to pick from yet.'); return images; }
+  if (!Number.isInteger(n) || n < 1 || n > images.length) {
+    errors.push(`Cover picture: give a number from 1 to ${images.length}, the position of the screenshot you want.`);
+    return images;
+  }
+  return [images[n - 1], ...images.filter((_, i) => i !== n - 1)];
+}
+
 // ---------- AI disclosure and permissions ----------
 function parseAi(v) {
   if (!(v in AI_USE)) { errors.push('AI use: pick one of the options from the list.'); return undefined; }
@@ -182,6 +196,7 @@ if (mode === 'submit') {
   const authorName = oneLine(f['Display name'], LIMITS.authorName);
   if (authorName) mod.authorName = authorName;
   if (f['Screenshots']) mod.images = parseImages(f['Screenshots']);
+  if (f['Cover picture']) mod.images = withCover(mod.images, f['Cover picture']);
   const scanChoice = f['Virus scan'];
   if (scanChoice && !(scanChoice in SCAN_MODES)) errors.push('Virus scan: pick one of the options from the list.');
   else if (scanChoice && SCAN_MODES[scanChoice] !== undefined) mod.scan = SCAN_MODES[scanChoice];
@@ -220,7 +235,8 @@ if (mode === 'submit') {
     const games = parseGames(v('Games'));
     if (games.length) set('games', games);
     if (v('Description')) set('description', parseDescription(v('Description')));
-    if (v('Screenshots')) isNone(v('Screenshots')) ? unset('images') : set('images', parseImages(v('Screenshots')));
+    if (v('Screenshots')) isNone(v('Screenshots')) ? unset('images') : set('images', withCover(parseImages(v('Screenshots')), v('Cover picture')));
+    else if (v('Cover picture')) set('images', withCover(mod.images, v('Cover picture')));
     if (v('Requirements')) set('requirements', parseRequirements(v('Requirements')));
     if (v('Tags')) set('tags', parseTags(v('Tags')));
     if (v('Virus scan') && v('Virus scan') !== 'No change') {
@@ -265,8 +281,8 @@ const siteUrl = siteRepo.toLowerCase() === `${siteOwner.toLowerCase()}.github.io
   : `https://${siteOwner.toLowerCase()}.github.io/${siteRepo}/`;
 const page = `${siteUrl}mod.html?id=${mod.id}`;
 const FIELD_NAMES = {
-  authorName: 'display name', name: 'mod name', images: 'screenshots', scan: 'virus scan setting',
-  ai: 'AI disclosure', aiParts: 'AI parts', permissionNotes: 'permission notes'
+  authorName: 'display name', name: 'mod name', scan: 'virus scan setting',
+  ai: 'AI disclosure', aiParts: 'AI parts', permissionNotes: 'permission notes', images: 'screenshots or cover picture'
 };
 const WHEN = {
   full: `It will appear at ${page}, usually within 2 to 5 minutes, once the site has rebuilt and VirusTotal has checked its files. ` +

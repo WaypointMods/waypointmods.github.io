@@ -413,8 +413,10 @@
 
     // Blueprint banner: the category's tool drawn large, a measurement line and the dotted route.
     const size = main ? fmtSize(main.size).toUpperCase() : '';
+    // With screenshots, the cover (the first one) fills the banner; if it fails to load, the drawing shows instead.
+    const coverImg = m.images && m.images[0];
     root.innerHTML = `
-      <div class="banner bp">
+      <div class="banner bp${coverImg ? ' has-img' : ''}">
         <svg viewBox="0 0 1440 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           <g transform="translate(1010 40) scale(7.5)" fill="none" stroke-width="0.28" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--line)">${CAT_ICON[m.category] || CAT_ICON.Other}</g>
           <path d="M1010 230 L1190 230 M1010 222 L1010 238 M1190 222 L1190 238" stroke-width="1.5" style="stroke: var(--line)"/>
@@ -422,6 +424,7 @@
           <path d="M700 210 C 780 190, 820 120, 900 130 S 960 60, 990 70" fill="none" stroke-width="2.5" stroke-dasharray="2 10" stroke-linecap="round" style="stroke: var(--accent)"/>
           <circle cx="700" cy="210" r="6" style="fill: var(--accent)"/>
         </svg>
+        ${coverImg ? `<img src="${esc(coverImg)}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove('has-img'); this.remove()">` : ''}
       </div>
       <div class="wrap mod-layout">
         <div class="mod-main">

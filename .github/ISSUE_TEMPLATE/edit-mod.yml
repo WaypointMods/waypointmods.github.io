@@ -69,7 +69,12 @@ body:
     id: screenshots
     attributes:
       label: Screenshots
-      description: "Replaces all screenshots. Drag or paste up to 8 images here; the first one is the cover. Write none to remove them."
+      description: "Replaces all screenshots. Drag or paste up to 8 images here. Write none to remove them."
+  - type: input
+    id: cover
+    attributes:
+      label: Cover picture
+      description: "Which screenshot is the cover (card and page banner)? 1 for the first, 2 for the second, and so on. Works with new screenshots above, or on its own to pick a different cover from your current ones. Leave empty to keep it as it is."
   - type: textarea
     id: requirements
     attributes:
