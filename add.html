@@ -38,6 +38,13 @@
             </div>
             <div class="mod-pick" id="mod-pick" role="listbox" aria-label="Listed mods"></div>
             <div id="mod-chosen" aria-live="polite"></div>
+            <details class="help remove-box" id="remove-box" hidden>
+              <summary>Remove this mod from Waypoint instead</summary>
+              <p>This takes <b id="rm-name"></b> off Waypoint. Your GitHub repository, releases and files are <b>not</b> touched, and you can add the mod again any time with Add your mod.</p>
+              <label class="check"><input type="checkbox" id="rm-ok"><span>Yes, take it off Waypoint.</span></label>
+              <p class="remove-actions"><a class="btn btn-danger" id="rm-send" href="#" target="_blank" rel="noopener">Remove from Waypoint</a><span class="werror" id="rm-error" role="alert"></span></p>
+              <small class="hint">Opens a short GitHub form; press Create there, signed in as the owner of the repository.</small>
+            </details>
           </div>
           <div data-mode="add">
           <h2 id="s1h">Where is your mod?</h2>
@@ -216,6 +223,7 @@
       <h2>Updating your mod</h2>
       <p>Publish a new release in the same repository. Waypoint notices it within a minute and lists it once its files are virus-scanned, usually 2 to 5 minutes after you publish. You don't need to add it again.</p>
       <p>To change the name, description, screenshots, cover picture, category, games, tags, requirements, AI use, permissions, credits or virus scan, use <a href="add.html?edit">Change your mod</a>. Edits show within a few minutes.</p>
+      <p>To take your mod off Waypoint but keep your GitHub repository, open <a href="add.html?edit">Change your mod</a>, pick it, and choose <strong>Remove this mod from Waypoint instead</strong>.</p>
       <div class="notice"><strong>About replaced files.</strong> Every file's SHA-256 hash is recorded. If you replace a file in an existing release, it's scanned again like a new one. A file flagged by the virus scan hides the whole mod until it's looked at, and turning the scan off afterwards doesn't undo that.</div>
       <p>You can only add repositories you own. For a repository owned by an organization, make your membership of that organization public first.</p>
 

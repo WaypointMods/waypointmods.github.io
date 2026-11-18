@@ -220,8 +220,27 @@
     $('#mod-chosen').innerHTML = `<ul class="checks">${ok(`Changing <b>${W.esc(m.name)}</b>. <a href="mod.html?id=${encodeURIComponent(m.id)}" target="_blank" rel="noopener">See its page</a>`)}
       ${ok(`It belongs to <b>${W.esc(ownerOf(m))}</b> on GitHub. You'll send the changes while signed in as ${W.esc(ownerOf(m))}.`)}</ul>`;
     load(m);
+    $('#remove-box').hidden = false;
+    $('#rm-name').textContent = m.name;
+    $('#rm-ok').checked = false;
+    $('#rm-error').textContent = '';
     try { history.replaceState(null, '', 'add.html?edit=' + encodeURIComponent(m.id)); } catch (e) { /* file:// */ }
   }
+
+  // "Remove this mod from Waypoint instead": the bot takes the entry off the site after the usual owner
+  // check. The author's repository is never touched.
+  function removalUrl() {
+    const q = new URLSearchParams();
+    q.set('template', 'edit-mod-guided.yml');
+    q.set('title', 'Remove: ' + mod.name);
+    q.set('answers', block([['Mod ID', mod.id], ['Remove from Waypoint', 'Yes, remove it']]));
+    return `https://github.com/${SITE.indexRepo}/issues/new?` + q.toString().replace(/\+/g, '%20');
+  }
+  $('#rm-send').addEventListener('click', e => {
+    if (!mod || !$('#rm-ok').checked) { e.preventDefault(); $('#rm-error').textContent = 'Tick the box first to confirm.'; return; }
+    e.currentTarget.href = removalUrl();
+  });
+  $('#rm-ok').addEventListener('change', () => { $('#rm-error').textContent = ''; });
 
   // Fill every question with the mod's current details.
   function load(m) {

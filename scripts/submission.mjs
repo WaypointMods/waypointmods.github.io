@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  CATEGORIES, GAME_LABELS, ARCHIVE_RE, IMAGE_RE, LIMITS, SCAN_MODES, PERMISSIONS, PERMISSION_ANSWERS, AI_USE, AI_PARTS,
+  MODS_DIR, CATEGORIES, GAME_LABELS, ARCHIVE_RE, IMAGE_RE, LIMITS, SCAN_MODES, PERMISSIONS, PERMISSION_ANSWERS, AI_USE, AI_PARTS,
   scanMode, clean, oneLine, slugify, hueFor, today, isNone,
   readMods, writeMod, validateMod, gh, setOutput
 } from './lib.mjs';
@@ -143,7 +143,7 @@ function parseNotes(label, v) {
 
 // ---------- checking the repository ----------
 // Returns the repo, or null after recording why it can't be used.
-async function loadRepo(full) {
+async function loadRepo(full, needRelease = true) {
   let repo;
   try {
     repo = await gh(`/repos/${full}`);
@@ -154,7 +154,7 @@ async function loadRepo(full) {
   if (repo.private) { errors.push('Repository: it must be public.'); return null; }
 
   const releases = (await gh(`/repos/${repo.full_name}/releases?per_page=30`)).filter(r => !r.draft);
-  if (!releases.some(r => r.assets.some(a => ARCHIVE_RE.test(a.name)))) {
+  if (needRelease && !releases.some(r => r.assets.some(a => ARCHIVE_RE.test(a.name)))) {
     errors.push('Repository: no published release with a .7z, .zip or .rar file attached. Publish a release first (see the Submit page).');
   }
 
@@ -231,7 +231,26 @@ if (mode === 'submit') {
     errors.push('Mod ID: no listed mod has that ID. It is the part after `?id=` in the mod page address.');
   } else {
     mod = { ...entry.mod };
-    const set = (key, value) => { if (JSON.stringify(mod[key]) !== JSON.stringify(value)) { mod[key] = value; changed.push(key); } };
+
+    // "Remove from Waypoint": takes the entry off the site. The author's repository is never touched.
+    // Same owner check as any change, so nobody can remove someone else's mod.
+    const removing = /^yes/i.test(oneLine(f['Remove from Waypoint'], 40));
+    if (removing) {
+      await loadRepo(mod.repo, false);
+      if (!errors.length) {
+        fs.unlinkSync(path.join(MODS_DIR, entry.file));
+        fs.writeFileSync(path.join(tmp, 'reply.md'),
+          `Done, @${login}. **${mod.name}** has been taken off Waypoint and disappears from the site within a few minutes ` +
+          '(press Ctrl + F5 if you had it open).\n\n' +
+          `Your GitHub repository, releases and files are untouched. To list it again any time, use ${siteUrl}add.html\n`);
+        setOutput('ok', 'true');
+        setOutput('title', `Remove ${mod.name}`);
+        console.log(`Removed mods/${entry.file}`);
+        process.exit(0);
+      }
+    }
+
+    const set =(key, value) => { if (JSON.stringify(mod[key]) !== JSON.stringify(value)) { mod[key] = value; changed.push(key); } };
     const unset = key => { if (key in mod) { delete mod[key]; changed.push(key); } };
     const v = label => f[label] || '';
 
@@ -262,7 +281,7 @@ if (mode === 'submit') {
       if (v(label)) isNone(v(label)) ? unset(key) : set(key, parseNotes(label, v(label)));
     }
     if (!changed.length && !errors.length) errors.push('Nothing to change: every field matches what is listed now.');
-    await loadRepo(mod.repo);
+    if (!removing) await loadRepo(mod.repo); // a removal already checked the owner
   }
 }
 
