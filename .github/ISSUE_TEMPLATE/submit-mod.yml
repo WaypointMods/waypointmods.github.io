@@ -189,5 +189,5 @@ body:
           required: true
         - label: It contains no sexually explicit content.
           required: true
-        - label: Nothing in it is paywalled or "early access".
+        - label: It's free to download. If supporters get a newer version first somewhere else (early access), it's released here for free within 3 months.
           required: true

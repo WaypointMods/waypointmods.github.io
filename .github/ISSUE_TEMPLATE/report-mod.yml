@@ -17,6 +17,7 @@ body:
       options:
         - Malware or a suspicious file
         - Uploaded without the author's permission
+        - Paid mod, or an early access version not released for free within 3 months
         - Breaks the site rules
         - Broken download
         - Something else
