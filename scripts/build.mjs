@@ -227,10 +227,63 @@ async function checkAsset(key, a, mode) {
 async function fetchRepo(mod) {
   try {
     const [repo, releases] = await Promise.all([gh(`/repos/${mod.repo}`), gh(`/repos/${mod.repo}/releases?per_page=30`)]);
-    return repo.private ? { error: 'repository is private' } : { repo, releases };
+    if (repo.private) return { error: 'repository is private' };
+    return { repo, releases, funding: await fetchFunding(repo) };
   } catch (err) {
     return { error: err.message };
   }
+}
+
+// ---------- donation links ----------
+// Authors who already set up GitHub's Sponsor button have a FUNDING.yml: in the mod's repository, or
+// shared from the owner's ".github" repository. Waypoint shows the same links on the mod page.
+// Donations go straight to the author; Waypoint only links to them.
+const FUNDING_SITES = {
+  github: ['GitHub Sponsors', u => `https://github.com/sponsors/${u}`],
+  patreon: ['Patreon', u => `https://www.patreon.com/${u}`],
+  ko_fi: ['Ko-fi', u => `https://ko-fi.com/${u}`],
+  buy_me_a_coffee: ['Buy Me a Coffee', u => `https://www.buymeacoffee.com/${u}`],
+  liberapay: ['Liberapay', u => `https://liberapay.com/${u}`],
+  open_collective: ['Open Collective', u => `https://opencollective.com/${u}`],
+  polar: ['Polar', u => `https://polar.sh/${u}`],
+  thanks_dev: ['thanks.dev', u => `https://thanks.dev/${u}`],
+  issuehunt: ['IssueHunt', u => `https://issuehunt.io/r/${u}`]
+};
+const fundingLabel = url => {
+  const host = new URL(url).hostname.replace(/^www\./, '');
+  const known = { 'paypal.me': 'PayPal', 'paypal.com': 'PayPal', 'ko-fi.com': 'Ko-fi', 'patreon.com': 'Patreon', 'buymeacoffee.com': 'Buy Me a Coffee',
+    'github.com': 'GitHub Sponsors', 'liberapay.com': 'Liberapay', 'opencollective.com': 'Open Collective', 'boosty.to': 'Boosty', 'streamelements.com': 'StreamElements' };
+  return known[host] || host;
+};
+// FUNDING.yml is simple "key: value" or "key: [a, b]" lines, so a tiny reader is enough.
+function parseFunding(text) {
+  const links = [];
+  for (const raw of String(text).split(/\r?\n/)) {
+    const m = raw.replace(/\s+#.*$/, '').match(/^([a-z_]+)\s*:\s*(.+?)\s*$/i);
+    if (!m) continue;
+    const values = (m[2].startsWith('[') ? m[2].replace(/^\[|\]$/g, '').split(',') : [m[2]])
+      .map(v => v.trim().replace(/^["']|["']$/g, '')).filter(v => v && v !== '#');
+    const key = m[1].toLowerCase();
+    for (const v of values) {
+      if (key === 'custom') {
+        const url = /^https?:\/\//i.test(v) ? v : `https://${v}`;
+        try { const u = new URL(url); if (u.protocol === 'https:' || u.protocol === 'http:') links.push({ label: fundingLabel(u.href), url: u.href.replace(/^http:/, 'https:') }); } catch { /* not a link */ }
+      } else if (FUNDING_SITES[key] && /^[\w.-]{1,60}$/.test(v)) {
+        links.push({ label: FUNDING_SITES[key][0], url: FUNDING_SITES[key][1](v) });
+      }
+    }
+  }
+  return links;
+}
+async function fetchFunding(repo) {
+  const owner = repo.owner.login;
+  for (const p of [`/repos/${repo.full_name}/contents/.github/FUNDING.yml`, `/repos/${owner}/.github/contents/FUNDING.yml`, `/repos/${owner}/.github/contents/.github/FUNDING.yml`]) {
+    try {
+      const f = await gh(p);
+      if (f && f.content) return parseFunding(Buffer.from(f.content, 'base64').toString('utf8')).slice(0, 6);
+    } catch { /* not there: try the next place */ }
+  }
+  return [];
 }
 const fetched = new Array(entries.length);
 let next = 0;
@@ -242,7 +295,7 @@ const out = [];
 const needsReview = [];
 const liveRepos = new Set();
 for (const [i, { mod }] of entries.entries()) {
-  const { repo, releases, error } = fetched[i];
+  const { repo, releases, funding, error } = fetched[i];
   if (error) { report.unavailable.push(`${mod.id}: ${error}`); continue; }
   liveRepos.add(repo.full_name.toLowerCase());
 
@@ -290,7 +343,10 @@ for (const [i, { mod }] of entries.entries()) {
     summary: mod.summary, description: mod.description, games: mod.games, category: mod.category,
     tags: mod.tags, requirements: mod.requirements, images: mod.images || [], scanMode: scanMode(mod),
     ai: mod.ai || '', aiParts: mod.aiParts || [], permissions: mod.permissions || {},
-    credits: mod.credits || '', permissionNotes: mod.permissionNotes || '',
+    credits: mod.credits || '', permissionNotes: mod.permissionNotes || '', donate: mod.donate || '',
+    // The author's own donation link first, then any from their FUNDING.yml, without repeats.
+    funding: [...(mod.donate ? [{ label: fundingLabel(mod.donate), url: mod.donate }] : []), ...(funding || [])]
+      .filter((f, k, all) => all.findIndex(x => x.url.replace(/\/$/, '').toLowerCase() === f.url.replace(/\/$/, '').toLowerCase()) === k).slice(0, 6),
     license: mod.license || (spdx && spdx !== 'NOASSERTION' ? spdx : ''),
     created: mod.created, stars: repo.stargazers_count,
     hue: mod.hue ?? hueFor(mod.id),

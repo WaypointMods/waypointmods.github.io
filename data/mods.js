@@ -49,7 +49,7 @@ window.MODS = [
     ]
   },
   {
-    id: 'tavern-chatter', ai: 'assisted', aiParts: ['audio'], permissions: { upload: 'ask', modify: 'yes', convert: 'yes', assets: 'ask', commercial: 'no' }, credits: 'Crowd recordings by **emberquill**, cleaned up with an AI noise tool.', permissionNotes: 'Translations are welcome. Please link back to this page.',
+    id: 'tavern-chatter', funding: [{ label: 'Ko-fi', url: 'https://ko-fi.com/emberquill' }, { label: 'GitHub Sponsors', url: 'https://github.com/sponsors/emberquill' }], ai: 'assisted', aiParts: ['audio'], permissions: { upload: 'ask', modify: 'yes', convert: 'yes', assets: 'ask', commercial: 'no' }, credits: 'Crowd recordings by **emberquill**, cleaned up with an AI noise tool.', permissionNotes: 'Translations are welcome. Please link back to this page.',
     name: 'Tavern Chatter',
     author: 'emberquill',
     repo: 'emberquill/tavern-chatter',

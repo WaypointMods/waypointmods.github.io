@@ -136,6 +136,7 @@ export function validateMod(mod, file) {
       Object.entries(mod.permissions).every(([k, v]) => Object.values(PERMISSIONS).includes(k) && Object.values(PERMISSION_ANSWERS).includes(v));
     if (!ok) e.push(`permissions must map ${Object.values(PERMISSIONS).join('/')} to yes, ask or no`);
   }
+  if (mod.donate !== undefined && !(isHttps(mod.donate) && mod.donate.length <= 300)) e.push('donate must be an https link');
   for (const k of ['credits', 'permissionNotes']) {
     if (mod[k] !== undefined && !isStr(mod[k], 1, L.notes)) e.push(`${k} must be 1-${L.notes} characters`);
   }

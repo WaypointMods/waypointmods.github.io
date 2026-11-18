@@ -554,3 +554,9 @@ textarea.input { border-radius: 16px; resize: vertical; min-height: 90px; line-h
 .desc-preview { margin-top: 10px; padding: 16px 18px; border: 1px dashed var(--border-strong); border-radius: 16px; background: var(--bg); max-height: 420px; overflow-y: auto; }
 .desc-tools { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
 .desc-tools .hint { margin: 0; }
+
+/* Support the author */
+.support-note { margin: 0 0 12px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.support-links { display: flex; flex-direction: column; gap: 8px; }
+.support-links .btn { justify-content: flex-start; }
+.support-links .btn svg { color: #e5484d; }

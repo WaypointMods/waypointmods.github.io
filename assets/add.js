@@ -39,7 +39,7 @@
   const GAMES = { se: 'Skyrim SE/AE', vr: 'Skyrim VR', le: 'Skyrim LE' };
   const AI_PART_OF = { audio: 'Voices or other audio', images: 'Textures or images', models: 'Meshes or models', code: 'Scripts or code', text: 'Text, dialogue or descriptions' };
   // Fields an author may empty when changing a mod; the bot takes "none" as "remove it".
-  const CLEARABLE = ['Display name', 'Requirements', 'Tags', 'Credits', 'Permission notes'];
+  const CLEARABLE = ['Display name', 'Requirements', 'Tags', 'Credits', 'Permission notes', 'Donation link'];
   // Longer links than this risk GitHub's "414 URI Too Long"; the description is then copied by hand.
   const MAX_URL = 7500;
 
@@ -273,6 +273,8 @@
     PERMS.forEach(([id, , , , , key]) => setPicked(id, m.permissions && m.permissions[key] ? [ANSWER_OF[m.permissions[key]]] : []));
     form.elements.credits.value = m.credits || '';
     form.elements['permission-notes'].value = m.permissionNotes || '';
+    form.elements.donate.value = m.donate || '';
+    $('#f-credits').closest('details').open = !!(m.credits || m.permissionNotes || m.donate);
     setPicked('scan', [m.scanMode || 'full']);
     const shots = m.images || [];
     $('#shots').innerHTML = shots.map((u, i) =>
@@ -308,6 +310,7 @@
       if (val('tags').split(',').filter(t => t.trim()).length > 8) return 'Use 8 tags at most.';
     }
     if (i === 2 && !picked('ai').length && !(EDIT && base && !base['AI use'])) return 'Say whether you used AI.';
+    if (i === 2 && val('donate') && !/^(https?:\/\/)?[\w-]+(\.[\w-]+)+(\/\S*)?$/i.test(val('donate'))) return 'The donation link should be a web address, like https://ko-fi.com/yourname.';
     if (i === 3) {
       if (EDIT) return changes().length ? '' : 'Nothing has changed yet. Go back and change something first.';
       if (picked('rules').length < 3) return 'Tick all three boxes to confirm the rules.';
@@ -343,6 +346,7 @@
     PERMS.forEach(([id, , , , label]) => { out[label] = picked(id)[0] || ''; });
     out['Credits'] = val('credits');
     out['Permission notes'] = val('permission-notes');
+    out['Donation link'] = val('donate');
     out['Virus scan'] = SCAN_OPTION[picked('scan')[0] || 'private'];
     // Too long for the link: it goes into the short form's own Description box instead (pasted).
     if (!withDescription) delete out['Description'];

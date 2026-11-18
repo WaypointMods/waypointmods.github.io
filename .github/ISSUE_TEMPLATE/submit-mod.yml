@@ -166,6 +166,12 @@ body:
     attributes:
       label: Permission notes
       description: Optional. Anything else people should know, for example "credit me if you use my textures".
+  - type: input
+    id: donate
+    attributes:
+      label: Donation link
+      description: "Optional. Your Ko-fi, Patreon, PayPal or similar page, shown as a Support the author button. Tips go straight to you. If your repository has a FUNDING.yml (GitHub's Sponsor button), those links are shown too."
+      placeholder: https://ko-fi.com/yourname
   - type: dropdown
     id: scan
     attributes:

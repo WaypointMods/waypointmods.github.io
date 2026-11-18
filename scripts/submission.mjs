@@ -138,6 +138,20 @@ function parsePermissions(get) {
   }
   return out;
 }
+// "Donation link": Ko-fi, Patreon, PayPal and so on. Optional; must be an https link.
+function parseDonate(v) {
+  let s = oneLine(v, 300);
+  if (!s) return '';
+  if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
+  try {
+    const u = new URL(s);
+    if (u.protocol !== 'https:' || !u.hostname.includes('.')) throw new Error();
+    return u.href;
+  } catch {
+    errors.push('Donation link: give a full web address, like `https://ko-fi.com/yourname`.');
+    return '';
+  }
+}
 function parseNotes(label, v) {
   const s = clean(v, LIMITS.notes + 1);
   if (s.length > LIMITS.notes) errors.push(`${label}: keep it under ${LIMITS.notes.toLocaleString('en')} characters.`);
@@ -220,6 +234,8 @@ if (mode === 'submit') {
   if (credits) mod.credits = credits;
   const permissionNotes = parseNotes('Permission notes', f['Permission notes']);
   if (permissionNotes) mod.permissionNotes = permissionNotes;
+  const donate = parseDonate(f['Donation link']);
+  if (donate) mod.donate = donate;
 
   const repo = full && await loadRepo(full);
   if (repo) {
@@ -280,6 +296,7 @@ if (mode === 'submit') {
     checkAiParts(mod);
     const perms = parsePermissions(v);
     if (Object.keys(perms).length) set('permissions', { ...(mod.permissions || {}), ...perms });
+    if (v('Donation link')) isNone(v('Donation link')) ? unset('donate') : (d => d && set('donate', d))(parseDonate(v('Donation link')));
     for (const [label, key] of [['Credits', 'credits'], ['Permission notes', 'permissionNotes']]) {
       if (v(label)) isNone(v(label)) ? unset(key) : set(key, parseNotes(label, v(label)));
     }
@@ -306,7 +323,7 @@ writeMod(mod);
 const page =`${siteUrl}mod.html?id=${mod.id}`;
 const FIELD_NAMES = {
   authorName: 'display name', name: 'mod name', scan: 'virus scan setting',
-  ai: 'AI disclosure', aiParts: 'AI parts', permissionNotes: 'permission notes', images: 'screenshots or cover picture'
+  ai: 'AI disclosure', aiParts: 'AI parts', donate: 'donation link', permissionNotes: 'permission notes', images: 'screenshots or cover picture'
 };
 const WHEN = {
   full: `It will appear at ${page}, usually within 2 to 5 minutes, once the site has rebuilt and VirusTotal has checked its files. ` +

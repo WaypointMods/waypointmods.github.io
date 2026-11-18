@@ -146,6 +146,11 @@ body:
     attributes:
       label: Permission notes
       description: Replaces the permission notes. Write none to remove them.
+  - type: input
+    id: donate
+    attributes:
+      label: Donation link
+      description: "Your Ko-fi, Patreon, PayPal or similar page. Write none to remove it."
   - type: dropdown
     id: scan
     attributes:
