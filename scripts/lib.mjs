@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const MODS_DIR = path.join(ROOT, 'mods');
@@ -18,6 +19,15 @@ export const GAME_KEYS = Object.values(GAME_LABELS);
 // One place for every size limit; the form checks and the entry validator both read these.
 export const LIMITS = { name: 80, authorName: 40, summary: 160, description: 20000, tags: 8, tag: 24, images: 8, requirements: 20 };
 export const USER_AGENT = 'waypoint-build';
+
+// Virus scan choice in the forms -> value stored in mods/<id>.json (a full scan stores nothing).
+export const SCAN_MODES = {
+  'Full scan with VirusTotal (recommended)': undefined,
+  'Private scan: ClamAV + VirusTotal fingerprint': 'private',
+  'No scan': false
+};
+// 'full' | 'private' | 'off'
+export const scanMode = mod => (mod.scan === false ? 'off' : mod.scan === 'private' ? 'private' : 'full');
 
 export const ARCHIVE_RE = /\.(7z|zip|rar)$/i;
 const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -89,7 +99,7 @@ export function validateMod(mod, file) {
   if (mod.images !== undefined && (!Array.isArray(mod.images) || mod.images.length > L.images ||
       mod.images.some(u => typeof u !== 'string' || !IMAGE_RE.test(u)))) e.push(`images must be up to ${L.images} GitHub-hosted image links`);
   if (mod.includePrereleases !== undefined && typeof mod.includePrereleases !== 'boolean') e.push('includePrereleases must be true or false');
-  if (mod.scan !== undefined && mod.scan !== false) e.push('scan can only be false (leave it out to scan)');
+  if (mod.scan !== undefined && !Object.values(SCAN_MODES).includes(mod.scan)) e.push('scan must be "private" or false (leave it out for a full scan)');
   return e;
 }
 
@@ -112,6 +122,39 @@ export async function gh(p, { method = 'GET', body } = {}) {
     throw err;
   }
   return res.status === 204 ? null : res.json();
+}
+
+// ---------- ClamAV (used by the private scan) ----------
+// Installed on the GitHub build machine the first time a build needs it, so builds without a
+// private scan don't pay the extra minute. Nothing here sends files anywhere.
+let clamReady = null;
+export function ensureClamAV() {
+  if (clamReady !== null) return clamReady;
+  const has = () => spawnSync('clamscan', ['--version'], { encoding: 'utf8' }).status === 0;
+  if (!has() && process.platform === 'linux') {
+    console.log('Installing ClamAV...');
+    spawnSync('sudo', ['apt-get', 'update', '-qq'], { stdio: 'inherit' });
+    spawnSync('sudo', ['apt-get', 'install', '-y', '-qq', 'clamav'], { stdio: 'inherit' });
+  }
+  if (has()) {
+    // Fresh virus definitions; the background updater would otherwise hold the lock.
+    spawnSync('sudo', ['systemctl', 'stop', 'clamav-freshclam'], { stdio: 'ignore' });
+    spawnSync('sudo', ['freshclam', '--quiet'], { stdio: 'inherit' });
+  }
+  clamReady = has();
+  return clamReady;
+}
+
+// Returns { result: 'clean' } or { result: 'infected', name } or { result: 'error', detail }.
+export function clamScan(file) {
+  const r = spawnSync('clamscan', [
+    '--no-summary', '--infected', '--stdout',
+    '--max-filesize=2000M', '--max-scansize=4000M', '--max-files=100000', '--max-recursion=30',
+    file
+  ], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  if (r.status === 0) return { result: 'clean' };
+  if (r.status === 1) return { result: 'infected', name: ((r.stdout || '').match(/: (.+) FOUND/) || [])[1] || 'unknown' };
+  return { result: 'error', detail: (r.stderr || r.stdout || String(r.error || '')).trim().slice(0, 300) };
 }
 
 export function setOutput(key, value) {

@@ -1,6 +1,7 @@
-name: Check VirusTotal key
+name: Check virus scanners
 
-# Run from the Actions tab after adding or changing the VT_API_KEY secret.
+# Run from the Actions tab after adding or changing the VT_API_KEY secret, or any time you want to
+# confirm both the full scan (VirusTotal) and the private scan (ClamAV) still work.
 on:
   workflow_dispatch:
 
@@ -15,6 +16,6 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-      - run: node scripts/vt-check.mjs
+      - run: node scripts/scanner-check.mjs
         env:
           VT_API_KEY: ${{ secrets.VT_API_KEY }}

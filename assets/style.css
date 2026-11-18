@@ -214,6 +214,7 @@ h1, h2, h3 { line-height: 1.2; }
 .page { max-width: 760px; padding: 40px 16px 20px; margin: 0 auto; }
 .page h1 { font-size: clamp(28px, 4vw, 36px); margin: 0 0 12px; }
 .page h2 { font-size: 20px; margin: 34px 0 10px; }
+[id] { scroll-margin-top: 80px; }
 .page p, .page li { color: var(--text); }
 .page .lead { color: var(--muted); }
 .notice { background: var(--surface-2); border-radius: var(--radius); padding: 14px 16px; color: var(--muted); font-size: 14px; }

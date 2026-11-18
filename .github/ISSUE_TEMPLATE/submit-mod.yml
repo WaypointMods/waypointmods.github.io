@@ -90,13 +90,20 @@ body:
       label: Tags
       description: Up to 8, separated by commas.
       placeholder: lighting, roads, night
-  - type: checkboxes
+  - type: dropdown
     id: scan
     attributes:
       label: Virus scan
-      description: "Your files are checked with VirusTotal before they can be downloaded here. VirusTotal may share uploaded files with its paid users. If you skip the scan, your mod is listed a little sooner but carries a clear Not virus-scanned warning on its card and page."
+      description: |
+        How your files are checked before they can be downloaded here. Visitors see which one you picked.
+        Full scan: VirusTotal checks the file with 70+ antivirus engines. Files it hasn't seen before are uploaded to it, and its paid users (security companies) can access uploaded files.
+        Private scan: ClamAV scans the file inside GitHub's build, and only the file's fingerprint (not the file) is sent to VirusTotal to see if any engine already knows it as malware. Your file never leaves GitHub, but brand-new malware is less likely to be caught.
+        No scan: nothing is checked, and your mod shows a red Not virus-scanned warning.
       options:
-        - label: Skip the virus scan for this mod.
+        - Full scan with VirusTotal (recommended)
+        - "Private scan: ClamAV + VirusTotal fingerprint"
+        - No scan
+      default: 0
   - type: checkboxes
     id: rules
     attributes:

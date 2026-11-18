@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  CATEGORIES, GAME_LABELS, ARCHIVE_RE, IMAGE_RE, LIMITS, clean, oneLine, slugify, hueFor, today, isNone,
+  CATEGORIES, GAME_LABELS, ARCHIVE_RE, IMAGE_RE, LIMITS, SCAN_MODES, scanMode, clean, oneLine, slugify, hueFor, today, isNone,
   readMods, writeMod, validateMod, gh, setOutput
 } from './lib.mjs';
 
@@ -155,7 +155,9 @@ if (mode === 'submit') {
   const authorName = oneLine(f['Display name'], LIMITS.authorName);
   if (authorName) mod.authorName = authorName;
   if (f['Screenshots']) mod.images = parseImages(f['Screenshots']);
-  if (checked(f['Virus scan']).length) mod.scan = false;
+  const scanChoice = f['Virus scan'];
+  if (scanChoice && !(scanChoice in SCAN_MODES)) errors.push('Virus scan: pick one of the options from the list.');
+  else if (scanChoice && SCAN_MODES[scanChoice] !== undefined) mod.scan = SCAN_MODES[scanChoice];
 
   const repo = full && await loadRepo(full);
   if (repo) {
@@ -184,8 +186,11 @@ if (mode === 'submit') {
     if (v('Screenshots')) isNone(v('Screenshots')) ? unset('images') : set('images', parseImages(v('Screenshots')));
     if (v('Requirements')) set('requirements', parseRequirements(v('Requirements')));
     if (v('Tags')) set('tags', parseTags(v('Tags')));
-    if (v('Virus scan') === 'Skip the virus scan') set('scan', false);
-    if (v('Virus scan') === 'Scan my files') unset('scan');
+    if (v('Virus scan') && v('Virus scan') !== 'No change') {
+      if (!(v('Virus scan') in SCAN_MODES)) errors.push('Virus scan: pick one of the options from the list.');
+      else if (SCAN_MODES[v('Virus scan')] === undefined) unset('scan');
+      else set('scan', SCAN_MODES[v('Virus scan')]);
+    }
     if (!changed.length && !errors.length) errors.push('Nothing to change: every field matches what is listed now.');
     await loadRepo(mod.repo);
   }
@@ -213,13 +218,18 @@ const siteUrl = siteRepo.toLowerCase() === `${siteOwner.toLowerCase()}.github.io
   : `https://${siteOwner.toLowerCase()}.github.io/${siteRepo}/`;
 const page = `${siteUrl}mod.html?id=${mod.id}`;
 const FIELD_NAMES = { authorName: 'display name', name: 'mod name', images: 'screenshots', scan: 'virus scan setting' };
+const WHEN = {
+  full: `It will appear at ${page}, usually within 2 to 5 minutes, once the site has rebuilt and VirusTotal has checked its files. ` +
+    'Files VirusTotal hasn\'t seen before take a few minutes longer while it analyses them.',
+  private: `It will appear at ${page}, usually within 2 to 5 minutes, once the site has rebuilt and its files have had the private scan ` +
+    '(ClamAV, plus a VirusTotal fingerprint check). Your files never leave GitHub.',
+  off: `It will appear at ${page} in a minute or two, once the site has rebuilt. You chose no virus scan, so it is marked ` +
+    '**Not virus-scanned** on its card and page. You can pick a scan later with the Edit a mod form.'
+};
 
 fs.writeFileSync(path.join(tmp, 'reply.md'), mode === 'submit'
   ? `Thanks, @${login}! **${mod.name}** passed the checks and is being published.\n\n` +
-    (mod.scan === false
-      ? `It will appear at ${page} in a minute or two, once the site has rebuilt. You chose to skip the virus scan, so it is marked **Not virus-scanned** on its card and page. You can turn scanning on later with the Edit a mod form.\n\n`
-      : `It will appear at ${page}, usually within 2 to 5 minutes, once the site has rebuilt and its files are virus-scanned. ` +
-        'Files VirusTotal hasn\'t seen before take a few minutes longer while it analyses them.\n\n') +
+    WHEN[scanMode(mod)] + '\n\n' +
     'If you had the site open already, press Ctrl + F5 to reload: browsers can keep an old copy for up to 10 minutes.\n\n' +
     'New versions show up automatically when you publish a GitHub release. To change the description, screenshots or tags later, use the Edit a mod form.\n'
   : `Done, @${login}. Updated the ${changed.map(k => FIELD_NAMES[k] || k).join(', ')} for **${mod.name}**. ` +

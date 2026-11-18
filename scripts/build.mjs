@@ -10,7 +10,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { ROOT, ARCHIVE_RE, USER_AGENT, readMods, validateMod, gh, today, hueFor } from './lib.mjs';
+import { ROOT, ARCHIVE_RE, USER_AGENT, readMods, validateMod, gh, today, hueFor, scanMode, ensureClamAV, clamScan } from './lib.mjs';
 
 const CHECK_ONLY = process.argv.includes('--check');
 const MAX_RELEASES = 5;                 // newest releases shown per mod
@@ -79,66 +79,103 @@ async function download(a) {
   return { file, sha256: hash.digest('hex') };
 }
 
-// Ask VirusTotal about a hash: 'done' (verdict recorded), 'running' (known, still analysing) or 'unknown'.
-async function lookup(e, a) {
-  const found = await vt(`https://www.virustotal.com/api/v3/files/${e.sha256}`);
-  if (!found) return 'unknown';
+// ---------- scanning ----------
+// The author picks the scan: 'full' (VirusTotal), 'private' (ClamAV here + VirusTotal fingerprint only)
+// or 'off'. Each file record keeps which method checked it, so the site can say so.
+
+// Ask VirusTotal about a hash (no file is sent): { state: 'unknown' | 'running' | 'done', stats }.
+async function vtReport(sha256) {
+  const found = await vt(`https://www.virustotal.com/api/v3/files/${sha256}`);
+  if (!found) return { state: 'unknown' };
   const stats = found.data && found.data.attributes && found.data.attributes.last_analysis_stats;
   const total = stats ? Object.values(stats).reduce((x, y) => x + y, 0) : 0;
-  if (!total) return 'running';
-  e.vt = { malicious: stats.malicious, suspicious: stats.suspicious, checked: today() };
-  e.status = stats.malicious >= VT_FLAG_AT ? 'flagged' : 'clean';
+  return total ? { state: 'done', stats } : { state: 'running' };
+}
+const vtDetail = s => `${s.malicious} malicious, ${s.suspicious} suspicious`;
+
+function verdict(e, a, method, flagged, detail) {
+  e.status = flagged ? 'flagged' : 'clean';
+  e.method = method;
+  e.checked = today();
   delete e.uploaded;
-  report.scanned.push(`${a.name}: ${e.status} (${stats.malicious} malicious, ${stats.suspicious} suspicious)`);
-  return 'done';
+  delete e.note;
+  report.scanned.push(`${a.name}: ${e.status} by ${method === 'private' ? 'private scan' : 'VirusTotal'} (${detail})`);
 }
 
-// While VirusTotal is analysing, wait for the verdict here rather than leaving it to the next build.
-async function awaitVerdict(e, a) {
-  for (let i = 0; i < VT_WAIT_TRIES && vtCalls < VT_MAX; i++) {
-    await sleep(VT_WAIT_MS);
-    if (await lookup(e, a) === 'done') return;
-  }
-}
-
-// Look the hash up on VirusTotal; upload the file if VirusTotal has never seen it.
-// scanOn is false when the author chose to skip the scan: the file is still hashed, never sent anywhere.
-async function scan(e, a, local, scanOn) {
-  if (!scanOn) { e.status = 'unscanned'; e.note = 'opted-out'; return; }
+// Full scan: look the hash up, upload the file if VirusTotal has never seen it, and wait for the verdict
+// here (up to ~3 minutes) rather than leaving it to the next build.
+async function fullScan(e, a, local) {
   if (!VT) { e.status = 'unscanned'; e.note = 'no-key'; return; }
   if (vtCalls >= VT_MAX) { e.status = 'queued'; return; }
-  delete e.note;
+  const settle = r => {
+    e.vt = { malicious: r.stats.malicious, suspicious: r.stats.suspicious };
+    verdict(e, a, 'virustotal', r.stats.malicious >= VT_FLAG_AT, vtDetail(r.stats));
+  };
+  const wait = async () => {
+    e.status = 'pending';
+    for (let i = 0; i < VT_WAIT_TRIES && vtCalls < VT_MAX; i++) {
+      await sleep(VT_WAIT_MS);
+      const r = await vtReport(e.sha256);
+      if (r.state === 'done') return settle(r);
+    }
+    report.scanned.push(`${a.name}: still being analysed by VirusTotal; listed on a later build`);
+  };
+
+  const first = await vtReport(e.sha256);
+  if (first.state === 'done') return settle(first);
+  if (first.state === 'running' || e.uploaded) return wait();
+  if (a.size > VT_LARGE) { e.status = 'unscanned'; e.note = 'too-large'; return; }
+  if (vtCalls + 2 > VT_MAX) { e.status = 'queued'; return; }
+  const dl = local || await download(a);
   try {
-    const first = await lookup(e, a);
-    if (first === 'done') return;
-    if (first === 'running' || e.uploaded) {
-      e.status = 'pending';
-      await awaitVerdict(e, a);
-      return;
-    }
-    if (a.size > VT_LARGE) { e.status = 'unscanned'; e.note = 'too-large'; return; }
-    if (vtCalls + 2 > VT_MAX) { e.status = 'queued'; return; }
-    const dl = local || await download(a);
-    try {
-      let target = 'https://www.virustotal.com/api/v3/files';
-      if (a.size > VT_SMALL) target = (await vt('https://www.virustotal.com/api/v3/files/upload_url')).data;
-      const form = new FormData();
-      form.append('file', await fs.openAsBlob(dl.file), a.name);
-      await vt(target, { method: 'POST', body: form });
-      e.uploaded = today();
-      e.status = 'pending';
-    } finally {
-      if (!local) fs.rmSync(dl.file, { force: true });
-    }
-    await awaitVerdict(e, a);
-    if (e.status === 'pending') report.scanned.push(`${a.name}: uploaded to VirusTotal, still being analysed; listed on a later build`);
+    let target = 'https://www.virustotal.com/api/v3/files';
+    if (a.size > VT_SMALL) target = (await vt('https://www.virustotal.com/api/v3/files/upload_url')).data;
+    const form = new FormData();
+    form.append('file', await fs.openAsBlob(dl.file), a.name);
+    await vt(target, { method: 'POST', body: form });
+    e.uploaded = today();
+  } finally {
+    if (!local) fs.rmSync(dl.file, { force: true });
+  }
+  return wait();
+}
+
+// Private scan: ClamAV on the build machine, plus a fingerprint-only VirusTotal lookup.
+// The file itself is never sent anywhere.
+async function privateScan(e, a, local) {
+  if (!ensureClamAV()) { e.status = 'queued'; e.note = 'clamav-unavailable'; return; }
+  const dl = local || await download(a);
+  let clam;
+  try { clam = clamScan(dl.file); } finally { if (!local) fs.rmSync(dl.file, { force: true }); }
+  if (clam.result === 'error') {
+    e.status = 'queued';
+    e.note = 'clamav-error';
+    console.warn(`ClamAV could not scan ${a.name}: ${clam.detail}`);
+    return;
+  }
+  let fp = null;
+  if (VT && vtCalls < VT_MAX) {
+    const r = await vtReport(e.sha256);
+    if (r.state === 'done') fp = r.stats;
+  }
+  e.clamav = clam.result === 'infected' ? clam.name : 'clean';
+  if (fp) e.vt = { malicious: fp.malicious, suspicious: fp.suspicious }; else delete e.vt;
+  const flagged = clam.result === 'infected' || (!!fp && fp.malicious >= VT_FLAG_AT);
+  verdict(e, a, 'private', flagged, `ClamAV: ${e.clamav}; fingerprint: ${fp ? vtDetail(fp) : 'not known to VirusTotal'}`);
+}
+
+async function scan(e, a, local, mode) {
+  try {
+    if (mode === 'off') { e.status = 'unscanned'; e.note = 'opted-out'; return; }
+    if (mode === 'private') return await privateScan(e, a, local);
+    return await fullScan(e, a, local);
   } catch (err) {
     e.status = 'queued';
-    console.warn(`VirusTotal check failed for ${a.name}: ${err.message}`);
+    console.warn(`Scan failed for ${a.name}: ${err.message}`);
   }
 }
 
-async function checkAsset(key, a, scanOn) {
+async function checkAsset(key, a, mode) {
   let e = state[key];
   const meta = { assetId: a.id, size: a.size, updatedAt: a.updated_at };
   const same = e && e.assetId === a.id && e.size === a.size && e.updatedAt === a.updated_at;
@@ -147,8 +184,9 @@ async function checkAsset(key, a, scanOn) {
     // A moderator can set "rescan" (scan again) or "clean" (false positive) on a flagged file.
     // A flagged file stays flagged even if the author later turns scanning off.
     const waiting = ['rescan', 'pending', 'queued'].includes(e.status);
-    const canScanNow = e.status === 'unscanned' && ((e.note === 'no-key' && VT) || (e.note === 'opted-out' && scanOn));
-    if (waiting || canScanNow) await scan(e, a, undefined, scanOn);
+    const canScanNow = e.status === 'unscanned' && ((e.note === 'no-key' && VT) || (e.note === 'opted-out' && mode !== 'off'));
+    const upgrade = e.status === 'clean' && e.method === 'private' && mode === 'full'; // author moved to the full scan
+    if (waiting || canScanNow || upgrade) await scan(e, a, undefined, mode);
     return e;
   }
 
@@ -156,18 +194,16 @@ async function checkAsset(key, a, scanOn) {
   try {
     if (!e) {
       e = state[key] = { ...meta, sha256: dl.sha256, status: 'queued', firstSeen: today() };
-      await scan(e, a, dl, scanOn);
+      await scan(e, a, dl, mode);
       return e;
     }
     Object.assign(e, meta);
     if (dl.sha256 !== e.sha256) {
       // Replaced under the same name: treat it as a new file and scan it again.
       Object.assign(e, { sha256: dl.sha256, status: 'queued', changed: today() });
-      delete e.vt;
-      delete e.uploaded;
-      delete e.note;
+      for (const k of ['vt', 'clamav', 'method', 'uploaded', 'note']) delete e[k];
       report.changed.push(key);
-      await scan(e, a, dl, scanOn);
+      await scan(e, a, dl, mode);
     }
     return e;
   } finally {
@@ -213,12 +249,16 @@ for (const [i, { mod }] of entries.entries()) {
     for (const a of r.assets.filter(x => ARCHIVE_RE.test(x.name) && x.state === 'uploaded')) {
       const key = `${repo.full_name}@${r.tag_name}/${a.name}`;
       let e;
-      try { e = await checkAsset(key, a, mod.scan !== false); } catch (err) { console.warn(`${key}: ${err.message}`); ready = false; continue; }
-      if (e.status === 'flagged') { hideReason = `${a.name} flagged by VirusTotal`; report.flagged.push(key); }
+      try { e = await checkAsset(key, a, scanMode(mod)); } catch (err) { console.warn(`${key}: ${err.message}`); ready = false; continue; }
+      if (e.status === 'flagged') {
+        const by = e.clamav && e.clamav !== 'clean' ? `ClamAV (${e.clamav})` : 'VirusTotal';
+        hideReason = `${a.name} flagged by ${by}`;
+        report.flagged.push(key);
+      }
       if (['pending', 'queued', 'rescan'].includes(e.status)) ready = false;
       assets.push({
         name: a.name, size: a.size, downloads: a.download_count, sha256: e.sha256,
-        url: a.browser_download_url, scan: e.status === 'clean' ? 'clean' : 'unscanned'
+        url: a.browser_download_url, scan: e.status === 'clean' ? (e.method === 'private' ? 'private' : 'virustotal') : 'unscanned'
       });
     }
     if (ready && assets.length) {
@@ -238,7 +278,7 @@ for (const [i, { mod }] of entries.entries()) {
   out.push({
     id: mod.id, name: mod.name, author: repo.owner.login, authorName: mod.authorName || '', repo: repo.full_name,
     summary: mod.summary, description: mod.description, games: mod.games, category: mod.category,
-    tags: mod.tags, requirements: mod.requirements, images: mod.images || [], scanSkipped: mod.scan === false,
+    tags: mod.tags, requirements: mod.requirements, images: mod.images || [], scanMode: scanMode(mod),
     license: mod.license || (spdx && spdx !== 'NOASSERTION' ? spdx : ''),
     created: mod.created, stars: repo.stargazers_count,
     hue: mod.hue ?? hueFor(mod.id),

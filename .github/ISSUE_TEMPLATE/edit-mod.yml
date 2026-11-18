@@ -84,9 +84,10 @@ body:
     id: scan
     attributes:
       label: Virus scan
-      description: "Skipped mods carry a Not virus-scanned warning on their card and page."
+      description: "See the Add your mod page for what each option means. Mods with no scan show a red Not virus-scanned warning."
       options:
         - No change
-        - Scan my files
-        - Skip the virus scan
+        - Full scan with VirusTotal (recommended)
+        - "Private scan: ClamAV + VirusTotal fingerprint"
+        - No scan
       default: 0

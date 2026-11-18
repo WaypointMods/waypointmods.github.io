@@ -24,7 +24,7 @@ Mod files stay in each author's own GitHub releases.
 5. **Actions → Set up labels → Run workflow** (once). The issue forms need these labels.
 6. Recommended: get a free VirusTotal API key (virustotal.com → sign in → API key) and add it under
    **Settings → Secrets and variables → Actions** as `VT_API_KEY`. Without it every file is listed as
-   "not virus-scanned". Then run **Actions → Check VirusTotal key** to confirm it works.
+   "not virus-scanned". Then run **Actions → Check virus scanners** to confirm VirusTotal and ClamAV work.
 7. Optional, for comments: **Settings → Features → Discussions**, create a category such as "Mod comments",
    install the giscus app (giscus.app), and copy the repo ID and category ID into `data/site.js`.
 8. **Actions → Build site → Run workflow** for the first build.
@@ -63,16 +63,24 @@ New mods and edits go live without review, so moderation is reactive:
 
 ### Scanning and replaced files
 
-Each new release file is downloaded once, hashed, and checked against VirusTotal. The free API allows
-4 requests a minute and 500 a day, so the build spaces requests out and stops after `VT_MAX_CALLS`
-(default 100) per run. Anything left over is picked up by the next build.
+Each new release file is downloaded once and hashed, then checked the way its author chose
+(`scan` in `mods/<id>.json`):
+
+| Choice | `scan` value | How the file is checked |
+|---|---|---|
+| Full scan (default) | not set | VirusTotal lookup; unknown files are uploaded and the build waits up to ~3 minutes for the verdict |
+| Private scan | `"private"` | ClamAV on the build machine (installed on demand, fresh definitions) plus a VirusTotal fingerprint lookup; the file is never uploaded |
+| No scan | `false` | Nothing; the mod shows a red "Not virus-scanned" warning |
+
+VirusTotal's free API allows 4 requests a minute and 500 a day, so the build spaces requests out and stops
+after `VT_MAX_CALLS` (default 100) per run. Anything left over is picked up by the next build.
 
 | Status in `state/assets.json` | Meaning | On the site |
 |---|---|---|
-| `clean` | VirusTotal found fewer than 2 detections | Listed |
-| `unscanned` | No API key, or over VirusTotal's 650 MB limit | Listed, marked "not virus-scanned" |
-| `pending` / `queued` | Waiting for a VirusTotal result | That release is held back until the next build |
-| `flagged` | 2 or more engines flagged it | **Whole mod hidden**, review issue opened |
+| `clean` (`method`: `virustotal` or `private`) | Fewer than 2 VirusTotal detections, and ClamAV found nothing (private scan) | Listed, with the scan type shown |
+| `unscanned` | No scan chosen, no API key, or over VirusTotal's 650 MB limit | Listed, marked "Not virus-scanned" |
+| `pending` / `queued` | Waiting for a result | That release is held back until the next build |
+| `flagged` | 2 or more engines flagged it, or ClamAV found something | **Whole mod hidden**, review issue opened |
 
 If an author replaces a file inside an existing release, the build notices the new hash and scans it
 again like a new file.

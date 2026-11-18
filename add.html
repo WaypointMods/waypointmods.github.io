@@ -31,12 +31,19 @@
 
       <h2>2. Add it here</h2>
       <p>The form asks for the repository, mod name, a one-line summary, the full description, category, supported games and requirements. It opens on GitHub. Automatic checks reply within a minute or two. If something needs fixing, the reply says what, and you edit the issue to try again.</p>
-      <div class="notice"><strong>How long until it shows?</strong> Usually 2 to 5 minutes after the bot's reply: the site rebuilds and your files are virus-scanned first. Files VirusTotal hasn't seen before take a few minutes longer while it analyses them. If you skip the scan, it's about a minute or two. If you had the site open just before, press <strong>Ctrl + F5</strong> to reload, because browsers can keep an old copy of the page for up to 10 minutes.</div>
+      <div class="notice"><strong>How long until it shows?</strong> Usually 2 to 5 minutes after the bot's reply: the site rebuilds and your files are virus-scanned first. Files VirusTotal hasn't seen before take a few minutes longer while it analyses them. With no scan, it's about a minute or two. If you had the site open just before, press <strong>Ctrl + F5</strong> to reload, because browsers can keep an old copy of the page for up to 10 minutes.</div>
       <p>Optional extras:</p>
       <ul>
         <li><strong>Display name:</strong> the author name shown on the site, for example your Nexus name. Your GitHub account is always shown next to it.</li>
         <li><strong>Screenshots:</strong> drag or paste up to 8 images into the form. The first one becomes the cover picture. GitHub hosts them for free.</li>
-        <li><strong>Skip the virus scan:</strong> files are scanned with VirusTotal by default, and VirusTotal may share uploaded files with its paid users. If you'd rather not, tick this box. Your mod is then shown with a red <strong>Not virus-scanned</strong> warning on its card and page, so visitors can decide for themselves.</li>
+        <li><strong>Virus scan:</strong> pick how your files are checked. Visitors see which one you picked.
+          <ul>
+            <li><strong>Full scan with VirusTotal</strong> (recommended): 70+ antivirus engines. Files VirusTotal hasn't seen are uploaded to it, and its paid users can access them.</li>
+            <li><strong>Private scan:</strong> ClamAV scans the file inside GitHub's build, and only its fingerprint is checked on VirusTotal. Your file never leaves GitHub, but brand-new malware is less likely to be caught.</li>
+            <li><strong>No scan:</strong> nothing is checked, and your mod shows a red <strong>Not virus-scanned</strong> warning so visitors can decide for themselves.</li>
+          </ul>
+          <a href="about.html#scans">More about the scans</a>
+        </li>
       </ul>
       <p>You can only add repositories you own. For a repository owned by an organization, make your membership of that organization public first.</p>
       <p class="cta"><a class="btn btn-primary btn-lg" data-issue="submit-mod.yml" href="#" target="_blank" rel="noopener">Open the form</a></p>

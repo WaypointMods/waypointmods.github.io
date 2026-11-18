@@ -36,11 +36,18 @@
   const latest = m => m.releases[0];
   const authorLabel = m => m.authorName || m.author;
   const hasOwnName = m => m.authorName && m.authorName.toLowerCase() !== m.author.toLowerCase();
-  // Files that weren't virus-scanned: the author opted out, or VirusTotal couldn't take them.
-  const unscanned = m => !!latest(m) && latest(m).assets.some(a => a.scan === 'unscanned');
-  const scanReason = m => m.scanSkipped
+  // How a file was checked: 'virustotal' (full scan), 'private' (ClamAV + VirusTotal fingerprint) or
+  // 'unscanned' (the author chose no scan, or VirusTotal couldn't take the file). Older data has no value.
+  const scanOf = a => a.scan || 'virustotal';
+  const unscanned = m => !!latest(m) && latest(m).assets.some(a => scanOf(a) === 'unscanned');
+  const noScanChosen = m => m.scanMode === 'off';
+  const scanReason = m => noScanChosen(m)
     ? 'The author chose not to have these files virus-scanned.'
     : 'These files are too large for VirusTotal, or the scanner was unavailable.';
+  const SCAN_LABEL = {
+    virustotal: 'Checked by VirusTotal (70+ antivirus engines)',
+    private: 'Private scan: checked by ClamAV, plus a VirusTotal fingerprint check'
+  };
   const sumDownloads = m => m.releases.reduce((a, r) => a + r.assets.reduce((b, x) => b + (x.downloads || 0), 0), 0);
   // Work out each mod's totals once, instead of on every sort and every keystroke.
   MODS.forEach(m => {
@@ -257,7 +264,8 @@
             <span>${fmtSize(a.size)}</span>
             <span>${svg('dl', 12)} <span data-dl="${esc(a.url)}">${fmtNum(a.downloads)}</span></span>
             <span class="hash" title="SHA-256 ${esc(a.sha256)}">SHA-256 ${esc(String(a.sha256).slice(0, 12))}…</span>
-            ${a.scan === 'unscanned' ? `<span class="warn-text">${svg('alert', 12)} Not virus-scanned</span>` : ''}
+            ${scanOf(a) === 'unscanned' ? `<span class="warn-text">${svg('alert', 12)} Not virus-scanned</span>`
+              : `<span title="${esc(SCAN_LABEL[scanOf(a)])}">${svg('shield', 12)} ${scanOf(a) === 'private' ? 'Private scan' : 'VirusTotal'}</span>`}
           </div>
         </div>
         <a class="btn btn-sm${isLatest ? ' btn-primary' : ''}" href="${esc(a.url)}">${svg('dl')} Download</a>
@@ -320,7 +328,8 @@
             <div><b>${ago(m.lastUpdated)}</b>updated</div>
           </div>
           ${unscanned(m) ? `<div class="notice notice-warn scan-warn">${svg('alert', 16)}<div><strong>Not virus-scanned.</strong> ${esc(scanReason(m))}
-            Only download it if you trust the author, and scan the file with your own antivirus before opening it.</div></div>` : ''}
+            Only download it if you trust the author, and scan the file with your own antivirus before opening it.
+            <a href="about.html#scans">About virus scans</a></div></div>` : ''}
           <div id="live-note"></div>
           ${m.images && m.images.length ? `<div class="gallery">${m.images.map((u, i) =>
             `<button type="button" class="thumb" data-shot="${i}" aria-label="Open screenshot ${i + 1} of ${m.images.length}">
@@ -344,9 +353,10 @@
                  <div class="dl-note">${esc(main.name)} · ${fmtSize(main.size)}</div>
                  ${r.assets.length > 1 ? `<a class="dl-note" href="#files" data-goto="files">+ ${r.assets.length - 1} more file${r.assets.length > 2 ? 's' : ''} in this release</a>` : ''}`
               : '<div class="dl-note">No files released yet.</div>'}
-            ${main ? (main.scan === 'unscanned'
-              ? `<div class="dl-note warn-text">${svg('alert')} Not virus-scanned${m.scanSkipped ? ' (author\'s choice)' : ''}. File hash recorded.</div>`
-              : `<div class="dl-note">${svg('shield')} Checked on VirusTotal, file hash recorded</div>`) : ''}
+            ${main ? (scanOf(main) === 'unscanned'
+              ? `<div class="dl-note warn-text">${svg('alert')} Not virus-scanned${noScanChosen(m) ? ' (author\'s choice)' : ''}. File hash recorded.</div>`
+              : `<div class="dl-note">${svg('shield')} ${esc(SCAN_LABEL[scanOf(main)])}. File hash recorded.</div>`) : ''}
+            ${main ? '<a class="dl-note" href="about.html#scans">What do the scan types mean?</a>' : ''}
             <a class="btn" href="https://github.com/${esc(m.repo)}" target="_blank" rel="noopener">Star or view on GitHub</a>
           </div>
           <div class="side-card"><h4>Details</h4>
@@ -493,7 +503,7 @@
     const n = data.newest;
     const listedDate = latest(m) ? latest(m).date : '';
     if (n && n.date.slice(0, 10) >= listedDate && n.urls.length && !n.urls.some(u => known.has(u))) {
-      note.innerHTML = `<div class="notice"><strong>${esc(n.tag)} was just released.</strong> ${m.scanSkipped
+      note.innerHTML = `<div class="notice"><strong>${esc(n.tag)} was just released.</strong> ${noScanChosen(m)
         ? 'It will appear here in a minute or two.'
         : 'It will appear here in a few minutes, once its files have been virus-scanned.'}</div>`;
     }
