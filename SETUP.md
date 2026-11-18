@@ -29,6 +29,21 @@ Mod files stay in each author's own GitHub releases.
    install the giscus app (giscus.app), and copy the repo ID and category ID into `data/site.js`.
 8. **Actions → Build site → Run workflow** for the first build.
 
+## Live numbers (optional, Cloudflare free plan)
+
+`worker/` is a small Cloudflare Worker. The home and browse pages ask it once for every mod's current
+download counts and stars, and it asks GitHub at most every 5 minutes. Mod pages use it too, and ask
+GitHub directly if it doesn't answer. Without it, lists show the numbers from the last build.
+
+1. Create a free Cloudflare account.
+2. From `worker/`: `npx wrangler login`, then `npx wrangler deploy`.
+3. Create a GitHub token (classic) with **no scopes** and no expiration, then run
+   `npx wrangler secret put GITHUB_TOKEN --name waypoint-stats` and paste it.
+4. Put the Worker's `/stats` address in `data/site.js` as `statsUrl`.
+
+Optional: a fine-grained token with **Actions: Read and write** on this repo only, saved as the secret
+`BUILD_TOKEN`, makes the Worker start a site build every 4 hours as a backup for GitHub's schedule.
+
 ## Moderating
 
 Submissions and edits go live without review, so moderation is reactive:

@@ -1,0 +1,11 @@
+name = "waypoint-stats"
+main = "index.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+SITE_URL = "https://waypointmods.github.io/"
+SITE_REPO = "WaypointMods/waypointmods.github.io"
+
+# Only does something if the optional BUILD_TOKEN secret is set (see index.js).
+[triggers]
+crons = ["17 */4 * * *"]

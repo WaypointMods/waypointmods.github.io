@@ -35,19 +35,22 @@
   const latest = m => m.releases[0];
   const authorLabel = m => m.authorName || m.author;
   const hasOwnName = m => m.authorName && m.authorName.toLowerCase() !== m.author.toLowerCase();
+  const sumDownloads = m => m.releases.reduce((a, r) => a + r.assets.reduce((b, x) => b + (x.downloads || 0), 0), 0);
   // Work out each mod's totals once, instead of on every sort and every keystroke.
   MODS.forEach(m => {
-    m.totalDownloads = m.releases.reduce((a, r) => a + r.assets.reduce((b, x) => b + (x.downloads || 0), 0), 0);
+    m.totalDownloads = sumDownloads(m);
     m.lastUpdated = latest(m) ? latest(m).date : m.created;
     m.searchText = [m.name, m.summary, m.author, m.authorName || '', m.category, ...m.tags].join(' ').toLowerCase();
   });
+  // Mods whose repository turned out to be deleted (from live data) drop out of every list.
+  const listed = () => MODS.filter(m => !m.gone);
   const issueUrl = (template, title) =>
     `https://github.com/${SITE.indexRepo}/issues/new?template=${encodeURIComponent(template)}` +
     (title ? '&title=' + encodeURIComponent(title) : '');
 
-  function countBy(fn) {
+  function countBy(mods, fn) {
     const out = {};
-    MODS.forEach(m => [].concat(fn(m)).forEach(k => { out[k] = (out[k] || 0) + 1; }));
+    mods.forEach(m => [].concat(fn(m)).forEach(k => { out[k] = (out[k] || 0) + 1; }));
     return out;
   }
 
@@ -175,19 +178,19 @@
 
   // ---------- pages ----------
   function home() {
-    $('#stat-mods').textContent = MODS.length;
-    $('#stat-dl').textContent = fmtNum(MODS.reduce((a, m) => a + m.totalDownloads, 0));
-    $('#stat-authors').textContent = new Set(MODS.map(m => m.author)).size;
-    if (!MODS.length) {
-      document.querySelectorAll('[data-needs-mods]').forEach(s => { s.hidden = true; });
-      $('#no-mods').hidden = false;
-      return;
-    }
-    $('#popular').innerHTML = MODS.slice().sort(SORTS.popular).slice(0, 4).map(card).join('');
-    $('#updated').innerHTML = MODS.slice().sort(SORTS.updated).slice(0, 4).map(card).join('');
-    const cats = countBy(m => m.category);
+    const mods = listed();
+    $('#stat-mods').textContent = mods.length;
+    $('#stat-dl').textContent = fmtNum(mods.reduce((a, m) => a + m.totalDownloads, 0));
+    $('#stat-authors').textContent = new Set(mods.map(m => m.author)).size;
+    document.querySelectorAll('[data-needs-mods]').forEach(s => { s.hidden = !mods.length; });
+    $('#no-mods').hidden = !!mods.length;
+    if (!mods.length) return;
+    $('#popular').innerHTML = mods.slice().sort(SORTS.popular).slice(0, 4).map(card).join('');
+    $('#updated').innerHTML = mods.slice().sort(SORTS.updated).slice(0, 4).map(card).join('');
+    const cats = countBy(mods, m => m.category);
     $('#cats').innerHTML = Object.keys(cats).sort().map(c =>
       `<a class="chip" href="browse.html?cat=${encodeURIComponent(c)}">${esc(c)}<small>${cats[c]}</small></a>`).join('');
+    return home;
   }
 
   const matches = (m, words) => words.every(w => m.searchText.includes(w));
@@ -206,16 +209,17 @@
     };
 
     // The filter lists only change when a filter is picked, not while typing in the search box.
-    const cats = countBy(m => m.category);
-    const games = countBy(m => m.games);
     function renderFilters() {
-      $('#f-cat').innerHTML = opt('cat', '', 'All', MODS.length) + Object.keys(cats).sort().map(c => opt('cat', c, c, cats[c])).join('');
-      $('#f-game').innerHTML = opt('game', '', 'All', MODS.length) + Object.keys(GAMES).map(g => opt('game', g, GAMES[g], games[g] || 0)).join('');
+      const mods = listed();
+      const cats = countBy(mods, m => m.category);
+      const games = countBy(mods, m => m.games);
+      $('#f-cat').innerHTML = opt('cat', '', 'All', mods.length) + Object.keys(cats).sort().map(c => opt('cat', c, c, cats[c])).join('');
+      $('#f-game').innerHTML = opt('game', '', 'All', mods.length) + Object.keys(GAMES).map(g => opt('game', g, GAMES[g], games[g] || 0)).join('');
     }
 
     function render() {
       const words = st.q.toLowerCase().split(/\s+/).filter(Boolean);
-      const list = MODS.filter(m => (!st.cat || m.category === st.cat) && (!st.game || m.games.includes(st.game)) && matches(m, words))
+      const list = listed().filter(m => (!st.cat || m.category === st.cat) && (!st.game || m.games.includes(st.game)) && matches(m, words))
         .sort(SORTS[st.sort]);
       $('#count').textContent = `${list.length} mod${list.length === 1 ? '' : 's'}`;
       $('#results').innerHTML = list.length ? list.map(card).join('')
@@ -233,6 +237,7 @@
     sort.addEventListener('change', () => { st.sort = sort.value; render(); });
     renderFilters();
     render();
+    return () => { renderFilters(); render(); };
   }
 
   function release(r, isLatest) {
@@ -380,46 +385,77 @@
     live(m);
   }
 
-  // ---------- live data from GitHub ----------
-  // The site is rebuilt every few hours. In between, a mod page asks GitHub directly for fresh
-  // download counts and stars, and whether the repository still exists. New releases are NOT
-  // offered for download here: they appear only after the build has virus-scanned them.
-  // Free: GitHub allows 60 requests an hour per visitor; each page uses 2, cached for 5 minutes.
+  // ---------- live data ----------
+  // The site is rebuilt every few hours. In between, pages show fresh download counts and stars,
+  // and notice deleted repositories. New releases are NOT offered for download here: they appear
+  // only after the build has virus-scanned them.
+  //  1. The stats Worker (SITE.statsUrl, Cloudflare free plan) answers for every mod in one request.
+  //  2. If it isn't set up or doesn't answer, a mod page asks GitHub directly (60 requests an hour
+  //     per visitor, 2 per page). Lists then just keep the built numbers.
+  // Both answers are kept for 5 minutes per browser tab.
   const LIVE_TTL = 5 * 60 * 1000;
 
-  async function fetchLive(repo) {
-    const key = 'live:' + repo;
+  async function remembered(key, load) {
     try {
       const hit = JSON.parse(sessionStorage.getItem(key) || 'null');
       if (hit && Date.now() - hit.at < LIVE_TTL) return hit.data;
     } catch (e) { /* storage unavailable */ }
+    const data = await load();
+    if (data) try { sessionStorage.setItem(key, JSON.stringify({ at: Date.now(), data })); } catch (e) { /* storage unavailable */ }
+    return data;
+  }
+
+  const getStats = () => !SITE.statsUrl || window.MODS_ARE_EXAMPLES ? Promise.resolve(null) : remembered('stats', async () => {
+    try {
+      const res = await fetch(SITE.statsUrl);
+      return res.ok ? (await res.json()).repos : null;
+    } catch (e) { return null; }
+  });
+
+  const fetchRepoDirect = repo => remembered('live:' + repo, async () => {
     const api = p => fetch('https://api.github.com/repos/' + repo + p, { headers: { Accept: 'application/vnd.github+json' } });
     const [r1, r2] = await Promise.all([api(''), api('/releases?per_page=10')]);
-    let data;
-    if (r1.status === 404) data = { gone: true };
-    else if (!r1.ok || !r2.ok) return null; // rate limit or network trouble: keep the built numbers
-    else {
-      const repoInfo = await r1.json();
-      const rels = (await r2.json()).filter(r => !r.draft && !r.prerelease && r.published_at);
-      data = {
-        stars: repoInfo.stargazers_count,
-        counts: Object.fromEntries(rels.flatMap(r => r.assets.map(a => [a.browser_download_url, a.download_count]))),
-        newest: rels.length ? {
-          tag: rels[0].tag_name,
-          date: rels[0].published_at,
-          urls: rels[0].assets.filter(a => /\.(7z|zip|rar)$/i.test(a.name)).map(a => a.browser_download_url)
-        } : null
-      };
-    }
-    try { sessionStorage.setItem(key, JSON.stringify({ at: Date.now(), data })); } catch (e) { /* storage unavailable */ }
-    return data;
+    if (r1.status === 404) return { gone: true };
+    if (!r1.ok || !r2.ok) return null; // rate limit or network trouble: keep the built numbers
+    const rels = (await r2.json()).filter(r => !r.draft && !r.prerelease && r.published_at);
+    return {
+      stars: (await r1.json()).stargazers_count,
+      counts: Object.fromEntries(rels.flatMap(r => r.assets.map(a => [a.browser_download_url, a.download_count]))),
+      newest: rels.length ? {
+        tag: rels[0].tag_name,
+        date: rels[0].published_at,
+        urls: rels[0].assets.filter(a => /\.(7z|zip|rar)$/i.test(a.name)).map(a => a.browser_download_url)
+      } : null
+    };
+  });
+
+  // Put live numbers into a mod's data. Returns false if there was nothing for it.
+  function applyLive(m, data) {
+    if (!data) return false;
+    if (data.gone) { m.gone = true; return true; }
+    m.releases.forEach(r => r.assets.forEach(a => { if (data.counts[a.url] !== undefined) a.downloads = data.counts[a.url]; }));
+    m.totalDownloads = sumDownloads(m);
+    m.stars = data.stars;
+    return true;
+  }
+
+  // Home and browse: one Worker request refreshes every card, then the page redraws.
+  async function liveLists(redraw) {
+    const stats = await getStats();
+    if (!stats) return;
+    let any = false;
+    MODS.forEach(m => { any = applyLive(m, stats[m.repo.toLowerCase()]) || any; });
+    if (any && redraw) redraw();
   }
 
   async function live(m) {
     if (window.MODS_ARE_EXAMPLES) return; // local preview data points at made-up repos
     let data;
-    try { data = await fetchLive(m.repo); } catch (e) { return; }
-    if (!data) return;
+    try {
+      const stats = await getStats();
+      data = (stats && stats[m.repo.toLowerCase()]) || await fetchRepoDirect(m.repo);
+    } catch (e) { return; }
+    if (!applyLive(m, data)) return;
     const note = $('#live-note');
 
     if (data.gone) {
@@ -432,15 +468,8 @@
       return;
     }
 
-    let total = 0;
-    m.releases.forEach(r => r.assets.forEach(a => {
-      if (data.counts[a.url] !== undefined) a.downloads = data.counts[a.url];
-      total += a.downloads || 0;
-    }));
-    m.totalDownloads = total;
-    m.stars = data.stars;
-    $('[data-live="downloads"]').textContent = fmtNum(total);
-    $('[data-live="stars"]').textContent = fmtNum(data.stars);
+    $('[data-live="downloads"]').textContent = fmtNum(m.totalDownloads);
+    $('[data-live="stars"]').textContent = fmtNum(m.stars);
     document.querySelectorAll('[data-dl]').forEach(el => {
       const n = data.counts[el.dataset.dl];
       if (n !== undefined) el.textContent = fmtNum(n);
@@ -508,5 +537,7 @@
   }
 
   shell();
-  ({ home, browse, mod: modPage }[page] || (() => {}))();
+  if (page === 'mod') modPage();
+  else if (page === 'home') liveLists(home());
+  else if (page === 'browse') liveLists(browse());
 })();
