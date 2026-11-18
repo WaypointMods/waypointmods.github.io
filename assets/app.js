@@ -611,6 +611,55 @@
     </div>`;
   }
 
+  // ---------- bug reports ----------
+  // Bugs are the author's own GitHub issues: reported, discussed and closed on the mod's repository,
+  // where the author is notified. The tab shows the open ones, loaded live when it is first opened.
+  const bugCount = m => (m.bugs && m.bugs.enabled !== false ? m.bugs.open || 0 : 0);
+  function bugsPanel(m) {
+    if (m.bugs && m.bugs.enabled === false) {
+      return `<div class="notice">The author has turned off bug reports on GitHub for this mod. You can mention problems in the <a href="#comments" data-goto="comments">Comments</a> instead.</div>`;
+    }
+    const gh = `https://github.com/${esc(m.repo)}/issues`;
+    return `<div class="bugs-head">
+        <p class="muted">Bug reports go straight to the author, on the mod's GitHub page. Reporting one needs a free GitHub account.</p>
+        <div class="bug-actions">
+          <a class="btn btn-primary" href="${gh}/new" target="_blank" rel="noopener">Report a bug</a>
+          <a class="btn" href="${gh}" target="_blank" rel="noopener">See all on GitHub</a>
+        </div>
+      </div>
+      <div id="bug-list" aria-live="polite"><p class="muted">Loading open bug reports...</p></div>`;
+  }
+  const fetchBugs = repo => remembered('bugs:' + repo, async () => {
+    try {
+      const res = await fetch(`https://api.github.com/repos/${repo}/issues?state=open&sort=updated&per_page=30`, { headers: { Accept: 'application/vnd.github+json' } });
+      if (!res.ok) return null;
+      const all = await res.json();
+      // GitHub lists pull requests here too; leave them out. "complete" says the page held everything.
+      return { complete: all.length < 30, items: all.filter(i => !i.pull_request).map(i => ({
+        n: i.number, title: i.title, url: i.html_url, by: i.user && i.user.login, comments: i.comments,
+        updated: String(i.updated_at).slice(0, 10), labels: (i.labels || []).map(l => l.name).slice(0, 4)
+      })) };
+    } catch (e) { return null; }
+  });
+  async function loadBugs(m) {
+    const box = $('#bug-list');
+    if (!box || box.dataset.loaded) return;
+    box.dataset.loaded = '1';
+    const got = window.MODS_ARE_EXAMPLES ? null : await fetchBugs(m.repo);
+    const list = got && got.items;
+    if (!list) {
+      box.innerHTML = `<p class="muted">The list couldn't be loaded just now. ${bugCount(m) ? `There ${bugCount(m) === 1 ? 'is' : 'are'} ${plural(bugCount(m), 'open report')} ` : ''}<a href="https://github.com/${esc(m.repo)}/issues" target="_blank" rel="noopener">on GitHub</a>.</p>`;
+      return;
+    }
+    box.innerHTML = list.length ? `<ul class="bugs">${list.map(b => `<li>
+        <a href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.title)}</a>
+        <small>#${b.n} · ${b.by ? 'reported by ' + esc(b.by) + ' · ' : ''}updated ${ago(b.updated)}${b.comments ? ' · ' + plural(b.comments, 'comment') : ''}</small>
+        ${b.labels.length ? `<span class="chips">${b.labels.map(l => `<span class="tag">${esc(l)}</span>`).join('')}</span>` : ''}
+      </li>`).join('')}</ul>` : '<p class="muted">No open bug reports right now.</p>';
+    const tab = $('.tab[data-tab="bugs"] small');
+    if (tab && got.complete) tab.textContent = list.length || ''; // a live count, when the page held them all
+  }
+
   function permissionsPanel(m) {
     const p = m.permissions || {};
     const stated = PERM_INFO.some(([k]) => p[k]);
@@ -695,6 +744,7 @@
             <button class="tab" role="tab" data-tab="description">Description</button>
             <button class="tab" role="tab" data-tab="files">Files<small>${fileCount}</small></button>
             <button class="tab" role="tab" data-tab="changelog">Changelog</button>
+            <button class="tab" role="tab" data-tab="bugs">Bugs<small>${bugCount(m) || ''}</small></button>
             <button class="tab" role="tab" data-tab="permissions">Permissions</button>
             <button class="tab" role="tab" data-tab="comments">Comments</button>
           </div>
@@ -702,6 +752,7 @@
           <section class="panel" role="tabpanel" id="p-files" hidden>${m.releases.map((x, i) => release(m, x, i === 0)).join('')}</section>
           <section class="panel" role="tabpanel" id="p-changelog" hidden>${m.releases.map(x =>
             `<div class="cl"><h3>v${esc(x.version)}<span class="muted">${esc(fmtDate(x.date))}</span></h3><div class="prose">${md(x.notes)}</div></div>`).join('')}</section>
+          <section class="panel" role="tabpanel" id="p-bugs" hidden>${bugsPanel(m)}</section>
           <section class="panel" role="tabpanel" id="p-permissions" hidden>${permissionsPanel(m)}</section>
           <section class="panel" role="tabpanel" id="p-comments" hidden><div id="giscus"></div></section>
         </div>
@@ -762,6 +813,7 @@
         $('#p-' + t.dataset.tab).hidden = !on;
       });
       if (name === 'comments') loadComments(m);
+      if (name === 'bugs') loadBugs(m);
     }
     tabs.forEach(t => t.addEventListener('click', () => {
       select(t.dataset.tab);

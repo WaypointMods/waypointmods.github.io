@@ -231,7 +231,7 @@ async function checkAsset(key, a, mode) {
 // VirusTotal's free tier only allows 4 requests a minute anyway.
 const BATCH = 20;
 const REPO_FIELDS = `nameWithOwner isPrivate stargazerCount owner { login } licenseInfo { spdxId }
-  fundingLinks { platform url }
+  fundingLinks { platform url } hasIssuesEnabled issues(states: OPEN) { totalCount }
   releases(first: 15, orderBy: { field: CREATED_AT, direction: DESC }) { nodes {
     tagName isDraft isPrerelease publishedAt description
     releaseAssets(first: 30) { nodes { id name size downloadCount downloadUrl updatedAt digest } } } }`;
@@ -254,7 +254,8 @@ function fromGraphql(r) {
   return {
     repo: {
       full_name: r.nameWithOwner, private: r.isPrivate, owner: { login: r.owner.login },
-      stargazers_count: r.stargazerCount, license: r.licenseInfo ? { spdx_id: r.licenseInfo.spdxId } : null
+      stargazers_count: r.stargazerCount, license: r.licenseInfo ? { spdx_id: r.licenseInfo.spdxId } : null,
+      has_issues: r.hasIssuesEnabled, open_bugs: r.issues.totalCount
     },
     releases: r.releases.nodes.map(x => ({
       tag_name: x.tagName, draft: x.isDraft, prerelease: x.isPrerelease, published_at: x.publishedAt, body: x.description,
@@ -362,6 +363,9 @@ for (const [i, { mod }] of entries.entries()) {
       .filter((f, k, all) => all.findIndex(x => x.url.replace(/\/$/, '').toLowerCase() === f.url.replace(/\/$/, '').toLowerCase()) === k).slice(0, 6),
     license: mod.license || (spdx && spdx !== 'NOASSERTION' ? spdx : ''),
     created: mod.created, stars: repo.stargazers_count,
+    // Bug reports are the author's own GitHub issues; the mod page loads the list itself, live.
+    // (Without a token the REST count also includes pull requests: close enough for a local test build.)
+    bugs: { enabled: repo.has_issues !== false, open: repo.open_bugs ?? repo.open_issues_count ?? 0 },
     hue: mod.hue ?? hueFor(mod.id),
     releases: outRels
   });

@@ -359,6 +359,18 @@ h1, h2 { font-family: var(--serif); font-weight: 700; }
 .ai-tag.ai-generated { color: var(--accent); border-color: var(--accent); }
 .ai-tag.ai-none { color: var(--good); border-color: var(--good); }
 .mod-head .ai-tag { padding: 4px 11px; }
+/* Bugs tab: the author's open GitHub issues */
+.bugs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.bugs-head p { margin: 0; flex: 1 1 280px; }
+.bug-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.bugs { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.bugs li { display: flex; flex-direction: column; gap: 4px; padding: 12px 18px; border-top: 1px solid var(--border); }
+.bugs li:first-child { border-top: 0; }
+.bugs li > a { font-weight: 600; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
+.bugs li > a:hover { color: var(--accent); }
+.bugs small { color: var(--muted); font-size: 13px; }
+.bugs .chips { gap: 6px; }
+.bugs .tag { font-size: 12px; padding: 2px 9px; }
 .panel-h { font-family: var(--serif); font-size: 22px; margin: 26px 0 12px; }
 .panel-h:first-child { margin-top: 0; }
 .perms { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
