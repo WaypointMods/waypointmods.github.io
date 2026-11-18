@@ -14,7 +14,7 @@ export const CATEGORIES = [
 ];
 // Checkbox label in the issue forms -> game key used by the site.
 export const GAME_LABELS = { 'Skyrim SE/AE': 'se', 'Skyrim VR': 'vr', 'Skyrim LE': 'le' };
-export const GAME_KEYS = Object.values(GAME_LABELS);
+const GAME_KEYS = Object.values(GAME_LABELS);
 
 // One place for every size limit; the form checks and the entry validator both read these.
 export const LIMITS = { name: 80, authorName: 40, summary: 160, description: 20000, tags: 8, tag: 24, images: 8, requirements: 20, notes: 3000 };

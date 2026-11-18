@@ -62,6 +62,8 @@
     `https://github.com/${SITE.indexRepo}/issues/new?template=${encodeURIComponent(template)}` +
     (title ? '&title=' + encodeURIComponent(title) : '');
 
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
   function countBy(mods, fn) {
     const out = {};
     mods.forEach(m => [].concat(fn(m)).forEach(k => { out[k] = (out[k] || 0) + 1; }));
@@ -81,7 +83,6 @@
   const P = {
     dl: '<path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/>',
     star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
-    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     shield: '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/>',
     alert: '<path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4m0 3h.01"/>',
@@ -298,8 +299,15 @@
   }
   const contours = (paths, width = 1.2) => `<g fill="none" stroke-width="${width}" style="stroke: var(--contour)">${paths}</g>`;
   const seedOf = s => { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return (h % 628) / 100; };
+  // The waypoint pin: a 24 x 26 shape whose round head is centred on (12, 10).
   const PIN_PATH = 'M12 25S2 16.6 2 10a10 10 0 0 1 20 0c0 6.6-10 15-10 15z';
   const pin = c => `<span class="pin"><svg viewBox="0 0 24 26" aria-hidden="true"><path d="${PIN_PATH}" fill="currentColor"/></svg>${catIcon(c, 22, 2)}</span>`;
+  // A big pin inside an SVG map, its head centred on (x, y).
+  const bigPin = (x, y, scale) => `<path d="${PIN_PATH}" transform="translate(${x - 12 * scale} ${y - 10 * scale}) scale(${scale})" style="fill: var(--accent)"/>`;
+  // Each mod's little contour map never changes, so it is drawn once and remembered.
+  const coverMaps = new Map();
+  const coverMap = id => coverMaps.get(id) || coverMaps.set(id, contours(rings(150, 75, 6, 16, 16, seedOf(id)))).get(id);
+  const warnPill = m => (unscanned(m) ? `<span class="warn-pill" title="${esc(scanReason(m))}">${svg('alert', 12)} Not virus-scanned</span>` : '');
 
   // Big background maps for the home page hero and share panel.
   const BACKDROPS = {
@@ -308,7 +316,7 @@
       <g class="trail"><path d="M560 690 C 660 610, 720 560, 830 520 S 1010 420, 1080 336" fill="none" stroke-width="3" stroke-dasharray="1 11" stroke-linecap="round" style="stroke: var(--accent)"/>
       <circle cx="830" cy="520" r="7" style="fill: var(--moss)"/>
       <ellipse cx="1080" cy="338" rx="30" ry="9" fill="none" stroke-width="1.5" style="stroke: var(--accent); opacity: .45"/>
-      <g transform="translate(1080 286)"><path d="M0 52C0 52-40 16-40-6a40 40 0 0 1 80 0C40 16 0 52 0 52z" style="fill: var(--accent)"/><circle cx="0" cy="-6" r="14" style="fill: var(--hero)"/></g></g></svg>`,
+      ${bigPin(1080, 280, 4)}<circle cx="1080" cy="280" r="14" style="fill: var(--hero)"/></g></svg>`,
     share: () => `<svg class="topo" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${contours(rings(1000, 300, 9, 40, 34, 1.3))}</svg>`
   };
   function backdrops() {
@@ -321,7 +329,7 @@
   function cover(m, extra = '') {
     const img = m.images && m.images[0];
     const r = latest(m);
-    return `<div class="cover"><svg class="topo" viewBox="0 0 300 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${contours(rings(150, 75, 6, 16, 16, seedOf(m.id)))}</svg>
+    return `<div class="cover"><svg class="topo" viewBox="0 0 300 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${coverMap(m.id)}</svg>
       ${pin(m.category)}
       <span class="cover-tag">${esc(m.category)}</span>${extra}
       ${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
@@ -329,7 +337,7 @@
   }
   function card(m, badge) {
     return `<a class="card" href="mod.html?id=${encodeURIComponent(m.id)}">
-      <div class="card-media">${cover(m, badge ? `<span class="cover-badge">${badge}</span>` : '')}${unscanned(m) ? `<span class="warn-pill" title="${esc(scanReason(m))}">${svg('alert', 12)} Not virus-scanned</span>` : ''}</div>
+      <div class="card-media">${cover(m, badge ? `<span class="cover-badge">${badge}</span>` : '')}${warnPill(m)}</div>
       <div class="card-body">
         <h3>${esc(m.name)}</h3>
         <p class="card-sum">${esc(m.summary)}</p>
@@ -421,7 +429,7 @@
     const box = $('#slide');
     box.setAttribute('aria-live', byUser ? 'polite' : 'off');
     box.innerHTML = `<a class="slide" href="${href}">
-      <div class="card-media">${cover(m, `<span class="rank">#${slider.at + 1}</span>`)}${unscanned(m) ? `<span class="warn-pill" title="${esc(scanReason(m))}">${svg('alert', 12)} Not virus-scanned</span>` : ''}</div>
+      <div class="card-media">${cover(m, `<span class="rank">#${slider.at + 1}</span>`)}${warnPill(m)}</div>
       <div class="slide-body">
         <h3>${esc(m.name)}</h3>
         <p>${esc(m.summary)}</p>
@@ -472,11 +480,10 @@
 
   function home() {
     const mods = listed();
-    const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
     const authors = new Set(mods.map(m => m.author)).size;
     const total = mods.reduce((a, m) => a + m.totalDownloads, 0);
     $('#hero-stats').innerHTML = mods.length
-      ? `<b>${plural(mods.length, 'mod')}</b> left here by <b>${plural(authors, 'author')}</b>, downloaded <b>${fmtNum(total)} time${total === 1 ? '' : 's'}</b>`
+      ? `<b>${plural(mods.length, 'mod')}</b> left here by <b>${plural(authors, 'author')}</b>, downloaded <b>${total === 1 ? '1 time' : fmtNum(total) + ' times'}</b>`
       : '';
     document.querySelectorAll('[data-needs-mods]').forEach(s => { s.hidden = !mods.length; });
     $('#no-mods').hidden = !!mods.length;
@@ -488,7 +495,7 @@
     const cats = countBy(mods, m => m.category);
     $('#cats').innerHTML = Object.keys(cats).sort().map(c =>
       `<a class="cat" href="browse.html?cat=${encodeURIComponent(c)}"><span class="cat-icon">${catIcon(c, 18, 1.9)}</span>
-        <span><b>${esc(c)}</b><small>${cats[c]} mod${cats[c] === 1 ? '' : 's'}</small></span></a>`).join('');
+        <span><b>${esc(c)}</b><small>${plural(cats[c], 'mod')}</small></span></a>`).join('');
     return home;
   }
 
@@ -526,8 +533,8 @@
       const list = listed().filter(m => (!st.cat || m.category === st.cat) && (!st.game || m.games.includes(st.game)) &&
         (!st.ai || aiOf(m) === st.ai) && matches(m, words))
         .sort(SORTS[st.sort]);
-      $('#count').textContent = `${list.length} mod${list.length === 1 ? '' : 's'}`;
-      $('#results').innerHTML = list.length ? list.map(card).join('')
+      $('#count').textContent = plural(list.length, 'mod');
+      $('#results').innerHTML = list.length ? list.map(m => card(m)).join('')
         : '<div class="empty">No mods match these filters. <a href="browse.html">Clear filters</a></div>';
 
       const u = new URLSearchParams();
@@ -598,7 +605,7 @@
     const links = (m.funding || []).filter(f => f && /^https:\/\//i.test(f.url));
     if (!links.length) return '';
     return `<div class="side-card support"><h4>Support the author</h4>
-      <p class="support-note">This mod is free. If you enjoy it, you can tip ${esc(authorLabel(m))} directly; Waypoint takes nothing.</p>
+      <p class="side-note">This mod is free. If you enjoy it, you can tip ${esc(authorLabel(m))} directly; Waypoint takes nothing.</p>
       <div class="support-links">${links.map(f =>
         `<a class="btn" href="${esc(f.url)}" target="_blank" rel="noopener nofollow">${svg('heart', 16)} ${esc(f.label)}</a>`).join('')}</div>
     </div>`;
@@ -656,10 +663,8 @@
           ${contours(rings(1110, 130, 10, 30, 26, seed) + rings(300, 60, 5, 40, 32, seed + 2), 1.3)}
           <path d="M700 290 C 780 250, 830 200, 920 200 S 1040 150, 1090 128" fill="none" stroke-width="3" stroke-dasharray="1 11" stroke-linecap="round" style="stroke: var(--accent)"/>
           <circle cx="920" cy="200" r="7" style="fill: var(--moss)"/>
-          <g transform="translate(1110 104)">
-            <path d="M0 40C0 40-36 6-36-14a36 36 0 0 1 72 0C36 6 0 40 0 40z" style="fill: var(--accent)"/>
-            <g transform="translate(-15 -29) scale(1.25)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--on-accent)">${CAT_ICON[m.category] || CAT_ICON.Other}</g>
-          </g>
+          ${bigPin(1110, 90, 3.3)}
+          <g transform="translate(1095 75) scale(1.25)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--on-accent)">${CAT_ICON[m.category] || CAT_ICON.Other}</g>
         </svg>
         ${coverImg ? `<img src="${esc(coverImg)}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove('has-img'); this.remove()">` : ''}
       </div>
@@ -736,7 +741,7 @@
           <div class="side-card"><h4>Requirements</h4>
             ${m.requirements.length
               ? `<ul class="reqs">${m.requirements.map(q => `<li><a href="${esc(q.url)}" target="_blank" rel="noopener">${esc(q.name)}</a></li>`).join('')}</ul>`
-              : '<div class="muted" style="font-size:14px">None beyond the base game.</div>'}
+              : '<p class="side-note">None beyond the base game.</p>'}
           </div>
           ${m.tags.length ? `<div class="side-card"><h4>Tags</h4>
             <div class="chips">${m.tags.map(t => `<a class="tag" href="browse.html?q=${encodeURIComponent(t)}">${esc(t)}</a>`).join('')}</div>
@@ -930,7 +935,7 @@
   }
 
   // Shared with add.js (the guided Add your mod page).
-  window.Waypoint = { esc, svg, md, card, catIcon, issueUrl, CATEGORIES: Object.keys(CAT_ICON), ARCHIVE_RE, fmtSize };
+  window.Waypoint = { esc, svg, md, card, catIcon, issueUrl, CATEGORIES: Object.keys(CAT_ICON), GAMES, ARCHIVE_RE, fmtSize };
 
   if (['home', 'browse', 'mod'].includes(page)) getStats(); // start the request before drawing the page
   shell();

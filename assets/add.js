@@ -36,11 +36,12 @@
   ];
   const ANSWERS = ['Yes', 'Ask me first', 'No'];
   const ANSWER_OF = { yes: 'Yes', ask: 'Ask me first', no: 'No' };
-  const GAMES = { se: 'Skyrim SE/AE', vr: 'Skyrim VR', le: 'Skyrim LE' };
+  const GAMES = W.GAMES;
   const AI_PART_OF = { audio: 'Voices or other audio', images: 'Textures or images', models: 'Meshes or models', code: 'Scripts or code', text: 'Text, dialogue or descriptions' };
   // Fields an author may empty when changing a mod; the bot takes "none" as "remove it".
   const CLEARABLE = ['Display name', 'Requirements', 'Tags', 'Credits', 'Permission notes', 'Donation link'];
-  // Longer links than this risk GitHub's "414 URI Too Long"; the description is then copied by hand.
+  // GitHub refuses links much over 8,000 characters ("414 URI Too Long"). A longer description is left
+  // out of the link and pasted into the short form's own Description box instead.
   const MAX_URL = 7500;
 
   let at = 0;
@@ -108,7 +109,6 @@
     if (reqs().length) $('#more-about').open = true;
     return !!data.repo;
   }
-  form.addEventListener('input', e => { save(); counts(); aiParts(); if (e.target.name === 'description') descPreview(); });
 
   // Description preview: exactly how it will look on the mod page.
   function descPreview() {
@@ -123,7 +123,6 @@
     e.currentTarget.setAttribute('aria-expanded', String(!box.hidden));
     descPreview();
   });
-  form.addEventListener('change', () => { save(); aiParts(); });
 
   function counts() {
     $$('.count-of').forEach(c => {
@@ -243,16 +242,9 @@
 
   // "Remove this mod from Waypoint instead": the bot takes the entry off the site after the usual owner
   // check. The author's repository is never touched.
-  function removalUrl() {
-    const q = new URLSearchParams();
-    q.set('template', 'edit-mod-guided.yml');
-    q.set('title', 'Remove: ' + mod.name);
-    q.set('answers', block([['Mod ID', mod.id], ['Remove from Waypoint', 'Yes, remove it']]));
-    return `https://github.com/${SITE.indexRepo}/issues/new?` + q.toString().replace(/\+/g, '%20');
-  }
   $('#rm-send').addEventListener('click', e => {
     if (!mod || !$('#rm-ok').checked) { e.preventDefault(); $('#rm-error').textContent = 'Tick the box first to confirm.'; return; }
-    e.currentTarget.href = removalUrl();
+    e.currentTarget.href = githubForm('edit-mod-guided.yml', 'Remove: ' + mod.name, [['Mod ID', mod.id], ['Remove from Waypoint', 'Yes, remove it']]);
   });
   $('#rm-ok').addEventListener('change', () => { $('#rm-error').textContent = ''; });
 
@@ -371,19 +363,14 @@
 
   const block = pairs => pairs.map(([q, v]) => `### ${q}\n\n${v ? safe(v) : '_No response_'}`).join('\n\n');
 
-  function buildUrl(withDescription) {
-    const q = new URLSearchParams();
-    if (EDIT) {
-      q.set('template', 'edit-mod-guided.yml');
-      q.set('title', 'Edit: ' + mod.name);
-      q.set('answers', block([['Mod ID', mod.id], ...changes(withDescription)]));
-    } else {
-      q.set('template', 'add-mod-guided.yml');
-      q.set('title', 'Add: ' + val('name'));
-      q.set('answers', block(Object.entries(fields(withDescription))));
-    }
+  // A link that opens one of the short GitHub forms with its answer box filled in.
+  function githubForm(template, title, answers) {
+    const q = new URLSearchParams({ template, title, answers: block(answers) });
     return `https://github.com/${SITE.indexRepo}/issues/new?` + q.toString().replace(/\+/g, '%20');
   }
+  const buildUrl = withDescription => (EDIT
+    ? githubForm('edit-mod-guided.yml', 'Edit: ' + mod.name, [['Mod ID', mod.id], ...changes(withDescription)])
+    : githubForm('add-mod-guided.yml', 'Add: ' + val('name'), Object.entries(fields(withDescription))));
 
   let longDesc = false; // the description doesn't fit in the GitHub link
   const CHANGE_NAMES ={ 'Which parts used AI?': 'AI parts', 'Screenshots': 'Screenshots' };
@@ -460,25 +447,29 @@
     preview(); // make sure the link carries the very latest answers
     if (longDesc && navigator.clipboard) navigator.clipboard.writeText(form.elements.description.value).catch(() => {});
   });
-  form.addEventListener('change', e => { if (at === 3) preview(); if (e.target.name === 'rules') $('#werror').textContent = ''; });
+  form.addEventListener('input', e => { save(); counts(); aiParts(); if (e.target.name === 'description') descPreview(); });
+  form.addEventListener('change', e => {
+    save();
+    aiParts();
+    if (at === 3) preview();
+    if (e.target.name === 'rules') $('#werror').textContent = '';
+  });
   form.addEventListener('submit', e => e.preventDefault());
 
   // ---------- start ----------
-  counts();
-  aiParts();
+  let hadRepo = false;
   if (EDIT) {
     form.elements.find.addEventListener('input', renderPicker);
     const want = listedMods().find(m => m.id === params.get('edit'));
     if (want) chooseMod(want); else renderPicker();
-    go(0);
   } else {
     $('#check-repo').addEventListener('click', checkRepo);
     form.elements.repo.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkRepo(); } });
     form.elements.repo.addEventListener('input', () => { repo = null; });
-    const hadRepo = restore();
-    counts();
-    aiParts();
-    go(0);
-    if (hadRepo) checkRepo();
+    hadRepo = restore();
   }
+  counts();
+  aiParts();
+  go(0);
+  if (hadRepo) checkRepo();
 })();
