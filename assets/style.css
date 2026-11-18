@@ -155,25 +155,31 @@ h1, h2 { font-family: var(--serif); font-weight: 700; }
 }
 @media (prefers-reduced-motion: reduce) { .dot { transition: none; } }
 
-/* "Most downloaded" row under the hero */
-.toprow { border-bottom: 1px solid var(--border); }
-.toprow .wrap { padding-top: 22px; padding-bottom: 24px; }
-.toprow-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 14px; }
-.toprow-head h2 { margin: 0; font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
-.toprow-head a { font-size: 14px; font-weight: 600; text-decoration: none; }
-/* One line that never wraps: on narrow screens it scrolls sideways (swipe on phones). */
-.toprow-list { list-style: none; margin: 0; padding: 0 0 4px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 1fr); gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: thin; }
-.toprow-list li { scroll-snap-align: start; }
-.top { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 8px; height: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; text-decoration: none; color: var(--text); transition: border-color .15s; }
-.top:hover { border-color: var(--accent); color: var(--text); }
-.top-n { font-family: var(--serif); font-weight: 700; font-size: 22px; color: var(--accent); width: 20px; text-align: center; flex: none; }
-.top-thumb { position: relative; width: 48px; height: 48px; border-radius: 12px; overflow: hidden; background: var(--cover); display: grid; place-items: center; flex: none; }
-.top-thumb .pin { transform: scale(.5); }
-.top-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.top-main { min-width: 0; display: flex; flex-direction: column; }
-.top-main b { font-weight: 600; font-size: 14px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.top-main small { color: var(--muted); font-size: 13px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; }
-@media (max-width: 600px) { .toprow .wrap { padding-top: 18px; padding-bottom: 20px; } }
+/* "Popular on the trail" band under the hero: the slider as one wide card */
+.pop-band .wrap { padding-top: 40px; }
+.slider.wide { max-width: none; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto; box-shadow: 0 18px 50px var(--shadow); }
+.slider.wide .slider-head { grid-column: 1 / -1; }
+.slider.wide #slide { grid-column: 1 / -1; grid-row: 2 / 4; }
+.slider.wide .slide { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); height: 100%; }
+.slider.wide .slide .card-media { position: relative; }
+.slider.wide .slide .cover { height: 100%; min-height: 280px; border-bottom: 0; border-right: 1px solid var(--border); }
+.slider.wide .slide .pin { transform: scale(1.3); }
+.slider.wide .slide-body { padding: 28px 28px 96px; }
+.slider.wide .slide-body h3 { font-size: 30px; margin-bottom: 10px; }
+.slider.wide .slide-body p { font-size: 16px; -webkit-line-clamp: 4; min-height: 0; }
+.slider.wide .slider-ctrl { grid-column: 2; grid-row: 3; position: relative; z-index: 1; padding: 0 28px 24px; }
+@media (max-width: 760px) {
+  .slider.wide { display: block; }
+  .slider.wide .slide { display: block; }
+  .slider.wide .slide .cover { height: 160px; min-height: 0; border-right: 0; border-bottom: 1px solid var(--border); }
+  .slider.wide .slide .pin { transform: none; }
+  .slider.wide .slide-body { padding: 16px 16px 4px; }
+  .slider.wide .slide-body h3 { font-size: 22px; }
+  .slider.wide .slide-body p { font-size: 14px; -webkit-line-clamp: 3; }
+  .slider.wide .slider-ctrl { padding: 14px 16px 16px; flex-wrap: wrap; }
+  .slider.wide #slide-link { order: 1; flex-basis: 100%; }
+  .pop-band .wrap { padding-top: 28px; }
+}
 
 .section { padding: 56px 0 0; }
 .section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 18px; }

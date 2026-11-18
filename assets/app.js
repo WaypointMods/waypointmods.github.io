@@ -186,8 +186,10 @@
   const BACKDROPS = {
     hero: () => `<svg class="topo" viewBox="0 0 1440 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       ${contours(rings(1080, 300, 12, 46, 30, 0.6) + rings(240, 120, 6, 40, 34, 2.4), 1.3)}
-      <g class="trail"><path d="M420 690 C 520 600, 600 560, 700 540 S 820 470, 862 400" fill="none" stroke-width="3" stroke-dasharray="1 11" stroke-linecap="round" style="stroke: var(--accent)"/>
-      <circle cx="700" cy="540" r="7" style="fill: var(--moss)"/></g></svg>`,
+      <g class="trail"><path d="M560 690 C 660 610, 720 560, 830 520 S 1010 420, 1080 336" fill="none" stroke-width="3" stroke-dasharray="1 11" stroke-linecap="round" style="stroke: var(--accent)"/>
+      <circle cx="830" cy="520" r="7" style="fill: var(--moss)"/>
+      <ellipse cx="1080" cy="338" rx="30" ry="9" fill="none" stroke-width="1.5" style="stroke: var(--accent); opacity: .45"/>
+      <g transform="translate(1080 286)"><path d="M0 52C0 52-40 16-40-6a40 40 0 0 1 80 0C40 16 0 52 0 52z" style="fill: var(--accent)"/><circle cx="0" cy="-6" r="14" style="fill: var(--hero)"/></g></g></svg>`,
     share: () => `<svg class="topo" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${contours(rings(1000, 300, 9, 40, 34, 1.3))}</svg>`
   };
   function backdrops() {
@@ -355,18 +357,7 @@
     document.querySelectorAll('[data-needs-mods]').forEach(s => { s.hidden = !mods.length; });
     $('#no-mods').hidden = !!mods.length;
     if (!mods.length) return;
-    const top = mods.slice().sort(SORTS.popular).slice(0, 5);
-    startSlider(top);
-    // "Most downloaded": the same top five as a quick ranked row under the hero.
-    $('#toprow').innerHTML = top.map((m, i) => {
-      const img = m.images && m.images[0];
-      return `<li><a class="top" href="mod.html?id=${encodeURIComponent(m.id)}">
-        <span class="top-n">${i + 1}</span>
-        <span class="top-thumb"><svg class="topo" viewBox="0 0 60 60" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${contours(rings(30, 30, 4, 6, 7, seedOf(m.id)))}</svg>
-          ${pin(m.category)}${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span>
-        <span class="top-main"><b>${esc(m.name)}</b><small>${esc(authorLabel(m))} · ${svg('dl', 12)} ${fmtNum(m.totalDownloads)}</small></span>
-      </a></li>`;
-    }).join('');
+    startSlider(mods.slice().sort(SORTS.popular).slice(0, 5));
     // A mod is "New" until it gets a release after the day it was added, then "Updated".
     $('#fresh').innerHTML = mods.slice().sort(SORTS.fresh).slice(0, 4)
       .map(m => card(m, m.lastUpdated > m.created ? 'Updated' : 'New')).join('');
