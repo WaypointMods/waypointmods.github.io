@@ -22,10 +22,10 @@
       <h2 id="scans">Virus scans, and why it's your call</h2>
       <p>Each author picks how their files are checked before they can be downloaded here. Every mod page shows which one was used.</p>
       <dl class="faq">
+        <dt>Private scan (the default)</dt>
+        <dd>The file is scanned by ClamAV, an open-source antivirus, inside GitHub's own build system. At the same time its fingerprint (not the file) is looked up on VirusTotal, so if any of its engines already knows the file as malware, it's caught. The file never leaves GitHub. It's less likely to catch brand-new malware that nobody has reported yet.</dd>
         <dt>Checked by VirusTotal (full scan)</dt>
         <dd>The file is checked by VirusTotal's 70+ antivirus engines. This is the strongest check. If VirusTotal hasn't seen the file before, it's uploaded there, and VirusTotal's paid users (security companies) can access uploaded files.</dd>
-        <dt>Private scan</dt>
-        <dd>The file is scanned by ClamAV, an open-source antivirus, inside GitHub's own build system. At the same time its fingerprint (not the file) is looked up on VirusTotal, so if any of its engines already knows the file as malware, it's caught. The file never leaves GitHub. It's less likely to catch brand-new malware that nobody has reported yet.</dd>
         <dt>Not virus-scanned</dt>
         <dd>Nothing was checked, because the author chose no scan or the file is over VirusTotal's 650 MB limit. These mods carry a red warning on their card and page.</dd>
       </dl>

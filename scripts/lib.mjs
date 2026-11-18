@@ -20,11 +20,15 @@ export const GAME_KEYS = Object.values(GAME_LABELS);
 export const LIMITS = { name: 80, authorName: 40, summary: 160, description: 20000, tags: 8, tag: 24, images: 8, requirements: 20, notes: 3000 };
 export const USER_AGENT = 'waypoint-build';
 
-// Virus scan choice in the forms -> value stored in mods/<id>.json (a full scan stores nothing).
+// Virus scan choice in the forms -> value stored in mods/<id>.json. The form preselects the private
+// scan; a full scan stores nothing (so hand-written entries without "scan" get a full scan).
 export const SCAN_MODES = {
+  'Private scan: ClamAV + VirusTotal fingerprint (recommended)': 'private',
+  'Full scan with VirusTotal': undefined,
+  'No scan': false,
+  // Older wording, still accepted from forms opened before the private scan became the default.
   'Full scan with VirusTotal (recommended)': undefined,
-  'Private scan: ClamAV + VirusTotal fingerprint': 'private',
-  'No scan': false
+  'Private scan: ClamAV + VirusTotal fingerprint': 'private'
 };
 // 'full' | 'private' | 'off'
 export const scanMode = mod => (mod.scan === false ? 'off' : mod.scan === 'private' ? 'private' : 'full');

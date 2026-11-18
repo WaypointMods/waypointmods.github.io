@@ -68,8 +68,8 @@ Each new release file is downloaded once and hashed, then checked the way its au
 
 | Choice | `scan` value | How the file is checked |
 |---|---|---|
-| Full scan (default) | not set | VirusTotal lookup; unknown files are uploaded and the build waits up to ~3 minutes for the verdict |
-| Private scan | `"private"` | ClamAV on the build machine (installed on demand, fresh definitions) plus a VirusTotal fingerprint lookup; the file is never uploaded |
+| Private scan (preselected in the form) | `"private"` | ClamAV on the build machine (installed on demand, fresh definitions) plus a VirusTotal fingerprint lookup; the file is never uploaded |
+| Full scan | not set | VirusTotal lookup; unknown files are uploaded and the build waits up to ~3 minutes for the verdict |
 | No scan | `false` | Nothing; the mod shows a red "Not virus-scanned" warning |
 
 VirusTotal's free API allows 4 requests a minute and 500 a day, so the build spaces requests out and stops

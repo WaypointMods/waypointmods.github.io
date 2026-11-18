@@ -153,7 +153,7 @@ body:
       description: "See the Add your mod page for what each option means. Mods with no scan show a red Not virus-scanned warning."
       options:
         - No change
-        - Full scan with VirusTotal (recommended)
-        - "Private scan: ClamAV + VirusTotal fingerprint"
+        - "Private scan: ClamAV + VirusTotal fingerprint (recommended)"
+        - Full scan with VirusTotal
         - No scan
       default: 0
