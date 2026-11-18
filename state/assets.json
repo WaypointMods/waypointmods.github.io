@@ -1,15 +1,1 @@
-{
-  "eargsm/MoreCaarriageRoutes@v1.0.0/More.Carriage.Route.7z": {
-    "assetId": 759855414,
-    "size": 11894,
-    "updatedAt": "2026-11-17T16:49:31Z",
-    "sha256": "976b9936ced66f9b2065f62c6b2eb85d97f1aaea3773efe34c8fff73273ebd5d",
-    "status": "clean",
-    "firstSeen": "2026-11-17",
-    "vt": {
-      "malicious": 0,
-      "suspicious": 0,
-      "checked": "2026-11-17"
-    }
-  }
-}
+{}
