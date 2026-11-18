@@ -387,7 +387,7 @@
   }
 
   // ---------- live data ----------
-  // The site is rebuilt every few hours. In between, pages show fresh download counts and stars,
+  // The site is rebuilt when something changes. In between, pages show fresh download counts and stars,
   // and notice deleted repositories. New releases are NOT offered for download here: they appear
   // only after the build has virus-scanned them.
   //  1. The stats Worker (SITE.statsUrl, Cloudflare free plan) answers for every mod in one request.
@@ -485,7 +485,7 @@
     const n = data.newest;
     const listedDate = latest(m) ? latest(m).date : '';
     if (n && n.date.slice(0, 10) >= listedDate && n.urls.length && !n.urls.some(u => known.has(u))) {
-      note.innerHTML = `<div class="notice"><strong>${esc(n.tag)} was just released.</strong> It will appear here within a few hours, once its files have been virus-scanned.</div>`;
+      note.innerHTML = `<div class="notice"><strong>${esc(n.tag)} was just released.</strong> It will appear here in a few minutes, once its files have been virus-scanned.</div>`;
     }
   }
 

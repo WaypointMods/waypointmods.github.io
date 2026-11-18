@@ -10,7 +10,7 @@ Mod files stay in each author's own GitHub releases.
 | `mods/<id>.json` | One file per listed mod. This is the registry. |
 | `.github/ISSUE_TEMPLATE/` | The Submit, Edit and Report forms. |
 | `.github/workflows/submission.yml` | When someone submits or edits, checks the form, commits `mods/<id>.json` straight to `main`, starts a build and closes the issue. No manual approval. Only a repo's owner (or a public member of the owning organization) can submit or edit it. Replies on the issue with problems if a check fails. |
-| `.github/workflows/build.yml` | On every push to `main` and every 4 hours: pulls releases, hashes and scans new files, builds `_site/`, publishes to Pages. |
+| `.github/workflows/build.yml` | On every push to `main`, when the stats Worker spots a new release or deleted repo, and every 6 hours as a safety net: pulls releases, hashes and scans new files (waiting up to 3 minutes for VirusTotal), builds `_site/`, publishes to Pages. |
 | `.github/workflows/check.yml` | Validates `mods/*.json` on pull requests that people open by hand. |
 | `state/assets.json` | Written by the build: every file's approved SHA-256 hash and scan status. Committed back automatically. |
 | `data/mods.js` | Example data for previewing locally only. The build replaces it with real data. |
@@ -42,7 +42,14 @@ GitHub directly if it doesn't answer. Without it, lists show the numbers from th
 4. Put the Worker's `/stats` address in `data/site.js` as `statsUrl`.
 
 Optional: a fine-grained token with **Actions: Read and write** on this repo only, saved as the secret
-`BUILD_TOKEN`, makes the Worker start a site build every 4 hours as a backup for GitHub's schedule.
+`BUILD_TOKEN`, lets the Worker check every minute for new releases and deleted repos and start a site
+build straight away, plus a safety-net build every 6 hours (GitHub's own schedule is unreliable).
+Without it, new releases only appear on GitHub's 6-hourly schedule or after a push.
+
+Check both tokens any time at the Worker's `/health` address, for example after renewing one. It shows
+`ok`, `missing` or `rejected` for each, never the tokens themselves. The build token is fine-grained, so it
+expires (at most after a year); GitHub emails a reminder. Renew it with **Regenerate token** on GitHub, then
+run `npx wrangler secret put BUILD_TOKEN --name waypoint-stats` again.
 
 ## Moderating
 
@@ -84,7 +91,8 @@ Then commit. The next build lists the mod again. If it's real malware, delete `m
 - GitHub Pages: 1 GB site size, about 100 GB a month of traffic. Mod downloads come from the authors'
   repositories and don't count toward it.
 - Pages isn't allowed for commercial sites, so no ads or paid tiers.
-- New releases appear within about 4 hours, or straight away if you run **Build site** by hand.
+- New releases appear about 2–5 minutes after they're published (with the Worker's `BUILD_TOKEN`),
+  or straight away if you run **Build site** by hand.
 
 ## Preview locally
 

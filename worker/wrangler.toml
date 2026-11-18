@@ -6,6 +6,7 @@ compatibility_date = "2026-10-01"
 SITE_URL = "https://waypointmods.github.io/"
 SITE_REPO = "WaypointMods/waypointmods.github.io"
 
-# Only does something if the optional BUILD_TOKEN secret is set (see index.js).
+# Both only do something once the BUILD_TOKEN secret is set (see index.js):
+# every minute, look for new releases and deleted repos; every 6 hours, a safety-net build.
 [triggers]
-crons = ["17 */4 * * *"]
+crons = ["* * * * *", "17 */6 * * *"]

@@ -16,7 +16,9 @@ const CHECK_ONLY = process.argv.includes('--check');
 const MAX_RELEASES = 5;                 // newest releases shown per mod
 const VT_SMALL = 32 * 1024 * 1024;      // direct upload limit
 const VT_LARGE = 650 * 1024 * 1024;     // upload_url limit
-const VT_GAP_MS = 16000;                // free API: 4 requests per minute
+const VT_GAP_MS = Number(process.env.VT_GAP_MS || 16000);   // free API: 4 requests per minute
+const VT_WAIT_TRIES = 6;                                    // while VirusTotal analyses, check up to 6 times...
+const VT_WAIT_MS = Number(process.env.VT_WAIT_MS || 30000); // ...30 seconds apart, so new files list in the same build
 const VT = process.env.VT_API_KEY || '';
 const VT_MAX = Number(process.env.VT_MAX_CALLS || 100);
 const VT_FLAG_AT = Number(process.env.VT_FLAG_AT || 2);
@@ -77,22 +79,41 @@ async function download(a) {
   return { file, sha256: hash.digest('hex') };
 }
 
+// Ask VirusTotal about a hash: 'done' (verdict recorded), 'running' (known, still analysing) or 'unknown'.
+async function lookup(e, a) {
+  const found = await vt(`https://www.virustotal.com/api/v3/files/${e.sha256}`);
+  if (!found) return 'unknown';
+  const stats = found.data && found.data.attributes && found.data.attributes.last_analysis_stats;
+  const total = stats ? Object.values(stats).reduce((x, y) => x + y, 0) : 0;
+  if (!total) return 'running';
+  e.vt = { malicious: stats.malicious, suspicious: stats.suspicious, checked: today() };
+  e.status = stats.malicious >= VT_FLAG_AT ? 'flagged' : 'clean';
+  delete e.uploaded;
+  report.scanned.push(`${a.name}: ${e.status} (${stats.malicious} malicious, ${stats.suspicious} suspicious)`);
+  return 'done';
+}
+
+// While VirusTotal is analysing, wait for the verdict here rather than leaving it to the next build.
+async function awaitVerdict(e, a) {
+  for (let i = 0; i < VT_WAIT_TRIES && vtCalls < VT_MAX; i++) {
+    await sleep(VT_WAIT_MS);
+    if (await lookup(e, a) === 'done') return;
+  }
+}
+
 // Look the hash up on VirusTotal; upload the file if VirusTotal has never seen it.
 async function scan(e, a, local) {
   if (!VT) { e.status = 'unscanned'; e.note = 'no-key'; return; }
   if (vtCalls >= VT_MAX) { e.status = 'queued'; return; }
   delete e.note;
   try {
-    const found = await vt(`https://www.virustotal.com/api/v3/files/${e.sha256}`);
-    const stats = found && found.data && found.data.attributes && found.data.attributes.last_analysis_stats;
-    const total = stats ? Object.values(stats).reduce((x, y) => x + y, 0) : 0;
-    if (stats && total > 0) {
-      e.vt = { malicious: stats.malicious, suspicious: stats.suspicious, checked: today() };
-      e.status = stats.malicious >= VT_FLAG_AT ? 'flagged' : 'clean';
-      report.scanned.push(`${a.name}: ${e.status} (${stats.malicious} malicious, ${stats.suspicious} suspicious)`);
+    const first = await lookup(e, a);
+    if (first === 'done') return;
+    if (first === 'running' || e.uploaded) {
+      e.status = 'pending';
+      await awaitVerdict(e, a);
       return;
     }
-    if (found || e.uploaded) { e.status = 'pending'; return; } // analysis still running
     if (a.size > VT_LARGE) { e.status = 'unscanned'; e.note = 'too-large'; return; }
     if (vtCalls + 2 > VT_MAX) { e.status = 'queued'; return; }
     const dl = local || await download(a);
@@ -104,10 +125,11 @@ async function scan(e, a, local) {
       await vt(target, { method: 'POST', body: form });
       e.uploaded = today();
       e.status = 'pending';
-      report.scanned.push(`${a.name}: uploaded to VirusTotal, result on the next build`);
     } finally {
       if (!local) fs.rmSync(dl.file, { force: true });
     }
+    await awaitVerdict(e, a);
+    if (e.status === 'pending') report.scanned.push(`${a.name}: uploaded to VirusTotal, still being analysed; listed on a later build`);
   } catch (err) {
     e.status = 'queued';
     console.warn(`VirusTotal check failed for ${a.name}: ${err.message}`);
