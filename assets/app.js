@@ -384,14 +384,19 @@
       <div class="v-count"></div>`;
     document.body.appendChild(dlg);
     const img = $('img', dlg);
-    let at = 0;
+    let at = 0, list = [], multi = false;
     const show = i => {
-      at = (i + m.images.length) % m.images.length;
-      img.src = m.images[at];
-      $('.v-count', dlg).textContent = `${at + 1} / ${m.images.length}`;
+      at = (i + list.length) % list.length;
+      img.src = list[at];
+      $('.v-count', dlg).textContent = `${at + 1} / ${list.length}`;
     };
-    const multi = m.images.length > 1;
-    dlg.querySelectorAll('.v-prev, .v-next').forEach(b => { b.hidden = !multi; });
+    img.addEventListener('error', () => {
+      list.splice(at, 1);
+      if (!list.length) { dlg.close(); return; }
+      multi = list.length > 1;
+      dlg.querySelectorAll('.v-prev, .v-next, .v-count').forEach(x => { x.hidden = !multi; });
+      show(at);
+    });
     $('.v-prev', dlg).addEventListener('click', () => show(at - 1));
     $('.v-next', dlg).addEventListener('click', () => show(at + 1));
     $('.v-close', dlg).addEventListener('click', () => dlg.close());
@@ -408,8 +413,14 @@
       if (Math.abs(dx) > 40) show(at + (dx < 0 ? 1 : -1));
       x0 = null;
     });
+    // Build the list when opening, from the thumbnails still on the page (broken images remove themselves).
     document.querySelectorAll('[data-shot]').forEach(b => b.addEventListener('click', () => {
-      show(Number(b.dataset.shot));
+      const shots = [...document.querySelectorAll('[data-shot]')];
+      list = shots.map(s => m.images[Number(s.dataset.shot)]);
+      multi = list.length > 1;
+      dlg.querySelectorAll('.v-prev, .v-next').forEach(x => { x.hidden = !multi; });
+      $('.v-count', dlg).hidden = !multi;
+      show(shots.indexOf(b));
       dlg.showModal();
     }));
   }
