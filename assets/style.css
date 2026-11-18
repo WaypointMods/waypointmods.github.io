@@ -139,6 +139,7 @@ h1, h2 { font-family: var(--serif); font-weight: 700; }
 .rank { position: absolute; right: 12px; top: 12px; z-index: 2; background: var(--accent); color: var(--on-accent); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
 .slider-ctrl { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px 20px; }
 .slider-ctrl .btn { white-space: nowrap; }
+.dots[hidden], .arrows[hidden] { display: none; }
 .dots { display: flex; align-items: center; gap: 6px; }
 .dot { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px; background: var(--dot-off); cursor: pointer; transition: width .2s, background .2s; position: relative; }
 .dot::after { content: ""; position: absolute; inset: -12px -4px; } /* bigger tap area */
