@@ -355,7 +355,18 @@
     document.querySelectorAll('[data-needs-mods]').forEach(s => { s.hidden = !mods.length; });
     $('#no-mods').hidden = !!mods.length;
     if (!mods.length) return;
-    startSlider(mods.slice().sort(SORTS.popular).slice(0, 5));
+    const top = mods.slice().sort(SORTS.popular).slice(0, 5);
+    startSlider(top);
+    // "Most downloaded": the same top five as a quick ranked row under the hero.
+    $('#toprow').innerHTML = top.map((m, i) => {
+      const img = m.images && m.images[0];
+      return `<li><a class="top" href="mod.html?id=${encodeURIComponent(m.id)}">
+        <span class="top-n">${i + 1}</span>
+        <span class="top-thumb"><svg class="topo" viewBox="0 0 60 60" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${contours(rings(30, 30, 4, 6, 7, seedOf(m.id)))}</svg>
+          ${pin(m.category)}${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span>
+        <span class="top-main"><b>${esc(m.name)}</b><small>${esc(authorLabel(m))} · ${svg('dl', 12)} ${fmtNum(m.totalDownloads)}</small></span>
+      </a></li>`;
+    }).join('');
     // A mod is "New" until it gets a release after the day it was added, then "Updated".
     $('#fresh').innerHTML = mods.slice().sort(SORTS.fresh).slice(0, 4)
       .map(m => card(m, m.lastUpdated > m.created ? 'Updated' : 'New')).join('');
