@@ -53,6 +53,7 @@
   MODS.forEach(m => {
     m.totalDownloads = sumDownloads(m);
     m.lastUpdated = latest(m) ? latest(m).date : m.created;
+    m.activity = m.lastUpdated > m.created ? m.lastUpdated : m.created;
     m.searchText = [m.name, m.summary, m.author, m.authorName || '', m.category, ...m.tags].join(' ').toLowerCase();
   });
   // Mods whose repository turned out to be deleted (from live data) drop out of every list.
@@ -71,6 +72,7 @@
     popular: (a, b) => b.totalDownloads - a.totalDownloads,
     updated: (a, b) => b.lastUpdated.localeCompare(a.lastUpdated),
     new: (a, b) => b.created.localeCompare(a.created),
+    fresh: (a, b) => b.activity.localeCompare(a.activity),
     stars: (a, b) => b.stars - a.stars,
     name: (a, b) => a.name.localeCompare(b.name)
   };
@@ -115,7 +117,7 @@
   }
 
   // ---------- shared pieces ----------
-  // Line drawings of a tool per category: the blueprint cover when a mod has no screenshot.
+  // Line icons per category: drawn inside the waypoint pin on covers, banners and category links.
   const CAT_ICON = {
     'Animation': '<circle cx="13" cy="4" r="2"/><path d="m7 21 3-7 3 3v5M7 12l3-4 4 1 3 3M10 8l-1 6"/>',
     'Armour and Weapons': '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="M12 8v8M9 11h6"/>',
@@ -157,18 +159,55 @@
   const catIcon = (c, size, width) =>
     `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICON[c] || CAT_ICON.Other}</svg>`;
 
-  function cover(m) {
+  // ---------- trail map drawing ----------
+  // Topographic contour lines: n irregular closed rings around a peak. The seed shapes them, so each
+  // mod keeps the same little map every time.
+  function rings(cx, cy, n, base, step, seed) {
+    let out = '';
+    for (let k = 0; k < n; k++) {
+      const r0 = base + k * step;
+      let d = '';
+      for (let i = 0; i <= 72; i++) {
+        const a = i / 72 * Math.PI * 2;
+        const r = r0 * (1 + 0.13 * Math.sin(3 * a + seed + k * 0.22) + 0.07 * Math.sin(5 * a + seed * 1.7 - k * 0.15) + 0.05 * Math.sin(2 * a + seed * 0.6));
+        d += (i ? 'L' : 'M') + (cx + r * Math.cos(a) * 1.35).toFixed(1) + ' ' + (cy + r * Math.sin(a)).toFixed(1);
+      }
+      out += `<path d="${d}Z"/>`;
+    }
+    return out;
+  }
+  const contours = (paths, width = 1.2) => `<g fill="none" stroke-width="${width}" style="stroke: var(--contour)">${paths}</g>`;
+  const seedOf = s => { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return (h % 628) / 100; };
+  const PIN_PATH = 'M12 25S2 16.6 2 10a10 10 0 0 1 20 0c0 6.6-10 15-10 15z';
+  const pin = c => `<span class="pin"><svg viewBox="0 0 24 26" aria-hidden="true"><path d="${PIN_PATH}" fill="currentColor"/></svg>${catIcon(c, 22, 2)}</span>`;
+
+  // Big background maps for the home page hero and share panel.
+  const BACKDROPS = {
+    hero: () => `<svg class="topo" viewBox="0 0 1440 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      ${contours(rings(1080, 300, 12, 46, 30, 0.6) + rings(240, 120, 6, 40, 34, 2.4), 1.3)}
+      <g class="trail"><path d="M420 690 C 520 600, 600 560, 700 540 S 820 470, 862 400" fill="none" stroke-width="3" stroke-dasharray="1 11" stroke-linecap="round" style="stroke: var(--accent)"/>
+      <circle cx="700" cy="540" r="7" style="fill: var(--moss)"/></g></svg>`,
+    share: () => `<svg class="topo" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${contours(rings(1000, 300, 9, 40, 34, 1.3))}</svg>`
+  };
+  function backdrops() {
+    document.querySelectorAll('[data-topo]').forEach(el => {
+      if (BACKDROPS[el.dataset.topo]) el.insertAdjacentHTML('afterbegin', BACKDROPS[el.dataset.topo]());
+    });
+  }
+
+  // A screenshot when there is one; if it fails to load it removes itself and the map shows through.
+  function cover(m, extra = '') {
     const img = m.images && m.images[0];
     const r = latest(m);
-    // A screenshot when there is one; if it fails to load it removes itself and the drawing shows through.
-    return `<div class="cover bp-fine">${catIcon(m.category, 76, 1.1)}
-      <span class="cover-tag">${esc(m.category)}</span>
+    return `<div class="cover"><svg class="topo" viewBox="0 0 300 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${contours(rings(150, 75, 6, 16, 16, seedOf(m.id)))}</svg>
+      ${pin(m.category)}
+      <span class="cover-tag">${esc(m.category)}</span>${extra}
       ${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
       ${r ? `<span class="cover-ver">v${esc(r.version)}</span>` : ''}</div>`;
   }
-  function card(m) {
+  function card(m, badge) {
     return `<a class="card" href="mod.html?id=${encodeURIComponent(m.id)}">
-      <div class="card-media">${cover(m)}${unscanned(m) ? `<span class="warn-pill" title="${esc(scanReason(m))}">${svg('alert', 12)} Not virus-scanned</span>` : ''}</div>
+      <div class="card-media">${cover(m, badge ? `<span class="cover-badge">${badge}</span>` : '')}${unscanned(m) ? `<span class="warn-pill" title="${esc(scanReason(m))}">${svg('alert', 12)} Not virus-scanned</span>` : ''}</div>
       <div class="card-body">
         <h3>${esc(m.name)}</h3>
         <p class="card-sum">${esc(m.summary)}</p>
@@ -181,16 +220,6 @@
       </div>
     </a>`;
   }
-  function row(m) {
-    const r = latest(m);
-    return `<a class="row" href="mod.html?id=${encodeURIComponent(m.id)}">
-      <span class="cat-icon">${catIcon(m.category, 20, 1.8)}</span>
-      <span class="row-main"><b>${esc(m.name)}</b><small>${esc(m.category)} · by ${esc(authorLabel(m))}</small></span>
-      ${r ? `<span class="ver">v${esc(r.version)}</span>` : ''}
-      <span class="row-when">${ago(m.lastUpdated)}</span>
-    </a>`;
-  }
-
   // ---------- theme ----------
   function readTheme() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
   function currentTheme() {
@@ -243,6 +272,7 @@
         </nav>
       </div>`;
     }
+    backdrops();
     document.querySelectorAll('[data-site-name]').forEach(e => { e.textContent = SITE.name; });
     document.querySelectorAll('[data-issue]').forEach(a => { a.href = issueUrl(a.dataset.issue); });
     document.querySelectorAll('[data-index-repo]').forEach(a => { a.href = 'https://github.com/' + SITE.indexRepo; });
@@ -251,19 +281,86 @@
   }
 
   // ---------- pages ----------
+  // "Popular on the trail": the five most downloaded mods. It moves on by itself every 5 seconds,
+  // but waits while the pointer or keyboard focus is on it, for 9 seconds after someone uses the
+  // arrows or dots, while the tab is hidden, and never moves on its own for reduced-motion users.
+  const slider = { list: [], at: 0, touched: 0, held: 0, timer: null };
+  function showSlide(i, byUser) {
+    const n = slider.list.length;
+    if (!n) return;
+    slider.at = (i + n) % n;
+    const m = slider.list[slider.at];
+    const href = 'mod.html?id=' + encodeURIComponent(m.id);
+    const box = $('#slide');
+    box.setAttribute('aria-live', byUser ? 'polite' : 'off');
+    box.innerHTML = `<a class="slide" href="${href}">
+      <div class="card-media">${cover(m, `<span class="rank">#${slider.at + 1}</span>`)}${unscanned(m) ? `<span class="warn-pill" title="${esc(scanReason(m))}">${svg('alert', 12)} Not virus-scanned</span>` : ''}</div>
+      <div class="slide-body">
+        <h3>${esc(m.name)}</h3>
+        <p>${esc(m.summary)}</p>
+        <div class="meta">
+          <span>by <strong>${esc(authorLabel(m))}</strong></span>
+          <span title="Downloads">${svg('dl', 13)} ${fmtNum(m.totalDownloads)}</span>
+          ${aiTag(m)}
+        </div>
+      </div>
+    </a>`;
+    $('#slide-count').textContent = n > 1 ? `${slider.at + 1} / ${n}` : '';
+    $('#slide-link').href = href;
+    document.querySelectorAll('#dots .dot').forEach((d, k) => d.setAttribute('aria-current', k === slider.at));
+  }
+  function startSlider(list) {
+    slider.list = list;
+    const many = list.length > 1;
+    $('#dots').hidden = !many;
+    $('.arrows').hidden = !many;
+    $('#dots').innerHTML = list.map((m, i) =>
+      `<button class="dot" type="button" data-i="${i}" aria-label="Show ${esc(m.name)}"></button>`).join('');
+    showSlide(Math.min(slider.at, list.length - 1));
+    if (slider.timer) return; // a redraw with fresh numbers: keep the running slider
+    const byUser = i => { slider.touched = Date.now(); showSlide(i, true); };
+    $('#slide-prev').addEventListener('click', () => byUser(slider.at - 1));
+    $('#slide-next').addEventListener('click', () => byUser(slider.at + 1));
+    $('#dots').addEventListener('click', e => { const d = e.target.closest('.dot'); if (d) byUser(Number(d.dataset.i)); });
+    const box = $('#slider');
+    const hold = d => () => { slider.held = Math.max(0, slider.held + d); };
+    box.addEventListener('mouseenter', hold(1));
+    box.addEventListener('mouseleave', hold(-1));
+    box.addEventListener('focusin', hold(1));
+    box.addEventListener('focusout', hold(-1));
+    let x0 = null;
+    box.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+    box.addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      x0 = null;
+      if (Math.abs(dx) > 40 && slider.list.length > 1) byUser(slider.at + (dx < 0 ? 1 : -1));
+    });
+    const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    slider.timer = still ? -1 : setInterval(() => {
+      if (slider.held || document.hidden || slider.list.length < 2 || Date.now() - slider.touched < 9000) return;
+      showSlide(slider.at + 1);
+    }, 5000);
+  }
+
   function home() {
     const mods = listed();
-    $('#stat-mods').textContent = mods.length;
-    $('#stat-dl').textContent = fmtNum(mods.reduce((a, m) => a + m.totalDownloads, 0));
-    $('#stat-authors').textContent = new Set(mods.map(m => m.author)).size;
+    const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+    const authors = new Set(mods.map(m => m.author)).size;
+    const total = mods.reduce((a, m) => a + m.totalDownloads, 0);
+    $('#hero-stats').innerHTML = mods.length
+      ? `<b>${plural(mods.length, 'mod')}</b> left here by <b>${plural(authors, 'author')}</b>, downloaded <b>${fmtNum(total)} time${total === 1 ? '' : 's'}</b>`
+      : '';
     document.querySelectorAll('[data-needs-mods]').forEach(s => { s.hidden = !mods.length; });
     $('#no-mods').hidden = !!mods.length;
     if (!mods.length) return;
-    $('#popular').innerHTML = mods.slice().sort(SORTS.popular).slice(0, 4).map(card).join('');
-    $('#updated').innerHTML = mods.slice().sort(SORTS.updated).slice(0, 5).map(row).join('');
+    startSlider(mods.slice().sort(SORTS.popular).slice(0, 5));
+    // A mod is "New" until it gets a release after the day it was added, then "Updated".
+    $('#fresh').innerHTML = mods.slice().sort(SORTS.fresh).slice(0, 4)
+      .map(m => card(m, m.lastUpdated > m.created ? 'Updated' : 'New')).join('');
     const cats = countBy(mods, m => m.category);
     $('#cats').innerHTML = Object.keys(cats).sort().map(c =>
-      `<a class="cat" href="browse.html?cat=${encodeURIComponent(c)}"><span class="cat-icon">${catIcon(c, 20, 1.8)}</span>
+      `<a class="cat" href="browse.html?cat=${encodeURIComponent(c)}"><span class="cat-icon">${catIcon(c, 18, 1.9)}</span>
         <span><b>${esc(c)}</b><small>${cats[c]} mod${cats[c] === 1 ? '' : 's'}</small></span></a>`).join('');
     return home;
   }
@@ -411,18 +508,20 @@
     const main = r && r.assets[0];
     const fileCount = m.releases.reduce((a, x) => a + x.assets.length, 0);
 
-    // Blueprint banner: the category's tool drawn large, a measurement line and the dotted route.
-    const size = main ? fmtSize(main.size).toUpperCase() : '';
-    // With screenshots, the cover (the first one) fills the banner; if it fails to load, the drawing shows instead.
+    // Trail banner: a contour map with the dotted trail leading to this mod's waypoint pin.
+    // With screenshots, the cover (the first one) fills the banner; if it fails to load, the map shows instead.
     const coverImg = m.images && m.images[0];
+    const seed = seedOf(m.id);
     root.innerHTML = `
-      <div class="banner bp${coverImg ? ' has-img' : ''}">
-        <svg viewBox="0 0 1440 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <g transform="translate(1010 40) scale(7.5)" fill="none" stroke-width="0.28" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--line)">${CAT_ICON[m.category] || CAT_ICON.Other}</g>
-          <path d="M1010 230 L1190 230 M1010 222 L1010 238 M1190 222 L1190 238" stroke-width="1.5" style="stroke: var(--line)"/>
-          <text x="1100" y="252" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" style="fill: var(--line-text)">${esc(m.category.toUpperCase())}${size ? ' · ' + esc(size) : ''}</text>
-          <path d="M700 210 C 780 190, 820 120, 900 130 S 960 60, 990 70" fill="none" stroke-width="2.5" stroke-dasharray="2 10" stroke-linecap="round" style="stroke: var(--accent)"/>
-          <circle cx="700" cy="210" r="6" style="fill: var(--accent)"/>
+      <div class="banner${coverImg ? ' has-img' : ''}">
+        <svg viewBox="0 0 1440 270" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+          ${contours(rings(1110, 130, 10, 30, 26, seed) + rings(300, 60, 5, 40, 32, seed + 2), 1.3)}
+          <path d="M700 290 C 780 250, 830 200, 920 200 S 1040 150, 1090 128" fill="none" stroke-width="3" stroke-dasharray="1 11" stroke-linecap="round" style="stroke: var(--accent)"/>
+          <circle cx="920" cy="200" r="7" style="fill: var(--moss)"/>
+          <g transform="translate(1110 104)">
+            <path d="M0 40C0 40-36 6-36-14a36 36 0 0 1 72 0C36 6 0 40 0 40z" style="fill: var(--accent)"/>
+            <g transform="translate(-15 -29) scale(1.25)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--on-accent)">${CAT_ICON[m.category] || CAT_ICON.Other}</g>
+          </g>
         </svg>
         ${coverImg ? `<img src="${esc(coverImg)}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove('has-img'); this.remove()">` : ''}
       </div>
@@ -431,7 +530,7 @@
           <div class="mod-head">
             <div class="head-tags"><span class="kicker">${esc(m.category)}</span>${aiTag(m)}</div>
             <h1 class="mod-title">${esc(m.name)}</h1>
-            <div class="byline">by ${hasOwnName(m)
+            <div class="byline">left here by ${hasOwnName(m)
               ? `<strong>${esc(m.authorName)}</strong> · <a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener" title="GitHub account">@${esc(m.author)}</a>`
               : `<a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener">${esc(m.author)}</a>`}</div>
             <p class="lead">${esc(m.summary)}</p>
