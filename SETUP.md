@@ -73,7 +73,10 @@ Each new release file is downloaded once and hashed, then checked the way its au
 | No scan | `false` | Nothing; the mod shows a red "Not virus-scanned" warning |
 
 VirusTotal's free API allows 4 requests a minute and 500 a day, so the build spaces requests out and stops
-after `VT_MAX_CALLS` (default 100) per run. Anything left over is picked up by the next build.
+after `VT_MAX_CALLS` (default 100) per run. It also keeps a daily count in `state/vt-quota.json` and stops at
+`VT_DAILY_MAX` (default 450, UTC days), so a busy day or a burst of spam can't use up the whole free quota.
+Anything left over waits for the next build or the next day; files are never listed unscanned because of it.
+The build summary shows the count, for example "VirusTotal calls: 5 (today: 37 of 450)".
 
 | Status in `state/assets.json` | Meaning | On the site |
 |---|---|---|

@@ -5,7 +5,8 @@
 //   node scripts/build.mjs --check   only validate mods/*.json (used on hand-made pull requests)
 //
 // Env: GITHUB_TOKEN (raises the API rate limit), VT_API_KEY (VirusTotal; without it files are
-// listed as "not virus-scanned"), VT_MAX_CALLS (default 100 per build), VT_FLAG_AT (default 2).
+// listed as "not virus-scanned"), VT_MAX_CALLS (default 100 per build), VT_DAILY_MAX (default 450 a
+// day, under the free plan's 500), VT_FLAG_AT (default 2).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -22,8 +23,10 @@ const VT_WAIT_TRIES = 6;                                    // while VirusTotal 
 const VT_WAIT_MS = Number(process.env.VT_WAIT_MS || 30000); // ...30 seconds apart, so new files list in the same build
 const VT = process.env.VT_API_KEY || '';
 const VT_MAX = Number(process.env.VT_MAX_CALLS || 100);
+const VT_DAILY_MAX = Number(process.env.VT_DAILY_MAX || 450);
 const VT_FLAG_AT = Number(process.env.VT_FLAG_AT || 2);
 const STATE_FILE = path.join(ROOT, 'state', 'assets.json');
+const QUOTA_FILE = path.join(ROOT, 'state', 'vt-quota.json');
 const OUT = path.join(ROOT, '_site');
 const SITE_FILES = ['index.html', 'browse.html', 'mod.html', 'add.html', 'about.html', 'helper.html', '.nojekyll', 'assets', 'helper', 'data/site.js'];
 
@@ -53,6 +56,11 @@ if (CHECK_ONLY) process.exit(0);
 const state = fs.existsSync(STATE_FILE) ? JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')) : {};
 const report = { listed: [], hidden: [], unavailable: [], scanned: [], changed: [], flagged: [] };
 let vtCalls = 0, vtLast = 0;
+// VirusTotal calls already used today (UTC) by earlier builds. Past the daily budget, files wait for
+// tomorrow rather than using up the free quota. They are never listed unscanned because of it.
+let quota = fs.existsSync(QUOTA_FILE) ? JSON.parse(fs.readFileSync(QUOTA_FILE, 'utf8')) : {};
+if (quota.date !== today()) quota = { date: today(), calls: 0 };
+const vtBudget = n => vtCalls + n <= VT_MAX && quota.calls + vtCalls + n <= VT_DAILY_MAX;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function vt(url, opts = {}) {
@@ -107,14 +115,14 @@ function verdict(e, a, method, flagged, detail) {
 // here (up to ~3 minutes) rather than leaving it to the next build.
 async function fullScan(e, a, local) {
   if (!VT) { e.status = 'unscanned'; e.note = 'no-key'; return; }
-  if (vtCalls >= VT_MAX) { e.status = 'queued'; return; }
+  if (!vtBudget(1)) { e.status = 'queued'; return; }
   const settle = r => {
     e.vt = { malicious: r.stats.malicious, suspicious: r.stats.suspicious };
     verdict(e, a, 'virustotal', r.stats.malicious >= VT_FLAG_AT, vtDetail(r.stats));
   };
   const wait = async () => {
     e.status = 'pending';
-    for (let i = 0; i < VT_WAIT_TRIES && vtCalls < VT_MAX; i++) {
+    for (let i = 0; i < VT_WAIT_TRIES && vtBudget(1); i++) {
       await sleep(VT_WAIT_MS);
       const r = await vtReport(e.sha256);
       if (r.state === 'done') return settle(r);
@@ -126,7 +134,7 @@ async function fullScan(e, a, local) {
   if (first.state === 'done') return settle(first);
   if (first.state === 'running' || e.uploaded) return wait();
   if (a.size > VT_LARGE) { e.status = 'unscanned'; e.note = 'too-large'; return; }
-  if (vtCalls + 2 > VT_MAX) { e.status = 'queued'; return; }
+  if (!vtBudget(2)) { e.status = 'queued'; return; }
   const dl = local || await download(a);
   try {
     let target = 'https://www.virustotal.com/api/v3/files';
@@ -144,6 +152,7 @@ async function fullScan(e, a, local) {
 // Private scan: ClamAV on the build machine, plus a fingerprint-only VirusTotal lookup.
 // The file itself is never sent anywhere.
 async function privateScan(e, a, local) {
+  if (VT && !vtBudget(1)) { e.status = 'queued'; return; } // keep the promised fingerprint check for later
   if (!ensureClamAV()) { e.status = 'queued'; e.note = 'clamav-unavailable'; return; }
   const dl = local || await download(a);
   let clam;
@@ -155,7 +164,7 @@ async function privateScan(e, a, local) {
     return;
   }
   let fp = null;
-  if (VT && vtCalls < VT_MAX) {
+  if (VT) {
     const r = await vtReport(e.sha256);
     if (r.state === 'done') fp = r.stats;
   }
@@ -299,6 +308,8 @@ for (const k of Object.keys(state)) {
 fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
 const sorted = Object.fromEntries(Object.keys(state).sort().map(k => [k, state[k]]));
 fs.writeFileSync(STATE_FILE, JSON.stringify(sorted, null, 2) + '\n');
+quota.calls += vtCalls;
+fs.writeFileSync(QUOTA_FILE, JSON.stringify(quota, null, 2) + '\n');
 
 fs.rmSync(OUT, { recursive: true, force: true });
 for (const f of SITE_FILES) {
@@ -350,7 +361,7 @@ if (needsReview.length && process.env.GITHUB_REPOSITORY && process.env.GITHUB_TO
 
 // ---------- 6. report ----------
 const section = (title, items) => items.length ? `### ${title} (${items.length})\n${items.map(i => `- ${i}`).join('\n')}\n\n` : '';
-const summary = `## Site build\n\n${report.listed.length} of ${entries.length} mods listed. VirusTotal calls: ${vtCalls}${VT ? '' : ' (no VT_API_KEY set: files are listed as not virus-scanned)'}.` +
+const summary = `## Site build\n\n${report.listed.length} of ${entries.length} mods listed. VirusTotal calls: ${vtCalls} (today: ${quota.calls} of ${VT_DAILY_MAX})${VT ? '' : ' (no VT_API_KEY set: files are listed as not virus-scanned)'}.` +
   `${pruned ? ` Forgot ${pruned} file record(s) from removed mods.` : ''}\n\n` +
   section('Flagged by VirusTotal', report.flagged) + section('Hidden', report.hidden) + section('Repository unavailable', report.unavailable) +
   section('Files replaced and rescanned', report.changed) + section('Scanned this build', report.scanned);
