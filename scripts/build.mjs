@@ -188,7 +188,9 @@ async function scan(e, a, local, mode) {
 async function checkAsset(key, a, mode) {
   let e = state[key];
   const meta = { assetId: a.id, size: a.size, updatedAt: a.updated_at };
-  const same = e && e.assetId === a.id && e.size === a.size && e.updatedAt === a.updated_at;
+  // The same file as before? GitHub gives each file's SHA-256, so a replaced file is caught without
+  // downloading it; older answers without it fall back to size and upload time.
+  const same = e && e.size === a.size && (a.sha256 ? e.sha256 === a.sha256 : e.updatedAt === a.updated_at);
 
   if (same) {
     // A moderator can set "rescan" (scan again) or "clean" (false positive) on a flagged file.
@@ -222,32 +224,23 @@ async function checkAsset(key, a, mode) {
 }
 
 // ---------- 3. build each mod ----------
-// Ask GitHub about every repo first, a few at a time. Scanning stays one file at a time below,
-// because VirusTotal's free tier only allows 4 requests a minute anyway.
-async function fetchRepo(mod) {
-  try {
-    const [repo, releases] = await Promise.all([gh(`/repos/${mod.repo}`), gh(`/repos/${mod.repo}/releases?per_page=30`)]);
-    if (repo.private) return { error: 'repository is private' };
-    return { repo, releases, funding: await fetchFunding(repo) };
-  } catch (err) {
-    return { error: err.message };
-  }
-}
+// Ask GitHub about every repo first. One GraphQL request answers for a whole batch of repositories:
+// details, newest releases with their files, and the donation links behind GitHub's Sponsor button
+// (FUNDING.yml). The REST API needed about 5 requests per mod, and a build may make only 1,000 an
+// hour, which capped the site at roughly 200 mods. Scanning stays one file at a time below, because
+// VirusTotal's free tier only allows 4 requests a minute anyway.
+const BATCH = 20;
+const REPO_FIELDS = `nameWithOwner isPrivate stargazerCount owner { login } licenseInfo { spdxId }
+  fundingLinks { platform url }
+  releases(first: 15, orderBy: { field: CREATED_AT, direction: DESC }) { nodes {
+    tagName isDraft isPrerelease publishedAt description
+    releaseAssets(first: 30) { nodes { id name size downloadCount downloadUrl updatedAt digest } } } }`;
 
-// ---------- donation links ----------
-// Authors who already set up GitHub's Sponsor button have a FUNDING.yml: in the mod's repository, or
-// shared from the owner's ".github" repository. Waypoint shows the same links on the mod page.
 // Donations go straight to the author; Waypoint only links to them.
-const FUNDING_SITES = {
-  github: ['GitHub Sponsors', u => `https://github.com/sponsors/${u}`],
-  patreon: ['Patreon', u => `https://www.patreon.com/${u}`],
-  ko_fi: ['Ko-fi', u => `https://ko-fi.com/${u}`],
-  buy_me_a_coffee: ['Buy Me a Coffee', u => `https://www.buymeacoffee.com/${u}`],
-  liberapay: ['Liberapay', u => `https://liberapay.com/${u}`],
-  open_collective: ['Open Collective', u => `https://opencollective.com/${u}`],
-  polar: ['Polar', u => `https://polar.sh/${u}`],
-  thanks_dev: ['thanks.dev', u => `https://thanks.dev/${u}`],
-  issuehunt: ['IssueHunt', u => `https://issuehunt.io/r/${u}`]
+const FUNDING_PLATFORMS = {
+  GITHUB: 'GitHub Sponsors', PATREON: 'Patreon', KO_FI: 'Ko-fi', BUY_ME_A_COFFEE: 'Buy Me a Coffee', LIBERAPAY: 'Liberapay',
+  OPEN_COLLECTIVE: 'Open Collective', POLAR: 'Polar', THANKS_DEV: 'thanks.dev', ISSUEHUNT: 'IssueHunt', TIDELIFT: 'Tidelift',
+  COMMUNITY_BRIDGE: 'LFX', LFX_CROWDFUNDING: 'LFX'
 };
 const fundingLabel = url => {
   const host = new URL(url).hostname.replace(/^www\./, '');
@@ -255,41 +248,61 @@ const fundingLabel = url => {
     'github.com': 'GitHub Sponsors', 'liberapay.com': 'Liberapay', 'opencollective.com': 'Open Collective', 'boosty.to': 'Boosty', 'streamelements.com': 'StreamElements' };
   return known[host] || host;
 };
-// FUNDING.yml is simple "key: value" or "key: [a, b]" lines, so a tiny reader is enough.
-function parseFunding(text) {
-  const links = [];
-  for (const raw of String(text).split(/\r?\n/)) {
-    const m = raw.replace(/\s+#.*$/, '').match(/^([a-z_]+)\s*:\s*(.+?)\s*$/i);
-    if (!m) continue;
-    const values = (m[2].startsWith('[') ? m[2].replace(/^\[|\]$/g, '').split(',') : [m[2]])
-      .map(v => v.trim().replace(/^["']|["']$/g, '')).filter(v => v && v !== '#');
-    const key = m[1].toLowerCase();
-    for (const v of values) {
-      if (key === 'custom') {
-        const url = /^https?:\/\//i.test(v) ? v : `https://${v}`;
-        try { const u = new URL(url); if (u.protocol === 'https:' || u.protocol === 'http:') links.push({ label: fundingLabel(u.href), url: u.href.replace(/^http:/, 'https:') }); } catch { /* not a link */ }
-      } else if (FUNDING_SITES[key] && /^[\w.-]{1,60}$/.test(v)) {
-        links.push({ label: FUNDING_SITES[key][0], url: FUNDING_SITES[key][1](v) });
-      }
-    }
-  }
-  return links;
+
+// GraphQL answers, reshaped like the REST ones the rest of this script reads.
+function fromGraphql(r) {
+  return {
+    repo: {
+      full_name: r.nameWithOwner, private: r.isPrivate, owner: { login: r.owner.login },
+      stargazers_count: r.stargazerCount, license: r.licenseInfo ? { spdx_id: r.licenseInfo.spdxId } : null
+    },
+    releases: r.releases.nodes.map(x => ({
+      tag_name: x.tagName, draft: x.isDraft, prerelease: x.isPrerelease, published_at: x.publishedAt, body: x.description,
+      assets: x.releaseAssets.nodes.map(a => ({
+        id: a.id, name: a.name, size: a.size, download_count: a.downloadCount, browser_download_url: a.downloadUrl,
+        updated_at: a.updatedAt, sha256: (a.digest || '').replace(/^sha256:/, '') || undefined, state: 'uploaded'
+      }))
+    })),
+    funding: r.fundingLinks.filter(f => /^https:\/\//i.test(f.url))
+      .map(f => ({ label: FUNDING_PLATFORMS[f.platform] || fundingLabel(f.url), url: f.url }))
+  };
 }
-async function fetchFunding(repo) {
-  const owner = repo.owner.login;
-  for (const p of [`/repos/${repo.full_name}/contents/.github/FUNDING.yml`, `/repos/${owner}/.github/contents/FUNDING.yml`, `/repos/${owner}/.github/contents/.github/FUNDING.yml`]) {
-    try {
-      const f = await gh(p);
-      if (f && f.content) return parseFunding(Buffer.from(f.content, 'base64').toString('utf8')).slice(0, 6);
-    } catch { /* not there: try the next place */ }
+
+async function fetchBatch(mods) {
+  const parts = mods.map((m, k) => {
+    const [owner, name] = m.repo.split('/');
+    return `r${k}: repository(owner: ${JSON.stringify(owner)}, name: ${JSON.stringify(name)}) { ${REPO_FIELDS} }`;
+  });
+  try {
+    const res = await gh('/graphql', { method: 'POST', body: { query: `{ ${parts.join('\n')} }` } });
+    const missing = new Map((res.errors || []).map(e => [String((e.path || [])[0]), e.type === 'NOT_FOUND' ? 'repository not found' : e.message]));
+    return mods.map((m, k) => {
+      const r = res.data && res.data[`r${k}`];
+      if (!r) return { error: missing.get(`r${k}`) || 'no answer from GitHub' };
+      return r.isPrivate ? { error: 'repository is private' } : fromGraphql(r);
+    });
+  } catch (err) {
+    return mods.map(() => ({ error: err.message }));
   }
-  return [];
 }
-const fetched = new Array(entries.length);
-let next = 0;
-await Promise.all(Array.from({ length: Math.min(8, entries.length) }, async () => {
-  while (next < entries.length) { const i = next++; fetched[i] = await fetchRepo(entries[i].mod); }
-}));
+
+// Without a token (a local test build) GitHub's GraphQL API isn't available: ask the REST API instead.
+async function fetchRest(mod) {
+  try {
+    const [repo, releases] = await Promise.all([gh(`/repos/${mod.repo}`), gh(`/repos/${mod.repo}/releases?per_page=30`)]);
+    return repo.private ? { error: 'repository is private' } : { repo, releases, funding: [] };
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+const fetched = [];
+if (process.env.GITHUB_TOKEN) {
+  for (let i = 0; i < entries.length; i += BATCH) fetched.push(...await fetchBatch(entries.slice(i, i + BATCH).map(x => x.mod)));
+} else {
+  for (const { mod } of entries) fetched.push(await fetchRest(mod));
+}
+console.log(`GitHub: ${entries.length} repos in ${process.env.GITHUB_TOKEN ? Math.ceil(entries.length / BATCH) + ' GraphQL request(s)' : entries.length * 2 + ' REST requests'}`);
 
 const out = [];
 const needsReview = [];
