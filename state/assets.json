@@ -14,6 +14,17 @@
     "method": "private",
     "checked": "2026-11-18"
   },
+  "eargsm/Fellowship@v1.5.0/Fellowship.1.5.0.7z": {
+    "assetId": "RA_kwDOVmWqls4tuAuo",
+    "size": 4189343,
+    "updatedAt": "2026-11-19T09:25:03Z",
+    "sha256": "df4c86192ae22da5b39efa70c3c64de6d8265e9121f724bb181b2e5fb47a39b4",
+    "status": "clean",
+    "firstSeen": "2026-11-19",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-19"
+  },
   "eargsm/MoreCarriageRoutes@v1.0.2/More.Carriage.Route.7z": {
     "assetId": 761703317,
     "size": 11894,
