@@ -1,0 +1,36 @@
+{
+  "id": "nokillmoves",
+  "name": "NoKillmoves",
+  "repo": "eargsm/NoKillmoves",
+  "summary": "SKSE plugin for Skyrim: travel with up to 20 followers and 20 animal companions using the vanilla follower dialogue",
+  "description": "NoKillmoves lets you switch kill moves on/off for yourself and for NPCs, and optionaly kill cam too. The idea is to get rid of VioLens dependency from my modlist.\n\n[line]\n\n[size=4][b]Feature[/b][/size]\n\n[list]\n[*][color=#d9a05b][b]bDisablePlayerThirdPerson = true[/b][/color]\nyour kill moves in third person.[/*]\n[*][color=#d9a05b][b]bDisablePlayerFirstPerson = true[/b][/color]\nyour kill moves in first person.[/*]\n[*][color=#d9a05b][b]bDisableNPC = true[/b][/color]\nkill moves by NPCs, creatures and dragons on you.[/*]\n[*][color=#d9a05b][b]bDisableNPCOnNPC = true[/b][/color]\nkill moves by NPCs, creatures and dragons on each other.[/*]\n[*][color=#d9a05b][b]bDisableKillMoveCam = false[/b][/color]\nthe camera during your melee kill moves. The kill move still plays.[/*]\n[*][color=#d9a05b][b]bDisableMagicKillCam = true[/b][/color]\nthe slow-motion when your spell kills the last enemy.[/*]\n[*][color=#d9a05b][b]bDisableBowKillCam = false[/b][/color]\nthe slow-motion camera that follows your arrow.[/*]\n[/list]\n\n[line]\n\n[size=4][b]Settings[/b][/size]\n\n[i]Mod Control Panel > NoKillmoves[/i] (SKSE Menu Framework), or [i]SKSE/Plugins/NoKillmoves.ini[/i].\n\n[line]\n\n[size=4][b]Requirements[/b][/size]\n\n[list]\n[*][url=https://skse.silverlock.org/]SKSE[/url][/*]\n[*][url=https://www.nexusmods.com/skyrimspecialedition/mods/32444]Address Library for SKSE Plugins[/url][/*]\n[*][i]Recommended:[/i] [url=https://www.nexusmods.com/skyrimspecialedition/mods/120352]SKSE Menu Framework[/url] (without it, use the INI)[/*]\n[/list]\n\n[size=2][color=#9a9a9a]Tested on Skyrim AE 1.6.1170. Built for SE and AE; VR is untested.[/color][/size]\n\n[line]\n\n[size=4][b]Compatibility[/b][/size]\n\n\nThe kill cam switches take priority over [i]bVATSDisable[/i] in your [i]Skyrim.ini[/i],\n\nKill move animation packs that add to the vanilla kill move lists are covered too.\n\n[color=#e07b67][b]Other kill move or kill cam managers[/b][/color] (VioLens, Kaputt, Disable Kill Cam And Kill Moves...) have their own switches. Use one or the other.\n\n[line]\n\n[size=4][b]FAQ[/b][/size]\n\n[b]Will I still get sneak kills?[/b]\nYes. The throat slit stays\n\n[b]Do NPC switches cover dragons and creatures?[/b]\nYes. Bears, sabre cats, trolls, dragons and the rest all count as NPCs here.\n\n[b]What about werewolf and vampire lord kills?[/b]\nThey count as your third person kill moves, so that switch covers them.\n\n[b]Install or remove mid-game?[/b]\nAny time. It saves nothing in your save file.\n\n[b]Reporting a bug[/b]\nPost your [i]Documents/My Games/Skyrim Special Edition/SKSE/NoKillmoves.log[/i] (via Pastebin) in the [b]Bugs[/b] tab with what you did and what you expected.\n\n[line]\n\n[center][size=2][color=#9a9a9a][b]Credits[/b]  alandtse and contributors (CommonLibSSE-NG)  ·  QTR-Modding (SKSE Menu Framework)  ·  Bethesda\n[/color][/size][/center]",
+  "category": "Combat",
+  "games": [
+    "se"
+  ],
+  "tags": [],
+  "requirements": [
+    {
+      "name": "Address Library for SKSE Plugins",
+      "url": "https://www.nexusmods.com/skyrimspecialedition/mods/32444"
+    }
+  ],
+  "created": "2026-11-19",
+  "hue": 355,
+  "authorName": "ItsRainmoon",
+  "images": [
+    "https://github.com/user-attachments/assets/5eab7d57-e5d2-483e-ba95-0799e3c16645"
+  ],
+  "scan": "private",
+  "ai": "assisted",
+  "aiParts": [
+    "code"
+  ],
+  "permissions": {
+    "upload": "ask",
+    "modify": "ask",
+    "convert": "ask",
+    "assets": "ask",
+    "commercial": "no"
+  }
+}
