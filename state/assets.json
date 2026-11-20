@@ -248,6 +248,955 @@
     "method": "private",
     "checked": "2026-11-20"
   },
+  "community-shaders/skyrim-community-shaders@v1.8.2/CommunityShaders-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJHk",
+    "size": 44089105,
+    "updatedAt": "2026-08-06T11:49:13Z",
+    "sha256": "5c9bbb49f71402fa8fd5936df6eefa40a8f0bcb4c623ebceeb478a1e14447c11",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/Effects11-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJHg",
+    "size": 6973,
+    "updatedAt": "2026-08-06T11:49:12Z",
+    "sha256": "83bd2337eda00273a2ba88079c87cf5ea7932740e901a79b57f39edd64254c64",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/Exponential.Height.Fog-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJHc",
+    "size": 12935,
+    "updatedAt": "2026-08-06T11:49:11Z",
+    "sha256": "5dc4a04799b101c0ef11369e9cb3cd254ac673f30f3a93ee8088e4c60460fa50",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/HDR.Display-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJHZ",
+    "size": 5167,
+    "updatedAt": "2026-08-06T11:49:11Z",
+    "sha256": "acb2e2570b61f03e62e68b5b03ff5ade744d9ab7d1eafd05412fd0af66a20a56",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/Hair.Specular-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJHb",
+    "size": 165822,
+    "updatedAt": "2026-08-06T11:49:11Z",
+    "sha256": "39705258a77aba66b5bf5a7013b143b6bb482a7c95e18be91118b9ac3fb68c47",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/Linear.Lighting-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJHV",
+    "size": 621,
+    "updatedAt": "2026-08-06T11:49:10Z",
+    "sha256": "b6a291ad37be631c4843652fdafad27e57d7b2c28f9f904d903b0000ecb7b4cc",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/Screen.Space.GI-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJHQ",
+    "size": 2668790,
+    "updatedAt": "2026-08-06T11:49:10Z",
+    "sha256": "6d1cb185fb2b5a67b6fb8313147dd2440682a8a54886e339c80132769765b59c",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/Skin-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJHO",
+    "size": 1247529,
+    "updatedAt": "2026-08-06T11:49:09Z",
+    "sha256": "c6c458320a6364646b90d984573dd8bd553b13d067ffe6ec7cf55f12552e4dee",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/Skylighting-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJHM",
+    "size": 5168,
+    "updatedAt": "2026-08-06T11:49:09Z",
+    "sha256": "8807a8423f25c051ce55c0c26e3b800c385949fbd03d6d17e8003b4780eff975",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/Terrain.Blending-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJHG",
+    "size": 1585,
+    "updatedAt": "2026-08-06T11:49:08Z",
+    "sha256": "124133dbc766d981dab3cb307da19313846f68c9773efc92cd35758400fe9d0e",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/Terrain.Helper-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJHA",
+    "size": 960,
+    "updatedAt": "2026-08-06T11:49:08Z",
+    "sha256": "5e916fefefa227bb9eb1046ee48fc6946374e8613689d543d612ee596597afd6",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/Terrain.Variation-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJG6",
+    "size": 3491,
+    "updatedAt": "2026-08-06T11:49:08Z",
+    "sha256": "0a4636e1b79772c2d6f01c31815ba7b91235444835f4c2f64a7af8982a6813a5",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/Upscaling-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJGh",
+    "size": 57985306,
+    "updatedAt": "2026-08-06T11:49:07Z",
+    "sha256": "3ca7b29d01cc38ae3573ab6c1cffb1ea5b911ab45720007055c6cfba4e3ce643",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.2/Wetness.Effects-2026-08-06T11-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eCJGc",
+    "size": 5687,
+    "updatedAt": "2026-08-06T11:49:05Z",
+    "sha256": "826257f907f21e46e54719b60d6b5c9c18c1e691fa7fbb1f2d00f10d62296075",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/CommunityShaders-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIaAC",
+    "size": 44092155,
+    "updatedAt": "2026-08-07T18:38:27Z",
+    "sha256": "cccab54f02fc57d30a172037b513915534855016fa7e99fac998625a210e8f7f",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/Effects11-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ_-",
+    "size": 6973,
+    "updatedAt": "2026-08-07T18:38:25Z",
+    "sha256": "ad273745581ea7f8222539cea8250e24303b6c9920a644bb772651d100d8ad46",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/Exponential.Height.Fog-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ_0",
+    "size": 12935,
+    "updatedAt": "2026-08-07T18:38:24Z",
+    "sha256": "eb60626ffa078c2a38abe1d940021ce105f7bdc8492d2e656e194c3a2b7ae46d",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/HDR.Display-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ85",
+    "size": 5167,
+    "updatedAt": "2026-08-07T18:38:23Z",
+    "sha256": "4f28694cc83b88a52a03ed9448bdb2bf26d576e8eedebaf986955ae2a057ec99",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/Hair.Specular-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ-z",
+    "size": 165822,
+    "updatedAt": "2026-08-07T18:38:24Z",
+    "sha256": "6f3a074687e464d4a06dc83ed0d125e7f2ccfc293f2f0f6538b38dd02da46b08",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/Linear.Lighting-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ81",
+    "size": 621,
+    "updatedAt": "2026-08-07T18:38:23Z",
+    "sha256": "b8c42e738e4be0cd4c2832443674ae203aef27e3934e24e43db516612e133f1d",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/Screen.Space.GI-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ8o",
+    "size": 2668790,
+    "updatedAt": "2026-08-07T18:38:22Z",
+    "sha256": "cdc2ba61c1f15bf4ffd9f1f5e7a0ee0439f32b38a3835a0db8db60e978d461e6",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/Skin-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ8e",
+    "size": 1247529,
+    "updatedAt": "2026-08-07T18:38:21Z",
+    "sha256": "3fee45be7ee35ebb650cbc100f4a2fde7e9d786cdea9884df2c33d5d273bf7e8",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/Skylighting-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ8P",
+    "size": 5168,
+    "updatedAt": "2026-08-07T18:38:21Z",
+    "sha256": "cb40b3efd75bb97ecf2a69319abd9bdb1797d291229528bc3c21591161f26eeb",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/Terrain.Blending-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ8I",
+    "size": 1585,
+    "updatedAt": "2026-08-07T18:38:20Z",
+    "sha256": "90dbfb59fad55a80223ae507357d11ffa5ed16542c7d2264362611631db5f6ae",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/Terrain.Helper-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ70",
+    "size": 960,
+    "updatedAt": "2026-08-07T18:38:20Z",
+    "sha256": "43b8f96f63c2c5554293e0e1bfc9027d5a5df661cc12a4866b7f27ac22eafcda",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/Terrain.Variation-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ7r",
+    "size": 3491,
+    "updatedAt": "2026-08-07T18:38:20Z",
+    "sha256": "ef8864815c4b8b24c7df06340cd60db35df3750f42d8aab12bb715c2fc907b70",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/Upscaling-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ5_",
+    "size": 57985306,
+    "updatedAt": "2026-08-07T18:38:19Z",
+    "sha256": "25ba44ea2f50ee8488a59b13636bd1bd5e31ca10f8ca4bce242a96534c9cc3e3",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.3/Wetness.Effects-2026-08-07T18-24Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84eIZ51",
+    "size": 5687,
+    "updatedAt": "2026-08-07T18:38:16Z",
+    "sha256": "4a3d162d85cddd63fc7474b0b3d8e00bd6ac09389981db93818d059007ce5700",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/CommunityShaders-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfvk",
+    "size": 44070769,
+    "updatedAt": "2026-08-26T23:56:45Z",
+    "sha256": "9d6793386cb57bb6f409253c31bf5cc97eb0ed2a8c87874ff323b89c3c98d69b",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/CommunityShaders_AIO-2026-08-26T23-47Z.7z": {
+    "assetId": "RA_kwDOJCbeQ84frfvv",
+    "size": 86638240,
+    "updatedAt": "2026-08-26T23:56:49Z",
+    "sha256": "f05ba8c7c2a5cfa063ae0fb200de23916da8cd4974ab7a0b05953d71dd729a77",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/Effects11-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfvg",
+    "size": 6973,
+    "updatedAt": "2026-08-26T23:56:43Z",
+    "sha256": "f55838f54fa3e5e404028e29dbe9d7711c9dcb8c8c0580a7b6e0b0445cfbb0dd",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/Exponential.Height.Fog-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfve",
+    "size": 12935,
+    "updatedAt": "2026-08-26T23:56:42Z",
+    "sha256": "9f32712a530c63b60b0507ae78f38a8f45c8af54f1eff192902c4fc0b44a17d6",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/HDR.Display-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfvX",
+    "size": 5167,
+    "updatedAt": "2026-08-26T23:56:41Z",
+    "sha256": "506893100fe6f5a306dd64ecd18f140182f807e9a01d66f47ec226595e48d010",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/Hair.Specular-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfvb",
+    "size": 165822,
+    "updatedAt": "2026-08-26T23:56:42Z",
+    "sha256": "cb1659cef7c849546b30ef792b890df4bc37fc66d3ea6e6dd149db70a58eb89c",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/Linear.Lighting-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfvQ",
+    "size": 621,
+    "updatedAt": "2026-08-26T23:56:41Z",
+    "sha256": "f370f36f7d7a6f42bd5865369e7bcd9269b3303450a755a8517fe38414c60319",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/Screen.Space.GI-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfu3",
+    "size": 2668790,
+    "updatedAt": "2026-08-26T23:56:40Z",
+    "sha256": "9540930d9ca0521837fb67409c1c8b68fca7abac1866747edf4ef601d9ab5f9f",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/Skin-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfu2",
+    "size": 1247529,
+    "updatedAt": "2026-08-26T23:56:40Z",
+    "sha256": "16dd85bd544fcb6f973b11486d9c198e7b779e1997613dbb974f21af0684797c",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/Skylighting-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfu0",
+    "size": 5168,
+    "updatedAt": "2026-08-26T23:56:39Z",
+    "sha256": "63ddd374882084ddad96cd115d88feded5cb72bedfb5623ee21764d2e4de3a77",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/Terrain.Blending-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfut",
+    "size": 1585,
+    "updatedAt": "2026-08-26T23:56:39Z",
+    "sha256": "6bc441d9eb74590aebd4c37df7fbeac191dac2d732dff3b4f27693b4e7750d12",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/Terrain.Helper-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfuq",
+    "size": 960,
+    "updatedAt": "2026-08-26T23:56:38Z",
+    "sha256": "a373d2234b6b73c83439e1bfd2ad57a8dfac5c123de10ae74e2254550586fed4",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/Terrain.Variation-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfum",
+    "size": 3491,
+    "updatedAt": "2026-08-26T23:56:38Z",
+    "sha256": "2f5b8d490e7d870f67b86f2c40e7ae4ebc9d025660591b29a74463b09bf5d91b",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/Upscaling-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfuF",
+    "size": 57985306,
+    "updatedAt": "2026-08-26T23:56:37Z",
+    "sha256": "7184b3490a45a7f238f7f162334051557b6e85431fe49dd377c66536aa30081c",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.8.4/Wetness.Effects-2026-08-26T23-47Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84frfuC",
+    "size": 5687,
+    "updatedAt": "2026-08-26T23:56:34Z",
+    "sha256": "edc6d9ceb0060e0fe90c06cf18d5670693a80eb2e7755d9e59a7a0589e5f7ff2",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/CommunityShaders-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SX-",
+    "size": 45128355,
+    "updatedAt": "2026-09-23T18:49:59Z",
+    "sha256": "7850c1d6a06be5014cdd4f995fe126c8695f06e039a014e97d4e9b6c06b71577",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/CommunityShaders_AIO-2026-09-23T18-34Z.7z": {
+    "assetId": "RA_kwDOJCbeQ84i1SZV",
+    "size": 87471358,
+    "updatedAt": "2026-09-23T18:50:02Z",
+    "sha256": "d2529c01f24e1c22cf117a0d5598c0ef30027e3a7a923135efa00aaa9d64c696",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Effects11-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SXy",
+    "size": 7024,
+    "updatedAt": "2026-09-23T18:49:57Z",
+    "sha256": "67f04dde6f98ff3b34d043041c080917331fc54650b840d72bb130eef7da4c46",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Exponential.Height.Fog-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SXc",
+    "size": 12935,
+    "updatedAt": "2026-09-23T18:49:57Z",
+    "sha256": "02c1518018437469d843d6c5a082dc0634d3641b430d4ff581ae930da63f52c5",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Grass.Optimizations-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SWv",
+    "size": 9731,
+    "updatedAt": "2026-09-23T18:49:56Z",
+    "sha256": "d6bde37fe68d4452a5202bb60dd0419a2d343f6e063b6f0c9fb64c0aebdb6a12",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/HDR.Display-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SWR",
+    "size": 5163,
+    "updatedAt": "2026-09-23T18:49:55Z",
+    "sha256": "a35d8332ad2fef64e91435387d7a9317023bb28bc6ae2b8935ac5d8190d80fce",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Hair.Specular-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SWh",
+    "size": 165819,
+    "updatedAt": "2026-09-23T18:49:55Z",
+    "sha256": "88f9c6b1936eadb13973533b797107a307430d53fcebcab8b62a1c157ee938e0",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Linear.Lighting-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SWE",
+    "size": 621,
+    "updatedAt": "2026-09-23T18:49:54Z",
+    "sha256": "1ffabe63cda633a34fb8fa6a46d2e1c86b57c13ed2c9da19a4ee2398aef385f9",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Screen.Space.GI-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SV_",
+    "size": 2668786,
+    "updatedAt": "2026-09-23T18:49:54Z",
+    "sha256": "3c64d86058109f074fe25f35e125e986991ca168bc1a9361134a8a19d0ecb2a2",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Skin-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SV0",
+    "size": 1247529,
+    "updatedAt": "2026-09-23T18:49:53Z",
+    "sha256": "d8b8b3bfbde4cb7565919006ed859e39e334372b4318f0f38b7c0a0692c3a59f",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Skylighting-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SVp",
+    "size": 5156,
+    "updatedAt": "2026-09-23T18:49:53Z",
+    "sha256": "9ca976fa77baaecd49eabe6ab915afed68efdcb861fa2b1efe71c5b4792127c0",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Terrain.Blending-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SVf",
+    "size": 1582,
+    "updatedAt": "2026-09-23T18:49:52Z",
+    "sha256": "1089f50143f66a0fcabd9aaa4c27551b72e18ffc3733fb8d87a7bc75022d50c6",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Terrain.Helper-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SVQ",
+    "size": 950,
+    "updatedAt": "2026-09-23T18:49:52Z",
+    "sha256": "797cdb44c4a3218155d9f2636d718f3992c011df0f2f0b8a0aaefaa32ab41fa1",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Terrain.Variation-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SVH",
+    "size": 3692,
+    "updatedAt": "2026-09-23T18:49:51Z",
+    "sha256": "031f43db8dbff392b1b440599549ff749c778900a15d627b318c3c3053e954b2",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Upscaling-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SUR",
+    "size": 57985302,
+    "updatedAt": "2026-09-23T18:49:51Z",
+    "sha256": "955331e0953b512d03d3d88b9d24f12e51f93e6a3c9bcf67c02cbe47be5f48e7",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.0/Wetness.Effects-2026-09-23T18-34Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i1SUJ",
+    "size": 5683,
+    "updatedAt": "2026-09-23T18:49:49Z",
+    "sha256": "6e8d484ec5fe55ed09a3ae03b1ac574b99fbef89d9d860addc3044dcec4fd513",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/CommunityShaders-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MMl",
+    "size": 45143091,
+    "updatedAt": "2026-09-24T12:44:03Z",
+    "sha256": "21daeba464bcbc6ee90f5bbf6d8bd17a0ad2b024cc406ba8a6ee216fc7679fcb",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/CommunityShaders_AIO-2026-09-24T12-32Z.7z": {
+    "assetId": "RA_kwDOJCbeQ84i7MNc",
+    "size": 87455348,
+    "updatedAt": "2026-09-24T12:44:06Z",
+    "sha256": "a0d6d888604e30187976627ae18a186e075ffd5e139d724f580d5c10e6750538",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Effects11-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MMb",
+    "size": 7024,
+    "updatedAt": "2026-09-24T12:44:01Z",
+    "sha256": "9fa639d36701412825c3ebb49fb1942c385f11e950d0ef2c02c4380005d401f4",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Exponential.Height.Fog-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MMK",
+    "size": 12935,
+    "updatedAt": "2026-09-24T12:44:00Z",
+    "sha256": "306127c8c757746cc2db02ddd5cfb37ab06ed07cb3d411bd577ff1b425720016",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Grass.Optimizations-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7ML2",
+    "size": 9731,
+    "updatedAt": "2026-09-24T12:44:00Z",
+    "sha256": "a3b92744575973ec956c78ad5611ccd099bfb9aa0331e46a6b0573aca9da3195",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/HDR.Display-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MLa",
+    "size": 5163,
+    "updatedAt": "2026-09-24T12:43:59Z",
+    "sha256": "68f2c85ab0ad0ce50b80a7735aca5a82c77ba6b0cb8559cae0738d7225ce055c",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Hair.Specular-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MLo",
+    "size": 165819,
+    "updatedAt": "2026-09-24T12:43:59Z",
+    "sha256": "7aba2f861d25a194e11d9ecbcfc869d38349024d0daebeedebf8ff4ec8a7768b",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Linear.Lighting-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MLH",
+    "size": 621,
+    "updatedAt": "2026-09-24T12:43:59Z",
+    "sha256": "0ae0616467f713bfff15a954d3ba4a7e29cf2f97d305a409a629b080013574cc",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Screen.Space.GI-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MK5",
+    "size": 2668786,
+    "updatedAt": "2026-09-24T12:43:58Z",
+    "sha256": "a29d2be61f8a2239cde52d2b7f4008b22e161711593131f6891b6b7d6f9203ae",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Skin-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MKv",
+    "size": 1247529,
+    "updatedAt": "2026-09-24T12:43:58Z",
+    "sha256": "13fbcd3e475ec0333b8fd6bebc7d54bc3b3db92deb14153388b1e89193f755cc",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Skylighting-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MKl",
+    "size": 5156,
+    "updatedAt": "2026-09-24T12:43:57Z",
+    "sha256": "6b294317bbcd2771be1dc5cd1cba10a98241b0ef00ac2a8704344a270d042c6a",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Terrain.Blending-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MKb",
+    "size": 1582,
+    "updatedAt": "2026-09-24T12:43:57Z",
+    "sha256": "979ea583e7ad8af7d9653d02ad182f28600e928c330ac32c2910c1e4885fb88b",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Terrain.Helper-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MKJ",
+    "size": 950,
+    "updatedAt": "2026-09-24T12:43:56Z",
+    "sha256": "99f646148d0048ad09de73cb0b11f6fa313c286d9ca8ae5ae879c2bf04cc1cf5",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Terrain.Variation-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MJ8",
+    "size": 3692,
+    "updatedAt": "2026-09-24T12:43:56Z",
+    "sha256": "2f7df55ab60880e52b3daae71622aefa9642898cb43cbce4d74e41836cca1068",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Upscaling-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MJQ",
+    "size": 57985302,
+    "updatedAt": "2026-09-24T12:43:56Z",
+    "sha256": "b40a79473aa6047c1e1e14b975ecde86ddf6f4656e05270fae60cf8d697da497",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "community-shaders/skyrim-community-shaders@v1.9.1/Wetness.Effects-2026-09-24T12-32Z.zip": {
+    "assetId": "RA_kwDOJCbeQ84i7MJE",
+    "size": 5683,
+    "updatedAt": "2026-09-24T12:43:54Z",
+    "sha256": "ae70ed4d1f10d69f28fbdd7e8753f8ab2115093d0c1aefd48921bb9700aa6748",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
   "eargsm/Fellowship@v1.4.0/Fellowship.1.4.0.7z": {
     "assetId": 762392334,
     "size": 4175254,
