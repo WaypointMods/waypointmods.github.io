@@ -248,6 +248,133 @@
     "method": "private",
     "checked": "2026-11-20"
   },
+  "PrismaUI-SKSE/framework@1.3.0/PrismaUI_1.3.0.zip": {
+    "assetId": "RA_kwDOPfmzKs4U11D0",
+    "size": 32297499,
+    "updatedAt": "2026-02-02T17:27:54Z",
+    "sha256": "bb68b05c11bee4e85d4293a4e4d92d12f20826391cbb466025fe666214888b55",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "PrismaUI-SKSE/framework@1.3.0/PrismaUI_ExamplePlugin.zip": {
+    "assetId": "RA_kwDOPfmzKs4U11FF",
+    "size": 221142,
+    "updatedAt": "2026-02-02T17:28:04Z",
+    "sha256": "16da38d3e3cd30def17528dfe443b52f429ab339f7df922f00ec747eb4df846a",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "PrismaUI-SKSE/framework@1.4.1/PrismaUI-ExamplePlugin.zip": {
+    "assetId": "RA_kwDOPfmzKs4WKTwK",
+    "size": 221641,
+    "updatedAt": "2026-03-11T20:23:00Z",
+    "sha256": "702ea140ecb68b5020d0daf30594bc0820898000a7aaf6fe202c6428a6872546",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "PrismaUI-SKSE/framework@1.4.1/PrismaUI_1.4.1.zip": {
+    "assetId": "RA_kwDOPfmzKs4W1ZuD",
+    "size": 32595568,
+    "updatedAt": "2026-03-27T19:39:42Z",
+    "sha256": "791414f212fd5d3a807d801ec8ae725d39ec510c7b033da6338733779bf28b68",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "PrismaUI-SKSE/framework@1.5.0-vr/PrismaUI_1.5.0.zip": {
+    "assetId": "RA_kwDOPfmzKs4X5MbZ",
+    "size": 32868676,
+    "updatedAt": "2026-04-20T16:19:54Z",
+    "sha256": "582c66c8149e8f08342f1637a64af498fdc646b82cc168f6d3db4c7703f5ff58",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "PrismaUI-SKSE/framework@1.5.0/PrismaUI-ExamplePlugin.zip": {
+    "assetId": "RA_kwDOPfmzKs4hUfUb",
+    "size": 228361,
+    "updatedAt": "2026-09-12T09:46:30Z",
+    "sha256": "51ef562cf6262afbd1c6e02a18240a2a021deab9bb14de4be4e515b809ceeee5",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "PrismaUI-SKSE/framework@1.5.0/PrismaUI.zip": {
+    "assetId": "RA_kwDOPfmzKs4hUkCd",
+    "size": 33806866,
+    "updatedAt": "2026-09-12T10:02:25Z",
+    "sha256": "7adcc1e0c46621ea0231ebbd59f2a9a335af1464016a4928c47ca2e4d81ae26b",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "PrismaUI-SKSE/framework@1.5.1/PrismaUI-ExamplePlugin.zip": {
+    "assetId": "RA_kwDOPfmzKs4iW1Ja",
+    "size": 228361,
+    "updatedAt": "2026-09-20T08:08:04Z",
+    "sha256": "51ef562cf6262afbd1c6e02a18240a2a021deab9bb14de4be4e515b809ceeee5",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "PrismaUI-SKSE/framework@1.5.1/PrismaUI_1.5.1.zip": {
+    "assetId": "RA_kwDOPfmzKs4iSt51",
+    "size": 33872125,
+    "updatedAt": "2026-09-19T19:14:26Z",
+    "sha256": "1b87a4b370de2222d14df146f7a18fe7517f9fc116d4436c4f565c2a539c1c58",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
   "community-shaders/skyrim-community-shaders@v1.8.2/CommunityShaders-2026-08-06T11-32Z.zip": {
     "assetId": "RA_kwDOJCbeQ84eCJHk",
     "size": 44089105,
