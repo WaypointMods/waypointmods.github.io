@@ -206,7 +206,37 @@ const all = readMods();
 const changed = [];
 let mod;
 
-if (mode === 'submit') {
+// "Quick listing": an admin lists someone else's mod from just its repository. The rest comes from
+// GitHub: the name (the repo's), the summary (its About line), the description (its README, shown
+// live), the tags (its topics) and the games (from topics such as "skyrim-vr"). AI use and
+// permissions stay "Not stated", so nothing is put in the author's mouth; they can fill them in.
+const quick = mode === 'submit' && /^yes/i.test(oneLine(f['Quick listing'], 10));
+if (quick) {
+  if (!isAdmin) errors.push('Quick listing is only for Waypoint\'s admins. To add your own mod, fill in the full form.');
+  const full = parseRepo(f['Repository']);
+  if (!full) errors.push('Repository: give it as `owner/name` or paste the GitHub link.');
+  const repo = isAdmin && full && await loadRepo(full);
+  if (repo) {
+    const name = oneLine(repo.name.replace(/[-_.]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2'), LIMITS.name);
+    const id = slugify(name);
+    if (!id) errors.push('Mod name: the repository name has no letters or numbers. Use the full form.');
+    else if (all.some(x => x.file === id + '.json')) errors.push(`Mod name: \`${id}\` is already taken. Use the full form and pick a different name.`);
+    const topics = repo.topics || [];
+    const games = ['se'];
+    if (topics.some(t => /vr/.test(t))) games.push('vr');
+    if (topics.some(t => /(^|-)le$|oldrim|legendary/.test(t))) games.push('le');
+    mod = {
+      id, name, repo: repo.full_name,
+      summary: oneLine(repo.description || `${name}, a Skyrim mod on GitHub.`, LIMITS.summary),
+      description: '', readme: true, category: 'Other', games,
+      tags: parseTags(topics.filter(t => !/^(skyrim|skyrim-?(se|ae|mod|mods|modding)|skyrimse|mods?|modding)$/.test(t)).join(', ')),
+      requirements: [], created: today(), hue: hueFor(id || 'mod'), scan: 'private'
+    };
+    if (byAdmin) mod.listedBy = 'waypoint';
+    const dupe = all.find(x => x.mod && x.mod.repo && x.mod.repo.toLowerCase() === repo.full_name.toLowerCase());
+    if (dupe) errors.push(`This repository is already listed as \`${dupe.mod.id}\`. To change it, use ${changeLink(dupe.mod.id)}`);
+  }
+} else if (mode === 'submit') {
   const full = parseRepo(f['Repository']);
   if (!full) errors.push('Repository: give it as `owner/name` or paste the GitHub link.');
   const name = oneLine(f['Mod name'], LIMITS.name);
@@ -357,6 +387,8 @@ const WHEN = {
 
 fs.writeFileSync(path.join(tmp, 'reply.md'), mode === 'submit'
   ? `Thanks, @${login}! **${mod.name}** passed the checks and is being published.\n\n` +
+    (quick ? 'Filled in from GitHub: the name, the summary (the repository\'s About line), the description (its README, shown live) and the tags. ' +
+      `The category is set to Other and AI use and permissions show "Not stated"; change any of it at ${changeLink(mod.id)}\n\n` : '') +
     (mod.listedBy ? `It is marked **Listed by Waypoint**, because ${mod.repo.split('/')[0]} (the owner) didn't add it themselves. ` +
       'They can take the listing over or remove it at any time from the Change your mod page.\n\n' : '') +
     WHEN[scanMode(mod)] + '\n\n' +

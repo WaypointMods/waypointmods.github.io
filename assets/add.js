@@ -13,6 +13,8 @@
   const steps = $$('.wstep');
   const params = new URLSearchParams(location.search);
   const EDIT = params.has('edit');
+  // add.html?admin: Waypoint's admins can list someone else's mod from just its repository.
+  const ADMIN = params.has('admin') && !EDIT;
   const DRAFT = 'waypoint-add-draft';
 
   // Exact option texts of the GitHub forms, which the bot (scripts/lib.mjs) expects.
@@ -210,7 +212,7 @@
       lines.push(ok(org
         ? `It belongs to the organization <b>${W.esc(owner)}</b>. Only its members can add it, and only if their membership is <a href="https://github.com/orgs/${W.esc(owner)}/people" target="_blank" rel="noopener">public</a>.`
         : `It belongs to <b>${W.esc(owner)}</b>. Only ${W.esc(owner)} can add it: the automatic check refuses it from any other GitHub account. (Waypoint's admins can also list it, marked <i>Listed by Waypoint</i>.)`));
-      result(`<ul class="checks">${lines.join('')}</ul>`);
+      result(`<ul class="checks">${lines.join('')}</ul>` + (ADMIN ? quickBox(info.full_name) : ''));
       repo = { full: info.full_name, owner, org, version: rel.tag_name.replace(/^v(?=\d)/i, '') };
       // Helpful starting values, only where the author hasn't typed anything yet.
       if (!val('name')) form.elements.name.value = info.name.replace(/[-_]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, c => c.toUpperCase());
@@ -228,6 +230,13 @@
       btn.textContent = 'Check';
     }
   }
+
+  // Admins only: send just the repository; the bot fills in the rest from GitHub.
+  const quickBox = full => `<div class="quick-box">
+      <b>Admin: quick list it</b>
+      <p class="hint">Sends only the repository, so you skip the other steps. The bot fills in the name, summary (the repo's About line), description (its README, shown live) and tags from GitHub. If it isn't your mod, it is marked Listed by Waypoint.</p>
+      <a class="btn btn-primary" href="${githubForm('add-mod-guided.yml', 'Add: ' + full, [['Repository', full], ['Quick listing', 'Yes']])}" target="_blank" rel="noopener">Quick list it</a>
+    </div>`;
 
   // ---------- step 1 (changing): pick the mod ----------
   const ownerOf = m => m.repo.split('/')[0];
