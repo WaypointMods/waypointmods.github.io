@@ -307,6 +307,9 @@
   // Each mod's little contour map never changes, so it is drawn once and remembered.
   const coverMaps = new Map();
   const coverMap = id => coverMaps.get(id) || coverMaps.set(id, contours(rings(150, 75, 6, 16, 16, seedOf(id)))).get(id);
+  // Listed by Waypoint's admins (not by the author) so people can find mods that live only on GitHub.
+  // The author can take the listing over or remove it.
+  const byWaypoint = m => m.listedBy === 'waypoint';
   const warnPill = m => (unscanned(m) ? `<span class="warn-pill" title="${esc(scanReason(m))}">${svg('alert', 12)} Not virus-scanned</span>` : '');
 
   // Big background maps for the home page hero and share panel.
@@ -346,6 +349,7 @@
           <span title="Downloads">${svg('dl', 13)} ${fmtNum(m.totalDownloads)}</span>
           <span title="GitHub stars">${svg('star', 13)} ${fmtNum(m.stars)}</span>
           ${aiTag(m)}
+          ${byWaypoint(m) ? `<span class="ai-tag" title="Listed by Waypoint so people can find it; the author didn't add it here">Listed by Waypoint</span>` : ''}
         </div>
       </div>
     </a>`;
@@ -674,7 +678,8 @@
     const parts = (m.aiParts || []).map(x => AI_PART_LABEL[x]).filter(Boolean);
     return `
       <h3 class="panel-h">Permissions</h3>
-      ${stated ? '' : '<div class="notice">The author hasn\'t stated permissions for this mod. Ask them before reusing any of it.</div>'}
+      ${byWaypoint(m) ? '<div class="notice">Waypoint filled these in from the mod\'s own page and license; the author didn\'t state them here. If in doubt, ask the author.</div>'
+        : stated ? '' : '<div class="notice">The author hasn\'t stated permissions for this mod. Ask them before reusing any of it.</div>'}
       <div class="perms">${rows}</div>
       ${m.permissionNotes ? `<h3 class="panel-h">Notes from the author</h3><div class="prose">${md(m.permissionNotes)}</div>` : ''}
       ${m.credits ? `<h3 class="panel-h">Credits</h3><div class="prose">${md(m.credits)}</div>` : ''}
@@ -722,7 +727,7 @@
           <div class="mod-head">
             <div class="head-tags"><span class="kicker">${esc(m.category)}</span>${aiTag(m)}</div>
             <h1 class="mod-title">${esc(m.name)}</h1>
-            <div class="byline">left here by ${hasOwnName(m)
+            <div class="byline">${byWaypoint(m) ? 'made by' : 'left here by'} ${hasOwnName(m)
               ? `<strong>${esc(m.authorName)}</strong> · <a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener" title="GitHub account">@${esc(m.author)}</a>`
               : `<a href="https://github.com/${esc(m.author)}" target="_blank" rel="noopener">${esc(m.author)}</a>`}</div>
             <p class="lead">${esc(m.summary)}</p>
@@ -733,6 +738,8 @@
               <div><b>${ago(m.lastUpdated)}</b>updated</div>
             </div>
           </div>
+          ${byWaypoint(m) ? `<div class="notice listed-note"><strong>Listed by Waypoint.</strong> This mod lives on its author's GitHub, and Waypoint lists it so more people can find it; the author didn't add it here. Downloads come straight from the author's GitHub.
+            <a href="add.html?edit=${encodeURIComponent(m.id)}">Are you the author? Take over or remove this listing</a></div>` : ''}
           ${unscanned(m) ? `<div class="notice notice-warn scan-warn">${svg('alert', 16)}<div><strong>Not virus-scanned.</strong> ${esc(scanReason(m))}
             Only download it if you trust the author, and scan the file with your own antivirus before opening it.
             <a href="about.html#scans">About virus scans</a></div></div>` : ''}

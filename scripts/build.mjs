@@ -358,6 +358,7 @@ for (const [i, { mod }] of entries.entries()) {
     tags: mod.tags, requirements: mod.requirements, images: mod.images || [], scanMode: scanMode(mod),
     ai: mod.ai || '', aiParts: mod.aiParts || [], permissions: mod.permissions || {},
     credits: mod.credits || '', permissionNotes: mod.permissionNotes || '', donate: mod.donate || '',
+    listedBy: mod.listedBy || '', // 'waypoint': listed by an admin, not by its author
     // The author's own donation link first, then any from their FUNDING.yml, without repeats.
     funding: [...(mod.donate ? [{ label: fundingLabel(mod.donate), url: mod.donate }] : []), ...(funding || [])]
       .filter((f, k, all) => all.findIndex(x => x.url.replace(/\/$/, '').toLowerCase() === f.url.replace(/\/$/, '').toLowerCase()) === k).slice(0, 6),

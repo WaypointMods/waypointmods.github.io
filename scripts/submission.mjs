@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  MODS_DIR, CATEGORIES, GAME_LABELS, ARCHIVE_RE, IMAGE_RE, LIMITS, SCAN_MODES, PERMISSIONS, PERMISSION_ANSWERS, AI_USE, AI_PARTS,
+  MODS_DIR, ADMINS, CATEGORIES, GAME_LABELS, ARCHIVE_RE, IMAGE_RE, LIMITS, SCAN_MODES, PERMISSIONS, PERMISSION_ANSWERS, AI_USE, AI_PARTS,
   scanMode, clean, oneLine, slugify, hueFor, today, isNone,
   readMods, writeMod, validateMod, gh, setOutput
 } from './lib.mjs';
@@ -22,6 +22,8 @@ const siteUrl = siteRepo.toLowerCase() === `${siteOwner.toLowerCase()}.github.io
 // The guided "Change your mod" page, opened on this mod.
 const changeLink = id => `${siteUrl}add.html?edit=${id}`;
 const errors = [];
+const isAdmin = ADMINS.some(a => a.toLowerCase() === login.toLowerCase());
+let byAdmin = false; // set by loadRepo: an admin (not the owner) is listing or changing this mod
 
 // ---------- reading the form ----------
 // Issue forms render as "### Label\n\nvalue"; empty answers are "_No response_".
@@ -177,6 +179,7 @@ async function loadRepo(full, needRelease = true) {
 
   const owner = repo.owner.login;
   if (owner.toLowerCase() === login.toLowerCase()) return repo;
+  if (isAdmin) { byAdmin = true; return repo; }
   if (repo.owner.type === 'Organization') {
     try {
       await gh(`/orgs/${owner}/public_members/${login}`);
@@ -241,6 +244,7 @@ if (mode === 'submit') {
   if (repo) {
     mod.repo = repo.full_name;
     const dupe = all.find(x => x.mod && x.mod.repo && x.mod.repo.toLowerCase() === repo.full_name.toLowerCase());
+    if (byAdmin) mod.listedBy = 'waypoint';
     if (dupe) errors.push(`This repository is already listed as \`${dupe.mod.id}\`. To change it, use ${changeLink(dupe.mod.id)}`);
   }
 } else {
@@ -300,8 +304,12 @@ if (mode === 'submit') {
     for (const [label, key] of [['Credits', 'credits'], ['Permission notes', 'permissionNotes']]) {
       if (v(label)) isNone(v(label)) ? unset(key) : set(key, parseNotes(label, v(label)));
     }
-    if (!changed.length && !errors.length) errors.push('Nothing to change: every field matches what is listed now.');
-    if (!removing) await loadRepo(mod.repo); // a removal already checked the owner
+    if (!removing) { // a removal already checked the owner
+      await loadRepo(mod.repo);
+      // The author changing a listing Waypoint made: from now on it is theirs.
+      if (!byAdmin && !errors.length && mod.listedBy) unset('listedBy');
+      if (!changed.length && !errors.length) errors.push('Nothing to change: every field matches what is listed now.');
+    }
   }
 }
 
@@ -323,7 +331,8 @@ writeMod(mod);
 const page =`${siteUrl}mod.html?id=${mod.id}`;
 const FIELD_NAMES = {
   authorName: 'display name', name: 'mod name', scan: 'virus scan setting',
-  ai: 'AI disclosure', aiParts: 'AI parts', donate: 'donation link', permissionNotes: 'permission notes', images: 'screenshots or cover picture'
+  ai: 'AI disclosure', aiParts: 'AI parts', donate: 'donation link',
+  listedBy: '"Listed by Waypoint" label (the listing is yours now)', permissionNotes: 'permission notes', images: 'screenshots or cover picture'
 };
 const WHEN = {
   full: `It will appear at ${page}, usually within 2 to 5 minutes, once the site has rebuilt and VirusTotal has checked its files. ` +
@@ -336,6 +345,8 @@ const WHEN = {
 
 fs.writeFileSync(path.join(tmp, 'reply.md'), mode === 'submit'
   ? `Thanks, @${login}! **${mod.name}** passed the checks and is being published.\n\n` +
+    (mod.listedBy ? `It is marked **Listed by Waypoint**, because ${mod.repo.split('/')[0]} (the owner) didn't add it themselves. ` +
+      'They can take the listing over or remove it at any time from the Change your mod page.\n\n' : '') +
     WHEN[scanMode(mod)] + '\n\n' +
     'If you had the site open already, press Ctrl + F5 to reload: browsers can keep an old copy for up to 10 minutes.\n\n' +
     `New versions show up automatically when you publish a GitHub release. To change the description, screenshots or anything else later, use ${changeLink(mod.id)}\n`

@@ -58,6 +58,9 @@ export const AI_PARTS = {
 };
 
 export const ARCHIVE_RE = /\.(7z|zip|rar)$/i;
+// GitHub accounts that may list any public mod, so people can find mods that live only on GitHub.
+// Their listings are marked "Listed by Waypoint", and the real author can take them over or remove them.
+export const ADMINS = ['eargsm'];
 const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const REPO_RE = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -137,6 +140,7 @@ export function validateMod(mod, file) {
     if (!ok) e.push(`permissions must map ${Object.values(PERMISSIONS).join('/')} to yes, ask or no`);
   }
   if (mod.donate !== undefined && !(isHttps(mod.donate) && mod.donate.length <= 300)) e.push('donate must be an https link');
+  if (mod.listedBy !== undefined && mod.listedBy !== 'waypoint') e.push('listedBy must be "waypoint" (or left out)');
   for (const k of ['credits', 'permissionNotes']) {
     if (mod[k] !== undefined && !isStr(mod[k], 1, L.notes)) e.push(`${k} must be 1-${L.notes} characters`);
   }

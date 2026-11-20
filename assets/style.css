@@ -398,6 +398,7 @@ h1, h2 { font-family: var(--serif); font-weight: 700; }
 .notice { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; color: var(--muted); font-size: 14px; }
 .notice strong { color: var(--text); }
 #live-note .notice { margin-top: 16px; }
+.listed-note { margin-top: 16px; border-left: 3px solid var(--moss); }
 .page .notice { margin: 18px 0; }
 .notice-warn { border-color: var(--warn); border-left-width: 3px; background: var(--warn-bg); color: var(--text); }
 .notice-warn strong { color: var(--warn); }
