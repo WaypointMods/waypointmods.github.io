@@ -317,7 +317,6 @@
     hero: () => `<svg class="topo" viewBox="0 0 1440 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       ${contours(rings(1080, 300, 12, 46, 30, 0.6) + rings(240, 120, 6, 40, 34, 2.4), 1.3)}
       <g class="trail"><path d="M560 690 C 660 610, 720 560, 830 520 S 1010 420, 1080 336" fill="none" stroke-width="3" stroke-dasharray="1 11" stroke-linecap="round" style="stroke: var(--accent)"/>
-      <circle cx="830" cy="520" r="7" style="fill: var(--moss)"/>
       <ellipse cx="1080" cy="338" rx="30" ry="9" fill="none" stroke-width="1.5" style="stroke: var(--accent); opacity: .45"/>
       ${bigPin(1080, 280, 4)}<circle cx="1080" cy="280" r="14" style="fill: var(--hero)"/></g></svg>`,
     share: () => `<svg class="topo" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${contours(rings(1000, 300, 9, 40, 34, 1.3))}</svg>`

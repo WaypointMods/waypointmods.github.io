@@ -234,7 +234,7 @@
   // Admins only: send just the repository; the bot fills in the rest from GitHub.
   const quickBox = full => `<div class="quick-box">
       <b>Admin: quick list it</b>
-      <p class="hint">Sends only the repository, so you skip the other steps. The bot fills in the name, summary (the repo's About line), description (its README, shown live) and tags from GitHub. If it isn't your mod, it is marked Listed by Waypoint.</p>
+      <p class="hint">Sends only the repository, so you skip the other steps. The bot fills in the name, summary (the repo's About line), description (its README, shown live) and tags from GitHub. If it isn't your mod, it is marked Listed by Waypoint. To add screenshots, drag them into the Screenshots box on GitHub before pressing Create (put a number in Cover picture to pick the cover). You can add or change them later on the Change page too.</p>
       <a class="btn btn-primary" href="${githubForm('add-mod-guided.yml', 'Add: ' + full, [['Repository', full], ['Quick listing', 'Yes']])}" target="_blank" rel="noopener">Quick list it</a>
     </div>`;
 
@@ -258,7 +258,7 @@
     renderPicker();
     $('#mod-chosen').innerHTML = `<ul class="checks">${ok(`Changing <b>${W.esc(m.name)}</b>. <a href="mod.html?id=${encodeURIComponent(m.id)}" target="_blank" rel="noopener">See its page</a>`)}
       ${ok(`It belongs to <b>${W.esc(ownerOf(m))}</b> on GitHub. Only ${W.esc(ownerOf(m))} can change it: the automatic check refuses changes from any other GitHub account.`)}
-      ${m.listedBy === 'waypoint' ? ok(`It is <b>Listed by Waypoint</b>. If you are ${W.esc(ownerOf(m))}, sending any change (or removing it) makes the listing yours, and the label goes away.`) : ''}</ul>`;
+      ${m.listedBy === 'waypoint' ? ok(`It is <b>Listed by Waypoint</b>. If you are ${W.esc(ownerOf(m))}, sending any change (or removing it) makes the listing yours, and the label goes away. Waypoint's admins can also change it, for example to add screenshots, and the label stays.`) : ''}</ul>`;
     load(m);
     $('#remove-box').hidden = false;
     $('#rm-name').textContent = m.name;

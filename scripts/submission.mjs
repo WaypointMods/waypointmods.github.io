@@ -237,6 +237,9 @@ if (quick) {
       requirements: [], created: today(), hue: hueFor(id || 'mod'), scan: 'private'
     };
     if (byAdmin) mod.listedBy = 'waypoint';
+    // Screenshots dragged into the short form's box before pressing Create (optional).
+    if (f['Screenshots']) mod.images = parseImages(f['Screenshots']);
+    if (f['Cover picture']) mod.images = withCover(mod.images, f['Cover picture']);
     const dupe = all.find(x => x.mod && x.mod.repo && x.mod.repo.toLowerCase() === repo.full_name.toLowerCase());
     if (dupe) errors.push(`This repository is already listed as \`${dupe.mod.id}\`. To change it, use ${changeLink(dupe.mod.id)}`);
   }
