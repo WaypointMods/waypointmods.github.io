@@ -1,6 +1,6 @@
 {
   "id": "skyrim-community-shaders",
-  "name": "Skyrim Community Shaders",
+  "name": "Community Shaders",
   "repo": "community-shaders/skyrim-community-shaders",
   "summary": "Community-driven advanced graphics modifications for AE, SE and VR.",
   "description": "",
@@ -24,5 +24,8 @@
   "created": "2026-11-20",
   "hue": 106,
   "scan": "private",
-  "listedBy": "waypoint"
+  "listedBy": "waypoint",
+  "images": [
+    "https://github.com/user-attachments/assets/2d78e0b4-fbfe-4d13-8359-2b2f60f471a8"
+  ]
 }
