@@ -777,7 +777,6 @@
         <svg viewBox="0 0 1440 270" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
           ${contours(rings(1110, 130, 10, 30, 26, seed) + rings(300, 60, 5, 40, 32, seed + 2), 1.3)}
           <path d="M700 290 C 780 250, 830 200, 920 200 S 1040 150, 1090 128" fill="none" stroke-width="3" stroke-dasharray="1 11" stroke-linecap="round" style="stroke: var(--accent)"/>
-          <circle cx="920" cy="200" r="7" style="fill: var(--moss)"/>
           ${bigPin(1110, 90, 3.3)}
           <g transform="translate(1095 75) scale(1.25)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--on-accent)">${CAT_ICON[m.category] || CAT_ICON.Other}</g>
         </svg>
