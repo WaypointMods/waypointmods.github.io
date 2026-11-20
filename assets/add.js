@@ -191,8 +191,8 @@
       const file = rel.assets.find(a => W.ARCHIVE_RE.test(a.name));
       lines.push(ok(`Latest release <b>${W.esc(rel.tag_name)}</b> with <b>${W.esc(file.name)}</b> (${W.fmtSize(file.size)}).`));
       lines.push(ok(org
-        ? `It belongs to the organization <b>${W.esc(owner)}</b>. Make your membership of it <a href="https://github.com/orgs/${W.esc(owner)}/people" target="_blank" rel="noopener">public</a> before you send.`
-        : `It belongs to <b>${W.esc(owner)}</b>. You'll send it while signed in to GitHub as ${W.esc(owner)}.`));
+        ? `It belongs to the organization <b>${W.esc(owner)}</b>. Only its members can add it, and only if their membership is <a href="https://github.com/orgs/${W.esc(owner)}/people" target="_blank" rel="noopener">public</a>.`
+        : `It belongs to <b>${W.esc(owner)}</b>. Only ${W.esc(owner)} can add it: the automatic check refuses it from any other GitHub account.`));
       result(`<ul class="checks">${lines.join('')}</ul>`);
       repo = { full: info.full_name, owner, org, version: rel.tag_name.replace(/^v(?=\d)/i, '') };
       // Helpful starting values, only where the author hasn't typed anything yet.
@@ -231,7 +231,7 @@
     mod = m;
     renderPicker();
     $('#mod-chosen').innerHTML = `<ul class="checks">${ok(`Changing <b>${W.esc(m.name)}</b>. <a href="mod.html?id=${encodeURIComponent(m.id)}" target="_blank" rel="noopener">See its page</a>`)}
-      ${ok(`It belongs to <b>${W.esc(ownerOf(m))}</b> on GitHub. You'll send the changes while signed in as ${W.esc(ownerOf(m))}.`)}</ul>`;
+      ${ok(`It belongs to <b>${W.esc(ownerOf(m))}</b> on GitHub. Only ${W.esc(ownerOf(m))} can change it: the automatic check refuses changes from any other GitHub account.`)}</ul>`;
     load(m);
     $('#remove-box').hidden = false;
     $('#rm-name').textContent = m.name;
