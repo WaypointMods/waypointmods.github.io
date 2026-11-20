@@ -1,4 +1,253 @@
 {
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.2.0-beta/Pandora_Behaviour_Engine_v4.2.0-beta.zip": {
+    "assetId": "RA_kwDOJulhmM4WuVlj",
+    "size": 79391358,
+    "updatedAt": "2026-03-25T13:03:44Z",
+    "sha256": "e016138633a76c7382af8d9095e5628f785bcaaa85cc0fc9e5f98dfbe21454cb",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.2.0-beta/Pandora_Behaviour_Engine_v4.2.0-beta_win-arm64_net.zip": {
+    "assetId": "RA_kwDOJulhmM4WuWGH",
+    "size": 49795780,
+    "updatedAt": "2026-03-25T13:06:29Z",
+    "sha256": "889dbbfeb28044db06f6de58c553e9b08fd779a91ec039ffd9fa7541508abe02",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.2.0-beta/Pandora_Behaviour_Engine_v4.2.0-beta_win-x64_net.zip": {
+    "assetId": "RA_kwDOJulhmM4WuWFU",
+    "size": 51819743,
+    "updatedAt": "2026-03-25T13:06:24Z",
+    "sha256": "b4dd6a8084e3c62dc252f40aae8c584a40153f0462224c4d1b6f4018bbf5d9bd",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.2.0-beta/Pandora_Behaviour_Engine_v4.2.0-beta_win-x86_net.zip": {
+    "assetId": "RA_kwDOJulhmM4WuWIF",
+    "size": 49063524,
+    "updatedAt": "2026-03-25T13:06:35Z",
+    "sha256": "9f900f214cfbedcf7bd72836ce73e65264dabbca54d6e273c1a163ea05da86a8",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.3.0-beta/Pandora_Behaviour_Engine_v4.3.0-beta.zip": {
+    "assetId": "RA_kwDOJulhmM4XtUzq",
+    "size": 79391914,
+    "updatedAt": "2026-04-16T12:16:49Z",
+    "sha256": "513fbadc21b0c657b89888ec6556fb2ada1841c6db7d0bd79a2ae4d144da1c80",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.3.0-beta/Pandora_Behaviour_Engine_v4.3.0-beta_win-x64_net.zip": {
+    "assetId": "RA_kwDOJulhmM4XtVO6",
+    "size": 51776994,
+    "updatedAt": "2026-04-16T12:19:23Z",
+    "sha256": "877e2aa4f0ad3168f9cbf4cf1c321447690f39406ed1f7809753b651c4eadd05",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 1,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.3.0-beta/Pandora_Behaviour_Engine_v4.3.0-beta_win-x86_net.zip": {
+    "assetId": "RA_kwDOJulhmM4XtVOD",
+    "size": 49123270,
+    "updatedAt": "2026-04-16T12:19:14Z",
+    "sha256": "a24992878c221d37c1102f1f8054f85bc552924028043d4da49ab33a81cd04ad",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.3.1-beta/Pandora_Behaviour_Engine_v4.3.1-beta.zip": {
+    "assetId": "RA_kwDOJulhmM4Xuiea",
+    "size": 79488181,
+    "updatedAt": "2026-04-16T21:31:40Z",
+    "sha256": "3bbb6eba14dbc9918dcd8fcf603418564efd8c61006e6e588b0edd0178bac4e2",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.3.1-beta/Pandora_Behaviour_Engine_v4.3.1-beta_win-arm64_net.zip": {
+    "assetId": "RA_kwDOJulhmM4Xui0V",
+    "size": 49899281,
+    "updatedAt": "2026-04-16T21:34:17Z",
+    "sha256": "a6f7de531ce96d38e907889456c46ef19d3efd966dd93c596a2e06d601bea8b6",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.3.1-beta/Pandora_Behaviour_Engine_v4.3.1-beta_win-x64_net.zip": {
+    "assetId": "RA_kwDOJulhmM4Xui1c",
+    "size": 51873017,
+    "updatedAt": "2026-04-16T21:34:29Z",
+    "sha256": "aba2639b3a97abf91d412a0ca450aa041fd25157c65f5a0e82658577f364c72c",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.3.1-beta/Pandora_Behaviour_Engine_v4.3.1-beta_win-x86_net.zip": {
+    "assetId": "RA_kwDOJulhmM4Xui0U",
+    "size": 49219069,
+    "updatedAt": "2026-04-16T21:34:17Z",
+    "sha256": "d470b72c0d53e5287b9d24e0f2a3d0ddd69ab2b202cc0f4357ed721c933b241c",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.4.0-beta/Pandora_Behaviour_Engine_v4.4.0-beta.zip": {
+    "assetId": "RA_kwDOJulhmM4ebQrA",
+    "size": 81750842,
+    "updatedAt": "2026-08-11T18:06:07Z",
+    "sha256": "8897ab6819b7d05178a95f881d0c006c39d5d2da946fc9cf0e04b0e6f0cdd526",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.4.0-beta/Pandora_Behaviour_Engine_v4.4.0-beta_win-arm64_net.zip": {
+    "assetId": "RA_kwDOJulhmM4ebRQT",
+    "size": 51362087,
+    "updatedAt": "2026-08-11T18:08:13Z",
+    "sha256": "075a23c9d47bc6dbe23010afe1da44284c4045e08a2482a2094e217261d59124",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.4.0-beta/Pandora_Behaviour_Engine_v4.4.0-beta_win-x64_net.zip": {
+    "assetId": "RA_kwDOJulhmM4ebRQh",
+    "size": 53458080,
+    "updatedAt": "2026-08-11T18:08:13Z",
+    "sha256": "bf7c5ae96482908c5b78c2b0558d37dbf956229e77aa8f91ae557e541b966c13",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v4.4.0-beta/Pandora_Behaviour_Engine_v4.4.0-beta_win-x86_net.zip": {
+    "assetId": "RA_kwDOJulhmM4ebRQ9",
+    "size": 50458390,
+    "updatedAt": "2026-08-11T18:08:16Z",
+    "sha256": "420e8d36ae0152a5eedae7b801cfa1075d7d552ceda14ef4963605ca24b418f7",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v5.0.0-beta/Pandora_Behaviour_Engine_v5.0.0-beta.zip": {
+    "assetId": "RA_kwDOJulhmM4j-owY",
+    "size": 217958168,
+    "updatedAt": "2026-10-01T16:08:22Z",
+    "sha256": "44e295ff246ae1f8f61918828a1114c0a477ccd926cfdd0d5ca10c1ab15b91e3",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v5.0.0-beta/Pandora_Behaviour_Engine_v5.0.0-beta_win-arm64_net.zip": {
+    "assetId": "RA_kwDOJulhmM4j-qVy",
+    "size": 80743960,
+    "updatedAt": "2026-10-01T16:11:34Z",
+    "sha256": "4ed797a24658cdbb3543f667c929f6cb87854f7c4757fa79d07b7c1191c8b8ab",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v5.0.0-beta/Pandora_Behaviour_Engine_v5.0.0-beta_win-x64_net.zip": {
+    "assetId": "RA_kwDOJulhmM4j-qLK",
+    "size": 83108908,
+    "updatedAt": "2026-10-01T16:11:10Z",
+    "sha256": "89c57c0d2f27afd038a68105acff9577ce49a34969ec2b0db75d5354cfe17688",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "vt": {
+      "malicious": 0,
+      "suspicious": 0
+    },
+    "method": "private",
+    "checked": "2026-11-20"
+  },
+  "Monitor221hz/Pandora-Behaviour-Engine-Plus@v5.0.0-beta/Pandora_Behaviour_Engine_v5.0.0-beta_win-x86_net.zip": {
+    "assetId": "RA_kwDOJulhmM4j-qPC",
+    "size": 80282711,
+    "updatedAt": "2026-10-01T16:11:18Z",
+    "sha256": "9afab6f95159a5d36977f72af41c69b3bead278ff4a0f24b6ef182c0df47f310",
+    "status": "clean",
+    "firstSeen": "2026-11-20",
+    "clamav": "clean",
+    "method": "private",
+    "checked": "2026-11-20"
+  },
   "eargsm/Fellowship@v1.4.0/Fellowship.1.4.0.7z": {
     "assetId": 762392334,
     "size": 4175254,
