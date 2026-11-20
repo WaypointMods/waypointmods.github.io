@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  MODS_DIR, ADMINS, CATEGORIES, GAME_LABELS, ARCHIVE_RE, IMAGE_RE, LIMITS, SCAN_MODES, PERMISSIONS, PERMISSION_ANSWERS, AI_USE, AI_PARTS,
+  MODS_DIR, ADMINS, DESC_SOURCES, CATEGORIES, GAME_LABELS, ARCHIVE_RE, IMAGE_RE, LIMITS, SCAN_MODES, PERMISSIONS, PERMISSION_ANSWERS, AI_USE, AI_PARTS,
   scanMode, clean, oneLine, slugify, hueFor, today, isNone,
   readMods, writeMod, validateMod, gh, setOutput
 } from './lib.mjs';
@@ -54,9 +54,10 @@ function parseSummary(v) {
   return s;
 }
 
-function parseDescription(v) {
+// With the README as the description source, the written description may stay empty.
+function parseDescription(v, optional = false) {
   const d = clean(v, LIMITS.description + 1);
-  if (!d) errors.push('Description: tell people what the mod does.');
+  if (!d && !optional) errors.push('Description: tell people what the mod does, or pick "GitHub README" as the description source.');
   else if (d.length > LIMITS.description) errors.push(`Description: keep it under ${LIMITS.description.toLocaleString('en')} characters.`);
   return d;
 }
@@ -154,6 +155,12 @@ function parseDonate(v) {
     return '';
   }
 }
+function parseDescSource(v) {
+  const s = oneLine(v, 40);
+  if (!s || s === 'No change') return undefined;
+  if (!(s in DESC_SOURCES)) { errors.push('Description source: pick "Written here" or "GitHub README".'); return undefined; }
+  return DESC_SOURCES[s];
+}
 function parseNotes(label, v) {
   const s = clean(v, LIMITS.notes + 1);
   if (s.length > LIMITS.notes) errors.push(`${label}: keep it under ${LIMITS.notes.toLocaleString('en')} characters.`);
@@ -212,7 +219,7 @@ if (mode === 'submit') {
   mod = {
     id, name, repo: full || '',
     summary: parseSummary(f['Summary']),
-    description: parseDescription(f['Description']),
+    description: parseDescription(f['Description'], parseDescSource(f['Description source']) === true),
     category: parseCategory(f['Category']),
     games,
     tags: parseTags(f['Tags']),
@@ -220,6 +227,7 @@ if (mode === 'submit') {
     created: today(),
     hue: hueFor(id || 'mod')
   };
+  if (parseDescSource(f['Description source']) === true) mod.readme = true;
   const authorName = oneLine(f['Display name'], LIMITS.authorName);
   if (authorName) mod.authorName = authorName;
   if (f['Screenshots']) mod.images = parseImages(f['Screenshots']);
@@ -284,6 +292,10 @@ if (mode === 'submit') {
     const games = parseGames(v('Games'));
     if (games.length) set('games', games);
     if (v('Description')) set('description', parseDescription(v('Description')));
+    const source = parseDescSource(v('Description source'));
+    if (source === true) set('readme', true);
+    else if (source === false) unset('readme');
+    if (!mod.readme && !mod.description) errors.push('Description: write one, or keep "GitHub README" as the description source.');
     if (v('Screenshots')) isNone(v('Screenshots')) ? unset('images') : set('images', withCover(parseImages(v('Screenshots')), v('Cover picture')));
     else if (v('Cover picture')) set('images', withCover(mod.images, v('Cover picture')));
     if (v('Requirements')) set('requirements', parseRequirements(v('Requirements')));
@@ -332,7 +344,7 @@ const page =`${siteUrl}mod.html?id=${mod.id}`;
 const FIELD_NAMES = {
   authorName: 'display name', name: 'mod name', scan: 'virus scan setting',
   ai: 'AI disclosure', aiParts: 'AI parts', donate: 'donation link',
-  listedBy: '"Listed by Waypoint" label (the listing is yours now)', permissionNotes: 'permission notes', images: 'screenshots or cover picture'
+  listedBy: '"Listed by Waypoint" label (the listing is yours now)', readme: 'description source', permissionNotes: 'permission notes', images: 'screenshots or cover picture'
 };
 const WHEN = {
   full: `It will appear at ${page}, usually within 2 to 5 minutes, once the site has rebuilt and VirusTotal has checked its files. ` +

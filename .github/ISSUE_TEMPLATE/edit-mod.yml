@@ -65,6 +65,16 @@ body:
     attributes:
       label: Description
       description: Replaces the whole description.
+  - type: dropdown
+    id: desc-source
+    attributes:
+      label: Description source
+      description: "GitHub README shows your repository's README instead, loaded live from GitHub."
+      options:
+        - No change
+        - Written here
+        - GitHub README
+      default: 0
   - type: textarea
     id: screenshots
     attributes:

@@ -354,7 +354,7 @@ for (const [i, { mod }] of entries.entries()) {
   const spdx = repo.license && repo.license.spdx_id;
   out.push({
     id: mod.id, name: mod.name, author: repo.owner.login, authorName: mod.authorName || '', repo: repo.full_name,
-    summary: mod.summary, description: mod.description, games: mod.games, category: mod.category,
+    summary: mod.summary, description: mod.description, readme: !!mod.readme, games: mod.games, category: mod.category,
     tags: mod.tags, requirements: mod.requirements, images: mod.images || [], scanMode: scanMode(mod),
     ai: mod.ai || '', aiParts: mod.aiParts || [], permissions: mod.permissions || {},
     credits: mod.credits || '', permissionNotes: mod.permissionNotes || '', donate: mod.donate || '',

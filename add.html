@@ -94,10 +94,18 @@
             </div>
           </div>
           <div class="field">
-            <label for="f-description">Description <small class="count-of" data-for="f-description"></small></label>
-            <textarea class="input" id="f-description" name="description" rows="12" maxlength="20000" required placeholder="What it does, how to install it, known issues..."></textarea>
+            <span class="label" id="desc-label">Description</span>
+            <div class="toggles desc-source" role="radiogroup" aria-labelledby="desc-label">
+              <label class="toggle"><input type="radio" name="desc-source" value="written" checked><span>Write it here</span></label>
+              <label class="toggle"><input type="radio" name="desc-source" value="readme"><span>Show my GitHub README</span></label>
+            </div>
+            <div id="desc-written">
+              <label class="sr-only" for="f-description">Description text</label>
+              <small class="count-of hint" data-for="f-description"></small>
+              <textarea class="input" id="f-description" name="description" rows="12" maxlength="20000" placeholder="What it does, how to install it, known issues..."></textarea>
+            </div>
             <div class="desc-tools">
-              <small class="hint">Supports BBCode (<code>[b]</code>, <code>[size]</code>, <code>[color]</code>, <code>[url]</code>, <code>[img]</code>, <code>[list]</code>, <code>[spoiler]</code>, <code>[youtube]</code> and more) and Markdown.</small>
+              <small class="hint" id="desc-hint">Supports BBCode (<code>[b]</code>, <code>[size]</code>, <code>[color]</code>, <code>[url]</code>, <code>[img]</code>, <code>[list]</code>, <code>[spoiler]</code>, <code>[youtube]</code> and more) and Markdown.</small>
               <button class="btn btn-sm" type="button" id="desc-preview-btn" aria-expanded="false" aria-controls="desc-preview">Preview</button>
             </div>
             <div class="desc-preview prose" id="desc-preview" hidden></div>

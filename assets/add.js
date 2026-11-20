@@ -110,10 +110,27 @@
     return !!data.repo;
   }
 
+  // Description: written here, or the repository's README shown live from GitHub.
+  const useReadme = () => picked('desc-source')[0] === 'readme';
+  const writtenHint = $('#desc-hint').innerHTML;
+  function descMode() {
+    $('#desc-written').hidden = useReadme();
+    $('#desc-hint').innerHTML = useReadme()
+      ? "Your mod page shows your repository's README, loaded live from GitHub. Nothing is copied: edit the README on GitHub and Waypoint shows the change."
+      : writtenHint;
+  }
+  const repoName = () => (repo ? repo.full : mod ? mod.repo : '');
+
   // Description preview: exactly how it will look on the mod page.
   function descPreview() {
     const box = $('#desc-preview');
     if (box.hidden) return;
+    if (useReadme()) {
+      if (!repoName()) { box.innerHTML = '<p class="muted">Check your repository in step 1 first.</p>'; return; }
+      box.innerHTML = '<p class="muted">Loading the README from GitHub...</p>';
+      W.showReadme(box, { repo: repoName(), summary: val('summary'), description: '', author: repoName().split('/')[0], authorName: val('author-name') });
+      return;
+    }
     box.innerHTML = val('description') ? W.md(form.elements.description.value) : '<p class="muted">Nothing to preview yet.</p>';
   }
   $('#desc-preview-btn').addEventListener('click', e => {
@@ -257,6 +274,8 @@
     setPicked('category', [m.category]);
     setPicked('games', (m.games || []).map(g => GAMES[g]));
     form.elements.description.value = m.description || '';
+    setPicked('desc-source', [m.readme ? 'readme' : 'written']);
+    descMode();
     $('#reqs').innerHTML = '';
     (m.requirements || []).forEach(q => addReq(q.name, q.url));
     form.elements.tags.value = (m.tags || []).join(', ');
@@ -297,7 +316,7 @@
       if (!val('summary')) return 'Write a one-line summary.';
       if (!picked('category').length) return 'Pick a category.';
       if (!picked('games').length) return 'Tick at least one game it works on.';
-      if (!val('description')) return 'Write a description.';
+      if (!val('description') && !useReadme()) return 'Write a description, or pick "Show my GitHub README".';
       const half = reqs().find(q => !q.name || !/^https?:\/\//.test(q.url));
       if (half) return 'Each requirement needs a name and a link starting with https://.';
       if (val('tags').split(',').filter(t => t.trim()).length > 8) return 'Use 8 tags at most.';
@@ -331,6 +350,7 @@
       'Category': picked('category')[0] || '',
       'Games': ticks(Object.values(GAMES), picked('games')),
       'Description': val('description'),
+      'Description source': useReadme() ? 'GitHub README' : 'Written here',
       'Requirements': reqs().map(r => `${r.name} | ${r.url}`).join('\n'),
       'Tags': val('tags').split(',').map(t => t.trim()).filter(Boolean).join(', '),
       'AI use': AI_OPTION[ai] || '',
@@ -452,6 +472,7 @@
   form.addEventListener('change', e => {
     save();
     aiParts();
+    if (e.target.name === 'desc-source') { descMode(); descPreview(); }
     if (at === 3) preview();
     if (e.target.name === 'rules') $('#werror').textContent = '';
   });
@@ -471,6 +492,7 @@
   }
   counts();
   aiParts();
+  descMode();
   go(0);
   if (hadRepo) checkRepo();
 })();

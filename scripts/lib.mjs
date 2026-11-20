@@ -61,6 +61,9 @@ export const ARCHIVE_RE = /\.(7z|zip|rar)$/i;
 // GitHub accounts that may list any public mod, so people can find mods that live only on GitHub.
 // Their listings are marked "Listed by Waypoint", and the real author can take them over or remove them.
 export const ADMINS = ['eargsm'];
+// "Description source": the text written in the form, or the repository's README shown live from GitHub
+// (nothing is copied; the mod page loads it from the author's repo each time).
+export const DESC_SOURCES = { 'Written here': false, 'GitHub README': true };
 const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const REPO_RE = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -117,7 +120,8 @@ export function validateMod(mod, file) {
   if (!isStr(mod.name, 1, L.name)) e.push(`name must be 1-${L.name} characters`);
   if (!isStr(mod.repo, 3, 141) || !REPO_RE.test(mod.repo)) e.push('repo must look like owner/name');
   if (!isStr(mod.summary, 1, L.summary)) e.push(`summary must be 1-${L.summary} characters`);
-  if (!isStr(mod.description, 1, L.description)) e.push(`description must be 1-${L.description} characters`);
+  if (mod.readme !== undefined && mod.readme !== true) e.push('readme must be true (or left out)');
+  if (!isStr(mod.description, mod.readme ? 0 : 1, L.description)) e.push(`description must be ${mod.readme ? 0 : 1}-${L.description} characters`);
   if (!CATEGORIES.includes(mod.category)) e.push(`category must be one of: ${CATEGORIES.join(', ')}`);
   if (!Array.isArray(mod.games) || !mod.games.length || mod.games.some(g => !GAME_KEYS.includes(g))) e.push(`games must be a non-empty list of: ${GAME_KEYS.join(', ')}`);
   if (!Array.isArray(mod.tags) || mod.tags.length > L.tags || mod.tags.some(t => !isStr(t, 1, L.tag))) e.push(`tags must be up to ${L.tags} strings of 1-${L.tag} characters`);

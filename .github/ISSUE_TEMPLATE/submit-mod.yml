@@ -71,9 +71,16 @@ body:
     id: description
     attributes:
       label: Description
-      description: "Supports BBCode ([b], [size], [color], [url], [img], [list], [spoiler], [youtube] and more) and Markdown. For headings use [size] or ## (not ###)."
-    validations:
-      required: true
+      description: "Supports BBCode ([b], [size], [color], [url], [img], [list], [spoiler], [youtube] and more) and Markdown. For headings use [size] or ## (not ###). Leave it empty if you pick GitHub README below."
+  - type: dropdown
+    id: desc-source
+    attributes:
+      label: Description source
+      description: "GitHub README shows your repository's README on your mod page instead, loaded live from GitHub (nothing is copied)."
+      options:
+        - Written here
+        - GitHub README
+      default: 0
   - type: textarea
     id: screenshots
     attributes:

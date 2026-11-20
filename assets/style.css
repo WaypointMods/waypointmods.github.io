@@ -309,6 +309,17 @@ h1, h2 { font-family: var(--serif); font-weight: 700; }
 .prose details.spoiler { margin: 0 0 14px; border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; background: var(--surface); }
 .prose details.spoiler > summary { cursor: pointer; font-weight: 600; color: var(--accent); }
 .prose details.spoiler[open] > summary { margin-bottom: 10px; }
+/* A README shown live from the author's GitHub */
+.readme-from { color: var(--muted); font-size: 13px; margin: 0 0 14px !important; }
+.readme h1 { font-size: 28px; margin: 6px 0 12px; }
+.readme h2 { font-size: 23px; margin: 26px 0 10px; }
+.readme h1, .readme h2 { font-family: var(--serif); padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.readme img { max-width: 100%; height: auto; vertical-align: middle; }
+.readme table { border-collapse: collapse; margin: 0 0 14px; display: block; overflow-x: auto; }
+.readme th, .readme td { border: 1px solid var(--border); padding: 6px 12px; }
+.readme th { background: var(--surface); }
+.readme details { margin: 0 0 14px; }
+.readme summary { cursor: pointer; font-weight: 600; }
 /* Videos in descriptions: a play button that loads YouTube only when pressed */
 .yt { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; max-width: 640px; aspect-ratio: 16 / 9; margin: 0 auto 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-2); color: var(--text); font: inherit; font-weight: 650; cursor: pointer; }
 .yt:hover { border-color: var(--accent); }
@@ -511,6 +522,9 @@ textarea.input { border-radius: 16px; resize: vertical; min-height: 90px; line-h
   .werror { order: 3; flex-basis: 100%; }
 }
 
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.desc-source { margin-bottom: 10px; }
+#desc-written .count-of { text-align: right; margin: 0 0 4px; }
 .desc-preview { margin-top: 10px; padding: 16px 18px; border: 1px dashed var(--border-strong); border-radius: 16px; background: var(--bg); max-height: 420px; overflow-y: auto; }
 .desc-tools { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
 .desc-tools .hint { margin: 0; }

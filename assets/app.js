@@ -615,6 +615,68 @@
     </div>`;
   }
 
+  // ---------- README from the author's GitHub ----------
+  // A mod can use its repository's README as the description. It is loaded live from GitHub (already
+  // turned into HTML by GitHub), so nothing is copied to Waypoint, then cleaned: only plain document
+  // tags survive, links and images must be http(s), and relative links point back into the repo.
+  const README_TAGS = new Set(['A', 'ABBR', 'B', 'BLOCKQUOTE', 'BR', 'CODE', 'DD', 'DEL', 'DETAILS', 'DIV', 'DL', 'DT', 'EM',
+    'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'I', 'IMG', 'INS', 'KBD', 'LI', 'OL', 'P', 'PICTURE', 'PRE', 'S', 'SAMP', 'SMALL',
+    'SPAN', 'STRONG', 'SUB', 'SUMMARY', 'SUP', 'TABLE', 'TBODY', 'TD', 'TFOOT', 'TH', 'THEAD', 'TR', 'U', 'UL']);
+  const README_DROP = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'FORM', 'INPUT', 'BUTTON', 'SELECT', 'TEXTAREA',
+    'SVG', 'MATH', 'LINK', 'META', 'BASE', 'NOSCRIPT', 'TEMPLATE', 'VIDEO', 'AUDIO', 'SOURCE', 'CANVAS']);
+  const README_ATTRS = { A: ['href', 'title'], IMG: ['src', 'alt', 'title', 'width', 'height'], TD: ['align', 'colspan', 'rowspan'],
+    TH: ['align', 'colspan', 'rowspan'], P: ['align'], DIV: ['align'], H1: ['align'], H2: ['align'], H3: ['align'], DETAILS: ['open'] };
+
+  function cleanReadme(html, repo) {
+    const doc = new DOMParser().parseFromString(`<div>${html}</div>`, 'text/html');
+    const root = doc.body.firstElementChild;
+    const abs = (u, raw) => {
+      if (/^https?:\/\//i.test(u)) return u;
+      if (/^(#|mailto:|javascript:|data:|vbscript:)/i.test(u) || u.startsWith('//')) return null;
+      const path = u.replace(/^\.?\//, '');
+      return raw ? `https://raw.githubusercontent.com/${repo}/HEAD/${path}` : `https://github.com/${repo}/blob/HEAD/${path}`;
+    };
+    (function walk(el) {
+      for (const node of [...el.children]) {
+        if (README_DROP.has(node.tagName)) { node.remove(); continue; }
+        walk(node);
+        if (!README_TAGS.has(node.tagName)) { node.replaceWith(...node.childNodes); continue; }
+        const keep = README_ATTRS[node.tagName] || [];
+        for (const a of [...node.attributes]) if (!keep.includes(a.name)) node.removeAttribute(a.name);
+        if (node.tagName === 'A') {
+          const href = abs(node.getAttribute('href') || '', false);
+          if (href) { node.setAttribute('href', href); node.setAttribute('target', '_blank'); node.setAttribute('rel', 'noopener nofollow ugc'); }
+          else node.removeAttribute('href');
+          if (!node.textContent.trim() && !node.querySelector('img')) node.remove(); // GitHub's empty heading anchors
+        }
+        if (node.tagName === 'IMG') {
+          const src = abs(node.getAttribute('src') || '', true);
+          if (!src) { node.remove(); continue; }
+          node.setAttribute('src', src);
+          node.setAttribute('loading', 'lazy');
+          node.setAttribute('referrerpolicy', 'no-referrer');
+        }
+      }
+    })(root);
+    return root.innerHTML;
+  }
+  const fetchReadme = repo => remembered('readme:' + repo, async () => {
+    try {
+      const res = await fetch(`https://api.github.com/repos/${repo}/readme`, { headers: { Accept: 'application/vnd.github.html+json' } });
+      return res.ok ? { html: cleanReadme(await res.text(), repo) } : (res.status === 404 ? { missing: true } : null);
+    } catch (e) { return null; }
+  });
+  // Fills a box with the README, or says why it couldn't.
+  async function showReadme(box, m) {
+    const gh = `https://github.com/${esc(m.repo)}#readme`;
+    const got = window.MODS_ARE_EXAMPLES ? null : await fetchReadme(m.repo);
+    box.innerHTML = got && got.html
+      ? `<p class="readme-from">From the README on <a href="${gh}" target="_blank" rel="noopener">${esc(authorLabel(m))}'s GitHub</a></p><div class="readme">${got.html}</div>`
+      : `<p>${esc(m.summary)}</p>${m.description ? md(m.description) : ''}<p class="muted">${got && got.missing
+        ? 'This repository has no README yet.'
+        : `The README couldn't be loaded just now. <a href="${gh}" target="_blank" rel="noopener">Read it on GitHub</a>.`}</p>`;
+  }
+
   // ---------- bug reports ----------
   // Bugs are the author's own GitHub issues: reported, discussed and closed on the mod's repository,
   // where the author is notified. The tab shows the open ones, loaded live when it is first opened.
@@ -755,7 +817,7 @@
             <button class="tab" role="tab" data-tab="permissions">Permissions</button>
             <button class="tab" role="tab" data-tab="comments">Comments</button>
           </div>
-          <section class="panel prose" role="tabpanel" id="p-description">${md(m.description)}</section>
+          <section class="panel prose" role="tabpanel" id="p-description">${m.readme ? '<p class="muted">Loading the README from GitHub...</p>' : md(m.description)}</section>
           <section class="panel" role="tabpanel" id="p-files" hidden>${m.releases.map((x, i) => release(m, x, i === 0)).join('')}</section>
           <section class="panel" role="tabpanel" id="p-changelog" hidden>${m.releases.map(x =>
             `<div class="cl"><h3>v${esc(x.version)}<span class="muted">${esc(fmtDate(x.date))}</span></h3><div class="prose">${md(x.notes)}</div></div>`).join('')}</section>
@@ -832,6 +894,7 @@
       $('.tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }));
     select(location.hash.slice(1));
+    if (m.readme) showReadme($('#p-description'), m);
     if (m.images && m.images.length) viewer(m);
     live(m);
   }
@@ -994,7 +1057,7 @@
   }
 
   // Shared with add.js (the guided Add your mod page).
-  window.Waypoint = { esc, svg, md, card, catIcon, issueUrl, CATEGORIES: Object.keys(CAT_ICON), GAMES, ARCHIVE_RE, fmtSize };
+  window.Waypoint = { esc, svg, md, showReadme, card, catIcon, issueUrl, CATEGORIES: Object.keys(CAT_ICON), GAMES, ARCHIVE_RE, fmtSize };
 
   if (['home', 'browse', 'mod'].includes(page)) getStats(); // start the request before drawing the page
   shell();
