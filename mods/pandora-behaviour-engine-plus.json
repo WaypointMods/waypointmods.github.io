@@ -1,0 +1,18 @@
+{
+  "id": "pandora-behaviour-engine-plus",
+  "name": "Pandora Behaviour Engine Plus",
+  "repo": "Monitor221hz/Pandora-Behaviour-Engine-Plus",
+  "summary": "Patcher for behavior, character, and skeleton project files for Skyrim Special Edition.",
+  "description": "",
+  "readme": true,
+  "category": "Other",
+  "games": [
+    "se"
+  ],
+  "tags": [],
+  "requirements": [],
+  "created": "2026-11-20",
+  "hue": 167,
+  "scan": "private",
+  "listedBy": "waypoint"
+}
