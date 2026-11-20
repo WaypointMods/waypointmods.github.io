@@ -1,11 +1,11 @@
 {
   "id": "framework",
-  "name": "Framework",
+  "name": "Prisma UI",
   "repo": "PrismaUI-SKSE/framework",
   "summary": "Prisma UI Framework project.",
   "description": "",
   "readme": true,
-  "category": "Other",
+  "category": "UI",
   "games": [
     "se"
   ],
@@ -21,5 +21,8 @@
   "created": "2026-11-20",
   "hue": 158,
   "scan": "private",
-  "listedBy": "waypoint"
+  "listedBy": "waypoint",
+  "images": [
+    "https://github.com/user-attachments/assets/d8340aa2-33e9-4451-897d-0f8532683010"
+  ]
 }
