@@ -217,7 +217,7 @@ if (quick) {
   if (!full) errors.push('Repository: give it as `owner/name` or paste the GitHub link.');
   const repo = isAdmin && full && await loadRepo(full);
   if (repo) {
-    const name = oneLine(repo.name.replace(/[-_.]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[a-z]/g, c => c.toUpperCase()), LIMITS.name);
+    const name = oneLine(repo.name.replace(/[-_.]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/\b[a-z]/g, c => c.toUpperCase()), LIMITS.name);
     const id = slugify(name);
     if (!id) errors.push('Mod name: the repository name has no letters or numbers. Use the full form.');
     else if (all.some(x => x.file === id + '.json')) errors.push(`Mod name: \`${id}\` is already taken. Use the full form and pick a different name.`);
