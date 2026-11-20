@@ -3,43 +3,19 @@
 @font-face { font-family: "Inter"; src: url("fonts/inter.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
 @font-face { font-family: "JetBrains Mono"; src: url("fonts/jetbrains-mono.woff2") format("woff2"); font-weight: 500; font-display: swap; }
 
-/* Light: warm parchment, burnt-orange waypoint markers, moss for good news */
+/* One look: night in Skyrim's mountains, cool slate with amber waypoint markers */
 :root {
-  --page: var(--bg); /* the theme's page colour, kept when .vista switches to dark colours */
-  --bg: #f5f0e6; --hero: #efe7d8; --surface: #fffdf8; --surface-2: #efe7d8; --cover: #f3ecdf;
-  --border: #e0d6c4; --border-strong: #cdbfa6;
-  --text: #2a241d; --muted: #685e51;
-  --accent: #a3560c; --accent-strong: #84450a; --on-accent: #ffffff;
-  --moss: #4c7547; --on-moss: #ffffff;
-  --contour: rgba(120, 88, 45, .16); --dot-off: #cdbfa6; --shadow: rgba(80, 55, 20, .14);
-  --good: #2f6f35; --warn: #b42318; --warn-bg: #fdecea; --on-warn: #ffffff;
+  --bg: #0e1216; --hero: #121820; --surface: #161c22; --surface-2: #1f262e; --cover: #131920;
+  --border: #2a333d; --border-strong: #3a4552;
+  --text: #e9edf0; --muted: #9aa6b1; --frost: #c9d8e3;
+  --accent: #e8a54b; --accent-strong: #f3c27f; --on-accent: #1d1305;
+  --moss: #93b98d; --on-moss: #112010;
+  --contour: rgba(201, 216, 227, .1); --dot-off: #3a4552; --shadow: rgba(0, 0, 0, .4);
+  --good: #93b98d; --warn: #ff8a7a; --warn-bg: #3b1e22; --on-warn: #2a0f0b;
   --radius: 18px; --maxw: 1240px;
   --serif: "Fraunces", Georgia, serif;
   --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
-  color-scheme: light;
-}
-/* Dark: night on the trail */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #121417; --hero: #16191d; --surface: #1b1f24; --surface-2: #252a31; --cover: #181c21;
-    --border: #2a3038; --border-strong: #3a424d;
-    --text: #ece6dc; --muted: #a8a093;
-    --accent: #e8a54b; --accent-strong: #f3c27f; --on-accent: #1d1305;
-    --moss: #93b98d; --on-moss: #112010;
-    --contour: rgba(232, 190, 130, .12); --dot-off: #3a424d; --shadow: rgba(0, 0, 0, .35);
-    --good: #93b98d; --warn: #ff8a7a; --warn-bg: #3b1e22; --on-warn: #2a0f0b;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #121417; --hero: #16191d; --surface: #1b1f24; --surface-2: #252a31; --cover: #181c21;
-  --border: #2a3038; --border-strong: #3a424d;
-  --text: #ece6dc; --muted: #a8a093;
-  --accent: #e8a54b; --accent-strong: #f3c27f; --on-accent: #1d1305;
-  --moss: #93b98d; --on-moss: #112010;
-  --contour: rgba(232, 190, 130, .12); --dot-off: #3a424d; --shadow: rgba(0, 0, 0, .35);
-  --good: #93b98d; --warn: #ff8a7a; --warn-bg: #3b1e22; --on-warn: #2a0f0b;
   color-scheme: dark;
 }
 
@@ -110,25 +86,19 @@ h1, h2 { font-family: var(--serif); font-weight: 700; }
 .btn-disabled, .btn-disabled:hover { opacity: .45; pointer-events: none; cursor: not-allowed; }
 
 /* The vista: Skyrim's mountains (assets/vista.jpg) behind the home page's top section and each mod's
-   header, with the trail along its river. The picture is dark, so it always uses the dark colours. */
-.vista, .site-header.over {
-  --bg: #121417; --hero: #16191d; --surface: #1b1f24; --surface-2: #252a31;
-  --border: #2a3038; --border-strong: #3a424d; --text: #ece6dc; --muted: #b9c1c8;
-  --accent: #e8a54b; --accent-strong: #f3c27f; --on-accent: #1d1305;
-  --good: #93b98d; --warn: #ff8a7a; --warn-bg: #3b1e22; --on-warn: #2a0f0b; --shadow: rgba(0, 0, 0, .35);
-  color: var(--text);
-}
+   header, with the trail along its river. */
+.vista { --muted: #b9c1c8; color: var(--text); }
 .vista { position: relative; overflow: hidden; display: flex; flex-direction: column;
   background: #0d1014 url(vista.jpg) center / cover; margin-top: calc(-1 * var(--hdr-h, 65px)); padding-top: var(--hdr-h, 65px); }
 .vista::before { content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(180deg, rgba(13, 16, 20, .65) 0%, rgba(13, 16, 20, .05) 24%, rgba(13, 16, 20, 0) 42%, rgba(13, 16, 20, .82) 76%, #0d1014 93%, var(--page) 100%); }
+  background: linear-gradient(180deg, rgba(13, 16, 20, .65) 0%, rgba(13, 16, 20, .05) 24%, rgba(13, 16, 20, 0) 42%, rgba(13, 16, 20, .82) 76%, #0d1014 93%, var(--bg) 100%); }
 .vista-trail { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .vista > .wrap { position: relative; width: 100%; }
 .vista .eyebrow, .vista .byline, .vista .lead, .vista .hero-stats, .vista .statrow { text-shadow: 0 1px 12px rgba(0, 0, 0, .85); }
 @media (max-width: 760px) {
   .vista-trail { display: none; }
   /* Text runs over the bright snow on narrow screens, so the picture is darkened more evenly. */
-  .vista::before { background: linear-gradient(180deg, rgba(13, 16, 20, .6) 0%, rgba(13, 16, 20, .5) 25%, rgba(13, 16, 20, .78) 55%, #0d1014 92%, var(--page) 100%); }
+  .vista::before { background: linear-gradient(180deg, rgba(13, 16, 20, .6) 0%, rgba(13, 16, 20, .5) 25%, rgba(13, 16, 20, .78) 55%, #0d1014 92%, var(--bg) 100%); }
 }
 
 /* Home: top section */
