@@ -303,7 +303,6 @@
   const PIN_PATH = 'M12 25S2 16.6 2 10a10 10 0 0 1 20 0c0 6.6-10 15-10 15z';
   const pin = c => `<span class="pin"><svg viewBox="0 0 24 26" aria-hidden="true"><path d="${PIN_PATH}" fill="currentColor"/></svg>${catIcon(c, 22, 2)}</span>`;
   // A big pin inside an SVG map, its head centred on (x, y).
-  const bigPin = (x, y, scale) => `<path d="${PIN_PATH}" transform="translate(${x - 12 * scale} ${y - 10 * scale}) scale(${scale})" style="fill: var(--accent)"/>`;
   // Each mod's little contour map never changes, so it is drawn once and remembered.
   const coverMaps = new Map();
   const coverMap = id => coverMaps.get(id) || coverMaps.set(id, contours(rings(150, 75, 6, 16, 16, seedOf(id)))).get(id);
@@ -313,12 +312,13 @@
   const warnPill = m => (unscanned(m) ? `<span class="warn-pill" title="${esc(scanReason(m))}">${svg('alert', 12)} Not virus-scanned</span>` : '');
 
   // Big background maps for the home page hero and share panel.
+  // The vista (assets/vista.jpg) and the trail along its river. Both use the image's own 1920x1080
+  // frame with "cover" scaling, so the trail stays on the river at any window size.
+  const VISTA_TRAIL = `<svg class="vista-trail" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <path d="M1105 1130 C 1090 1010, 1190 960, 1165 880 S 1120 790, 1190 735 S 1300 680, 1285 640" fill="none" stroke-width="4" stroke-dasharray="1 14" stroke-linecap="round" style="stroke: var(--accent)"/>
+    <circle cx="1285" cy="630" r="11" style="fill: var(--accent)"/></svg>`;
   const BACKDROPS = {
-    hero: () => `<svg class="topo" viewBox="0 0 1440 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      ${contours(rings(1080, 300, 12, 46, 30, 0.6) + rings(240, 120, 6, 40, 34, 2.4), 1.3)}
-      <g class="trail"><path d="M560 690 C 660 610, 720 560, 830 520 S 1010 420, 1080 336" fill="none" stroke-width="3" stroke-dasharray="1 11" stroke-linecap="round" style="stroke: var(--accent)"/>
-      <ellipse cx="1080" cy="338" rx="30" ry="9" fill="none" stroke-width="1.5" style="stroke: var(--accent); opacity: .45"/>
-      ${bigPin(1080, 280, 4)}<circle cx="1080" cy="280" r="14" style="fill: var(--hero)"/></g></svg>`,
+    hero: () => VISTA_TRAIL,
     share: () => `<svg class="topo" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${contours(rings(1000, 300, 9, 40, 34, 1.3))}</svg>`
   };
   function backdrops() {
@@ -365,6 +365,8 @@
   if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
 
   // ---------- header / footer ----------
+  // Over the vista (home and mod pages) the header is see-through until you scroll.
+  let syncHeader = () => {};
   function shell() {
     const nav = [['browse', 'browse.html', 'Browse'], ['about', 'about.html', 'About']];
     const h = $('#site-header');
@@ -380,6 +382,12 @@
           ${page === 'add' ? '' : '<a class="btn btn-primary hdr-add" href="add.html">Add your mod</a>'}
         </div>
       </div>`;
+      const fit = () => document.documentElement.style.setProperty('--hdr-h', h.offsetHeight + 'px');
+      syncHeader = () => h.classList.toggle('over', scrollY < 40 && !!document.querySelector('.vista'));
+      fit();
+      syncHeader();
+      addEventListener('resize', fit);
+      addEventListener('scroll', () => syncHeader(), { passive: true });
       const btn = $('#theme-btn');
       const paint = () => {
         const dark = currentTheme() === 'dark';
@@ -768,22 +776,12 @@
     const main = r && r.assets[0];
     const fileCount = m.releases.reduce((a, x) => a + x.assets.length, 0);
 
-    // Trail banner: a contour map with the dotted trail leading to this mod's waypoint pin.
-    // With screenshots, the cover (the first one) fills the banner; if it fails to load, the map shows instead.
-    const coverImg = m.images && m.images[0];
-    const seed = seedOf(m.id);
+    // Vista hero: the name, stats and download box sit on the image's dark foreground.
+    // Screenshots show in the gallery below.
     root.innerHTML = `
-      <div class="banner${coverImg ? ' has-img' : ''}">
-        <svg viewBox="0 0 1440 270" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
-          ${contours(rings(1110, 130, 10, 30, 26, seed) + rings(300, 60, 5, 40, 32, seed + 2), 1.3)}
-          <path d="M700 290 C 780 250, 830 200, 920 200 S 1040 150, 1090 128" fill="none" stroke-width="3" stroke-dasharray="1 11" stroke-linecap="round" style="stroke: var(--accent)"/>
-          ${bigPin(1110, 90, 3.3)}
-          <g transform="translate(1095 75) scale(1.25)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--on-accent)">${CAT_ICON[m.category] || CAT_ICON.Other}</g>
-        </svg>
-        ${coverImg ? `<img src="${esc(coverImg)}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove('has-img'); this.remove()">` : ''}
-      </div>
-      <div class="wrap mod-layout">
-        <div class="mod-main">
+      <section class="vista mod-vista">
+        ${VISTA_TRAIL}
+        <div class="wrap mod-hero">
           <div class="mod-head">
             <div class="head-tags"><span class="kicker">${esc(m.category)}</span>${aiTag(m)}</div>
             <h1 class="mod-title">${esc(m.name)}</h1>
@@ -798,6 +796,26 @@
               <div><b>${ago(m.lastUpdated)}</b>updated</div>
             </div>
           </div>
+          <div class="dl-box glass">
+            ${main
+              ? `<a class="btn btn-primary btn-lg" href="${esc(main.url)}">${svg('dl', 20)} Download v${esc(r.version)}</a>
+                 <a class="btn" href="${esc(managerLink(m, main))}">${svg('box', 18)} Download with MO2 / Vortex</a>
+                 <a class="dl-note center" href="helper.html">Needs the free Waypoint helper (one-time setup)</a>`
+              : '<div class="dl-note">No files released yet.</div>'}
+            ${main ? `<div class="dl-sep">
+              <div class="dl-note file">${esc(main.name)} · ${fmtSize(main.size)}</div>
+              ${r.assets.length > 1 ? `<a class="dl-note" href="#files" data-goto="files">+ ${r.assets.length - 1} more file${r.assets.length > 2 ? 's' : ''} in this release</a>` : ''}
+              ${scanOf(main) === 'unscanned'
+                ? `<div class="dl-note warn-text">${svg('alert', 16)} Not virus-scanned${noScanChosen(m) ? ' (author\'s choice)' : ''}. File hash recorded.</div>`
+                : `<div class="dl-note good">${svg('shield', 16)} ${esc(SCAN_LABEL[scanOf(main)])}. File hash recorded.</div>`}
+              <a class="dl-note" href="about.html#scans">What do the scan types mean?</a>
+            </div>` : ''}
+            <a class="btn" href="https://github.com/${esc(m.repo)}" target="_blank" rel="noopener">Star or view on GitHub</a>
+          </div>
+        </div>
+      </section>
+      <div class="wrap mod-layout">
+        <div class="mod-main">
           ${byWaypoint(m) ? `<div class="notice listed-note"><strong>Listed by Waypoint.</strong> This mod lives on its author's GitHub, and Waypoint lists it so more people can find it; the author didn't add it here. Downloads come straight from the author's GitHub.
             <a href="add.html?edit=${encodeURIComponent(m.id)}">Are you the author? Take over or remove this listing</a></div>` : ''}
           ${unscanned(m) ? `<div class="notice notice-warn scan-warn">${svg('alert', 16)}<div><strong>Not virus-scanned.</strong> ${esc(scanReason(m))}
@@ -824,22 +842,6 @@
           <section class="panel" role="tabpanel" id="p-comments" hidden><div id="giscus"></div></section>
         </div>
         <aside class="mod-side">
-          <div class="side-card dl-box">
-            ${main
-              ? `<a class="btn btn-primary btn-lg" href="${esc(main.url)}">${svg('dl', 20)} Download v${esc(r.version)}</a>
-                 <a class="btn" href="${esc(managerLink(m, main))}">${svg('box', 18)} Download with MO2 / Vortex</a>
-                 <a class="dl-note center" href="helper.html">Needs the free Waypoint helper (one-time setup)</a>`
-              : '<div class="dl-note">No files released yet.</div>'}
-            ${main ? `<div class="dl-sep">
-              <div class="dl-note file">${esc(main.name)} · ${fmtSize(main.size)}</div>
-              ${r.assets.length > 1 ? `<a class="dl-note" href="#files" data-goto="files">+ ${r.assets.length - 1} more file${r.assets.length > 2 ? 's' : ''} in this release</a>` : ''}
-              ${scanOf(main) === 'unscanned'
-                ? `<div class="dl-note warn-text">${svg('alert', 16)} Not virus-scanned${noScanChosen(m) ? ' (author\'s choice)' : ''}. File hash recorded.</div>`
-                : `<div class="dl-note good">${svg('shield', 16)} ${esc(SCAN_LABEL[scanOf(main)])}. File hash recorded.</div>`}
-              <a class="dl-note" href="about.html#scans">What do the scan types mean?</a>
-            </div>` : ''}
-            <a class="btn" href="https://github.com/${esc(m.repo)}" target="_blank" rel="noopener">Star or view on GitHub</a>
-          </div>
           ${support(m)}
           ${main ? `<details class="side-card install-tip">
             <summary>How to install</summary>
@@ -870,6 +872,7 @@
           </div>
         </aside>
       </div>`;
+    syncHeader();
 
     const tabs = Array.from(document.querySelectorAll('.tab'));
     function select(name) {
