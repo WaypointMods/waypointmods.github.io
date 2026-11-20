@@ -1,0 +1,25 @@
+{
+  "id": "framework",
+  "name": "Framework",
+  "repo": "PrismaUI-SKSE/framework",
+  "summary": "Prisma UI Framework project.",
+  "description": "",
+  "readme": true,
+  "category": "Other",
+  "games": [
+    "se"
+  ],
+  "tags": [
+    "framework",
+    "modding-tools",
+    "skse",
+    "skse64",
+    "skyrim-special-edition",
+    "ui"
+  ],
+  "requirements": [],
+  "created": "2026-11-20",
+  "hue": 158,
+  "scan": "private",
+  "listedBy": "waypoint"
+}
