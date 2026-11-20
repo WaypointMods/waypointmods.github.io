@@ -5,7 +5,7 @@
   "summary": "Patcher for behavior, character, and skeleton project files for Skyrim Special Edition.",
   "description": "",
   "readme": true,
-  "category": "Other",
+  "category": "Utilities",
   "games": [
     "se"
   ],
@@ -14,5 +14,8 @@
   "created": "2026-11-20",
   "hue": 167,
   "scan": "private",
-  "listedBy": "waypoint"
+  "listedBy": "waypoint",
+  "images": [
+    "https://github.com/user-attachments/assets/a0259c5c-f06c-4bb1-b4c0-d53b15570af0"
+  ]
 }
