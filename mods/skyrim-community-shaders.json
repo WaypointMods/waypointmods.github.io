@@ -1,0 +1,28 @@
+{
+  "id": "skyrim-community-shaders",
+  "name": "Skyrim Community Shaders",
+  "repo": "community-shaders/skyrim-community-shaders",
+  "summary": "Community-driven advanced graphics modifications for AE, SE and VR.",
+  "description": "",
+  "readme": true,
+  "category": "Other",
+  "games": [
+    "se",
+    "vr"
+  ],
+  "tags": [
+    "c-plus-plus",
+    "directx",
+    "game-engine",
+    "graphics",
+    "rendering",
+    "shaders",
+    "skse",
+    "skse64"
+  ],
+  "requirements": [],
+  "created": "2026-11-20",
+  "hue": 106,
+  "scan": "private",
+  "listedBy": "waypoint"
+}
